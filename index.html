@@ -362,7 +362,9 @@
       fixedListEl.innerHTML = '<div class="fixed-empty">Nenhum fixo ainda. Ex: "academia 30 dia 15".</div>';
       return;
     }
-    fixedListEl.innerHTML = recurring.map(f => {
+    // Ordena por dia do desconto, do menor pro maior. Fixos sem dia vão pro fim.
+    const sorted = [...recurring].sort((a, b) => (a.dueDay || 999) - (b.dueDay || 999));
+    fixedListEl.innerHTML = sorted.map(f => {
       const paid = isPaid(f);
       return '<div class="fixed-item' + (paid ? ' paid' : '') + '">' +
         '<span class="fx-left">' +
