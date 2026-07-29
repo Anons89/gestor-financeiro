@@ -88,6 +88,21 @@
   .day-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #6C6C7C; font-weight: 700; }
   .day-total { font-size: 12px; color: #8A8A9A; font-weight: 700; }
 
+  .tabs { display: flex; gap: 8px; margin-top: 18px; }
+  .tab { flex: 1; padding: 10px; border-radius: 12px; font-size: 14px; font-weight: 700; background: var(--panel); color: var(--muted); border: 1px solid var(--border); cursor: pointer; }
+  .tab.active { background: var(--spent); color: #05230F; border-color: var(--spent); }
+  .profile { border-radius: 16px; padding: 14px 16px; background: var(--panel); border: 1px solid var(--border); margin-top: 20px; }
+  .profile-title { font-size: 11px; color: var(--muted); letter-spacing: 0.05em; margin-bottom: 8px; }
+  .profile-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .profile input, .profile select { flex: 1; min-width: 0; padding: 9px 12px; border-radius: 10px; font-size: 12px; background: var(--bg); color: var(--cream); border: 1px solid var(--border); outline: none; }
+  .chat { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .msg { max-width: 85%; padding: 10px 13px; border-radius: 16px; font-size: 14px; line-height: 1.45; white-space: pre-wrap; }
+  .msg.user { align-self: flex-end; background: var(--spent); color: #05230F; }
+  .msg.bot { align-self: flex-start; background: var(--panel); color: var(--cream); border: 1px solid var(--border); }
+  .thinking { font-size: 12px; color: var(--muted); padding: 2px 4px; }
+  .suggestions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .coach-input-row { display: flex; gap: 8px; margin-top: 12px; }
+
   .disclaimer { font-size: 11px; text-align: center; margin-top: 16px; color: #6C7391; }
 </style>
 </head>
@@ -102,6 +117,12 @@
     </div>
     <div class="sub" id="sub"></div>
 
+    <div class="tabs">
+      <button class="tab active" id="tabGastos"></button>
+      <button class="tab" id="tabCoach"></button>
+    </div>
+
+    <div id="viewGastos">
     <div class="row">
       <input id="input" autocomplete="off" />
       <button class="primary" id="addBtn"></button>
@@ -132,6 +153,24 @@
       <div class="head mono" id="receiptHead"></div>
       <div class="body mono" id="list"></div>
     </div>
+    </div><!-- /viewGastos -->
+
+    <div id="viewCoach" style="display:none">
+      <div class="profile">
+        <div class="profile-title" id="profileTitle"></div>
+        <div class="profile-row">
+          <input id="pIncome" autocomplete="off" />
+          <select id="pRisk"></select>
+        </div>
+        <input id="pGoal" autocomplete="off" style="width:100%" />
+      </div>
+      <div class="chat" id="chat"></div>
+      <div class="suggestions" id="suggestions"></div>
+      <div class="coach-input-row">
+        <input id="coachInput" autocomplete="off" />
+        <button class="primary" id="coachSend"></button>
+      </div>
+    </div>
 
     <div class="disclaimer" id="disclaimer"></div>
   </div>
@@ -160,6 +199,13 @@
       dueDay: "cai dia", today: "Hoje", yesterday: "Ontem",
       weekdays: ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"],
       editChips: "editar", addChipPh: "novo atalho", okBtn: "ok",
+      tabGastosLabel: "Gastos", tabCoachLabel: "Coach",
+      profileTitle: "SEU PERFIL (opcional — ajuda o coach)", incomePh: "renda/mês £",
+      riskQ: "risco?", riskLow: "risco baixo", riskMed: "risco médio", riskHigh: "risco alto",
+      goalPh: "seu objetivo (ex: juntar pra uma viagem)",
+      coachGreeting: "Oi! Sou seu coach financeiro. Ajudo você a entender pra onde vai seu dinheiro e explico conceitos — mas não digo o que comprar. Registra alguns gastos e me pergunta o que quiser. 👇",
+      suggestions: ["Onde eu mais gasto?", "Como posso economizar?", "O que é reserva de emergência?", "O que fazer com o que sobra?"],
+      coachPh: "pergunta pro seu coach...", send: "Enviar", thinkingTxt: "coach pensando...", coachErr: "Tive um problema pra pensar agora. Tenta de novo?",
       cats: { "Alimentação": "Alimentação", "Transporte": "Transporte", "Mercado": "Mercado", "Lazer": "Lazer", "Contas": "Contas", "Compras": "Compras", "Saúde": "Saúde", "Outros": "Outros" },
     },
     en: {
@@ -176,6 +222,13 @@
       dueDay: "due day", today: "Today", yesterday: "Yesterday",
       weekdays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
       editChips: "edit", addChipPh: "new shortcut", okBtn: "done",
+      tabGastosLabel: "Spending", tabCoachLabel: "Coach",
+      profileTitle: "YOUR PROFILE (optional — helps the coach)", incomePh: "income/mo £",
+      riskQ: "risk?", riskLow: "low risk", riskMed: "medium risk", riskHigh: "high risk",
+      goalPh: "your goal (e.g. save for a trip)",
+      coachGreeting: "Hi! I'm your financial coach. I help you understand where your money goes and explain concepts — but I won't tell you what to buy. Log some spending and ask me anything. 👇",
+      suggestions: ["Where do I spend most?", "How can I save?", "What is an emergency fund?", "What to do with leftover money?"],
+      coachPh: "ask your coach...", send: "Send", thinkingTxt: "coach thinking...", coachErr: "I had a problem thinking. Try again?",
       cats: { "Alimentação": "Food", "Transporte": "Transport", "Mercado": "Groceries", "Lazer": "Leisure", "Contas": "Bills", "Compras": "Shopping", "Saúde": "Health", "Outros": "Other" },
     },
   };
@@ -242,6 +295,15 @@
   function saveChips() { localStorage.setItem("quickchips", JSON.stringify(quickChips)); }
   let quickChips = loadChips();
   let editingChips = false;
+
+  // ---- Coach: perfil + conversa (memória) ----
+  function loadProfile() { try { return JSON.parse(localStorage.getItem("coach_profile") || "{}"); } catch (e) { return {}; } }
+  function saveProfile() { localStorage.setItem("coach_profile", JSON.stringify(coachProfile)); }
+  let coachProfile = loadProfile();
+  function loadCoachMsgs() { try { const r = localStorage.getItem("coach_msgs"); if (r) return JSON.parse(r); } catch (e) {} return [{ role: "bot", content: STR[lang].coachGreeting }]; }
+  function saveCoachMsgs() { localStorage.setItem("coach_msgs", JSON.stringify(coachMessages)); }
+  let coachMessages = loadCoachMsgs();
+  let coachThinking = false;
 
   // ---- Ações: gastos do dia ----
   async function addExpense(msg) {
@@ -347,7 +409,24 @@
     document.getElementById("receiptHead").textContent = t("receiptHead");
     document.getElementById("disclaimer").textContent = t("disclaimer");
     document.getElementById("langBtn").textContent = lang === "pt" ? "EN" : "PT";
+    document.getElementById("tabGastos").textContent = t("tabGastosLabel");
+    document.getElementById("tabCoach").textContent = t("tabCoachLabel");
+    document.getElementById("profileTitle").textContent = t("profileTitle");
+    document.getElementById("pIncome").setAttribute("placeholder", t("incomePh"));
+    document.getElementById("pGoal").setAttribute("placeholder", t("goalPh"));
+    document.getElementById("coachInput").setAttribute("placeholder", t("coachPh"));
+    document.getElementById("coachSend").textContent = t("send");
+    document.getElementById("pRisk").innerHTML =
+      '<option value="">' + t("riskQ") + '</option>' +
+      '<option value="baixo">' + t("riskLow") + '</option>' +
+      '<option value="médio">' + t("riskMed") + '</option>' +
+      '<option value="alto">' + t("riskHigh") + '</option>';
+    document.getElementById("pRisk").value = coachProfile.risk || "";
+    document.getElementById("pIncome").value = coachProfile.income || "";
+    document.getElementById("pGoal").value = coachProfile.goal || "";
     renderChips();
+    renderSuggestions();
+    renderChat();
   }
 
   // ---- Desenha os gastos do dia ----
@@ -429,6 +508,54 @@
     }).join("");
   }
 
+  // ---- Coach: telas e envio ----
+  function setTab(name) {
+    document.getElementById("viewGastos").style.display = name === "coach" ? "none" : "";
+    document.getElementById("viewCoach").style.display = name === "coach" ? "" : "none";
+    document.getElementById("tabGastos").classList.toggle("active", name !== "coach");
+    document.getElementById("tabCoach").classList.toggle("active", name === "coach");
+  }
+  function renderChat() {
+    document.getElementById("chat").innerHTML =
+      coachMessages.map(m => '<div class="msg ' + (m.role === "user" ? "user" : "bot") + '">' + esc(m.content) + '</div>').join("") +
+      (coachThinking ? '<div class="thinking">' + t("thinkingTxt") + '</div>' : "");
+  }
+  function renderSuggestions() {
+    document.getElementById("suggestions").innerHTML =
+      t("suggestions").map((q, i) => '<button class="chip" onclick="askCoachSuggestion(' + i + ')">' + esc(q) + '</button>').join("");
+  }
+  function askCoachSuggestion(i) { askCoach(t("suggestions")[i]); }
+  async function askCoach(preset) {
+    const el = document.getElementById("coachInput");
+    const q = (preset !== undefined ? preset : el.value).trim();
+    if (!q || coachThinking) return;
+    coachMessages.push({ role: "user", content: q });
+    el.value = ""; coachThinking = true; renderChat();
+
+    // resumo dos gastos pra dar contexto ao coach
+    const byCat = {};
+    expenses.forEach(e => { byCat[e.category] = (byCat[e.category] || 0) + (Number(e.amount) || 0); });
+    const total = expenses.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+    const spending = "Total " + money(total) + ". " + (Object.entries(byCat).map(([c, v]) => c + ": " + money(v)).join(", ") || "(sem gastos)");
+
+    const payload = {
+      lang: lang,
+      profile: coachProfile,
+      spending: spending,
+      messages: coachMessages.slice(1).map(m => ({ role: m.role === "bot" ? "assistant" : "user", content: m.content })).slice(-12),
+    };
+    try {
+      const res = await fetch("/.netlify/functions/coach", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      coachMessages.push({ role: "bot", content: (data && data.reply) ? data.reply : t("coachErr") });
+    } catch (e) {
+      coachMessages.push({ role: "bot", content: t("coachErr") });
+    }
+    coachThinking = false; saveCoachMsgs(); renderChat();
+  }
+
   // ---- Liga os botões ----
   document.getElementById("addBtn").onclick = () => addExpense();
   input.addEventListener("keydown", e => { if (e.key === "Enter") addExpense(); });
@@ -440,9 +567,19 @@
     applyStaticTexts(); render(); renderFixed();
   };
 
+  // ---- Coach wiring ----
+  document.getElementById("tabGastos").onclick = () => setTab("gastos");
+  document.getElementById("tabCoach").onclick = () => setTab("coach");
+  document.getElementById("coachSend").onclick = () => askCoach();
+  document.getElementById("coachInput").addEventListener("keydown", e => { if (e.key === "Enter") askCoach(); });
+  document.getElementById("pIncome").addEventListener("input", e => { coachProfile.income = e.target.value; saveProfile(); });
+  document.getElementById("pGoal").addEventListener("input", e => { coachProfile.goal = e.target.value; saveProfile(); });
+  document.getElementById("pRisk").addEventListener("change", e => { coachProfile.risk = e.target.value; saveProfile(); });
+
   applyStaticTexts();
   render();
   renderFixed();
+  setTab("gastos");
 </script>
 </body>
 </html>
