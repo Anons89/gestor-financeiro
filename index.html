@@ -103,17 +103,38 @@
   .suggestions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
   .coach-input-row { display: flex; gap: 8px; margin-top: 12px; }
 
+  .bubble { position: fixed; z-index: 50; right: 20px; bottom: calc(24px + env(safe-area-inset-bottom)); width: 56px; height: 56px; border-radius: 999px; background: linear-gradient(140deg, #5AE88F 0%, #22C55E 100%); color: #04220E; font-weight: 800; font-size: 15px; letter-spacing: 0.5px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; touch-action: none; user-select: none; box-shadow: 0 8px 22px rgba(0,0,0,0.5); animation: bubblePing 2.6s ease-out infinite; }
+  @keyframes bubblePing {
+    0% { box-shadow: 0 8px 22px rgba(0,0,0,0.5), 0 0 0 0 rgba(74,222,128,0.5); }
+    70% { box-shadow: 0 8px 22px rgba(0,0,0,0.5), 0 0 0 15px rgba(74,222,128,0); }
+    100% { box-shadow: 0 8px 22px rgba(0,0,0,0.5), 0 0 0 0 rgba(74,222,128,0); }
+  }
+  .sheet { position: fixed; inset: 0; z-index: 60; display: none; }
+  .sheet.open { display: block; }
+  .sheet-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.35); }
+  .sheet-panel { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%) translateY(100%); width: 100%; max-width: 440px; height: 82vh; background: var(--bg); border: 1px solid var(--border); border-bottom: none; border-top-left-radius: 20px; border-top-right-radius: 20px; transition: transform 0.28s cubic-bezier(.2,.8,.2,1); display: flex; flex-direction: column; overflow: hidden; padding: 0 16px calc(12px + env(safe-area-inset-bottom)); }
+  .sheet.open .sheet-panel { transform: translateX(-50%) translateY(0); }
+  .sheet-grip { padding: 10px 0 4px; display: flex; justify-content: center; cursor: grab; touch-action: none; flex-shrink: 0; }
+  .grip-bar { width: 40px; height: 5px; border-radius: 999px; background: var(--border); }
+  .sheet-body { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+  .sheet-body .profile { margin-top: 6px; }
+  .sheet-body .chat { flex: 1; overflow-y: auto; min-height: 0; margin-top: 12px; }
+
   .compare { font-size: 13px; color: var(--muted); margin-top: 8px; }
-  .curbar { display: flex; gap: 6px; margin-top: 10px; align-items: center; }
-  .cur-btn { padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 700; background: var(--panel); color: var(--muted); border: 1px solid var(--border); cursor: pointer; }
-  .cur-btn.active { background: var(--spent); color: #05230F; border-color: var(--spent); }
-  .cur-detect { margin-left: auto; padding: 6px 10px; border-radius: 999px; font-size: 12px; background: var(--panel); color: var(--cream); border: 1px solid var(--border); cursor: pointer; }
+  .curbar { position: relative; display: inline-block; margin-top: 10px; }
+  .cur-toggle { padding: 7px 14px; border-radius: 999px; font-size: 14px; font-weight: 700; background: var(--panel); color: var(--cream); border: 1px solid var(--border); cursor: pointer; }
+  .caret { color: var(--muted); font-size: 12px; }
+  .cur-menu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 40; min-width: 160px; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 6px; box-shadow: 0 12px 30px rgba(0,0,0,0.55); display: none; }
+  .cur-menu.open { display: block; }
+  .cur-opt { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 10px 12px; border-radius: 10px; font-size: 14px; background: none; border: none; color: var(--cream); cursor: pointer; }
+  .cur-opt.active { color: var(--spent); font-weight: 700; }
+  .cur-opt.local { border-top: 1px solid var(--border); margin-top: 4px; color: var(--muted); }
   .othercur { font-size: 12px; color: var(--muted); margin-top: 6px; }
   .actions { display: flex; gap: 8px; margin-top: 16px; }
   .act { flex: 1; padding: 11px; border-radius: 12px; font-size: 13px; font-weight: 600; background: var(--panel); color: var(--cream); border: 1px solid var(--border); cursor: pointer; }
   @media print {
     body { background: #fff !important; color: #000 !important; padding: 12px !important; }
-    .tabs, .row, .chips, .lang, .actions, .curbar, #viewCoach, .disclaimer, .del, .fx-del, .check, .sub { display: none !important; }
+    .tabs, .row, .chips, .lang, .actions, .curbar, .bubble, .sheet, .disclaimer, .del, .fx-del, .check, .sub { display: none !important; }
     .summary, .fixed { background: #fff !important; color: #000 !important; border: 1px solid #ddd !important; }
     .summary .total, .eyebrow, h1, .fixed-title, .label, .fixed-total, .fx-name, .fx-amount, .fx-due, .compare, .note, .fixed-sub { color: #000 !important; }
   }
@@ -131,11 +152,6 @@
       <button class="lang" id="langBtn"></button>
     </div>
     <div class="sub" id="sub"></div>
-
-    <div class="tabs">
-      <button class="tab active" id="tabGastos"></button>
-      <button class="tab" id="tabCoach"></button>
-    </div>
 
     <div id="viewGastos">
     <div class="row">
@@ -179,24 +195,32 @@
     </div>
     </div><!-- /viewGastos -->
 
-    <div id="viewCoach" style="display:none">
-      <div class="profile">
-        <div class="profile-title" id="profileTitle"></div>
-        <div class="profile-row">
-          <input id="pIncome" autocomplete="off" />
-          <select id="pRisk"></select>
+    <div class="disclaimer" id="disclaimer"></div>
+
+    <button id="coachBubble" class="bubble">AI</button>
+
+    <div id="coachSheet" class="sheet">
+      <div class="sheet-backdrop" id="sheetBackdrop"></div>
+      <div class="sheet-panel" id="sheetPanel">
+        <div class="sheet-grip" id="sheetGrip"><span class="grip-bar"></span></div>
+        <div class="sheet-body">
+          <div class="profile">
+            <div class="profile-title" id="profileTitle"></div>
+            <div class="profile-row">
+              <input id="pIncome" autocomplete="off" />
+              <select id="pRisk"></select>
+            </div>
+            <input id="pGoal" autocomplete="off" style="width:100%" />
+          </div>
+          <div class="chat" id="chat"></div>
+          <div class="suggestions" id="suggestions"></div>
+          <div class="coach-input-row">
+            <input id="coachInput" autocomplete="off" />
+            <button class="primary" id="coachSend"></button>
+          </div>
         </div>
-        <input id="pGoal" autocomplete="off" style="width:100%" />
-      </div>
-      <div class="chat" id="chat"></div>
-      <div class="suggestions" id="suggestions"></div>
-      <div class="coach-input-row">
-        <input id="coachInput" autocomplete="off" />
-        <button class="primary" id="coachSend"></button>
       </div>
     </div>
-
-    <div class="disclaimer" id="disclaimer"></div>
   </div>
 
 <script>
@@ -232,7 +256,7 @@
       coachPh: "pergunta pro seu coach...", send: "Enviar", thinkingTxt: "coach pensando...", coachErr: "Tive um problema pra pensar agora. Tenta de novo?",
       cmpThisMonth: "Esse mês:", cmpMore: "a mais que o mês passado", cmpLess: "a menos que o mês passado", cmpSame: "Igual ao mês passado.",
       share: "↗ Compartilhar", pdf: "PDF", shareTitle: "meus gastos", copied: "Copiado!",
-      detectCur: "moeda daqui", otherCur: "Outras moedas:",
+      detectCur: "moeda daqui", otherCur: "Outras moedas:", localCur: "Moeda local",
       cats: { "Alimentação": "Alimentação", "Transporte": "Transporte", "Mercado": "Mercado", "Lazer": "Lazer", "Contas": "Contas", "Compras": "Compras", "Saúde": "Saúde", "Outros": "Outros" },
     },
     en: {
@@ -258,7 +282,7 @@
       coachPh: "ask your coach...", send: "Send", thinkingTxt: "coach thinking...", coachErr: "I had a problem thinking. Try again?",
       cmpThisMonth: "This month:", cmpMore: "more than last month", cmpLess: "less than last month", cmpSame: "Same as last month.",
       share: "↗ Share", pdf: "PDF", shareTitle: "my spending", copied: "Copied!",
-      detectCur: "currency here", otherCur: "Other currencies:",
+      detectCur: "currency here", otherCur: "Other currencies:", localCur: "Local currency",
       cats: { "Alimentação": "Food", "Transporte": "Transport", "Mercado": "Groceries", "Lazer": "Leisure", "Contas": "Bills", "Compras": "Shopping", "Saúde": "Health", "Outros": "Other" },
     },
   };
@@ -320,9 +344,10 @@
   let recurring = loadFixed();
 
   // Atalhos editáveis (o usuário cria os próprios gastos frequentes)
-  const DEFAULT_CHIPS = ["Gastei £5.50 meal deal", "Gastei £15 gasolina", "Gastei £30 na Gopuff", "Gastei £20 no supermercado"];
-  function loadChips() { try { const r = localStorage.getItem("quickchips"); return r ? JSON.parse(r) : DEFAULT_CHIPS.slice(); } catch (e) { return DEFAULT_CHIPS.slice(); } }
-  function saveChips() { localStorage.setItem("quickchips", JSON.stringify(quickChips)); }
+  const MAX_CHIPS = 3;
+  const DEFAULT_CHIPS = ["Café £3.20", "Meal Deal £3.85", "Bus £1.75"];
+  function loadChips() { try { const r = localStorage.getItem("quickchips_v3"); return (r ? JSON.parse(r) : DEFAULT_CHIPS.slice()).slice(0, MAX_CHIPS); } catch (e) { return DEFAULT_CHIPS.slice(); } }
+  function saveChips() { localStorage.setItem("quickchips_v3", JSON.stringify(quickChips)); }
   let quickChips = loadChips();
   let editingChips = false;
 
@@ -353,11 +378,27 @@
   function quickAdd(i) { addExpense(quickChips[i]); }
   function removeChip(i) { quickChips.splice(i, 1); saveChips(); renderChips(); }
   function addChipFromInput() {
+    if (quickChips.length >= MAX_CHIPS) return;
     const el = document.getElementById("chipInput");
     const v = el ? el.value.trim() : "";
     if (!v) return;
-    quickChips.push(v); saveChips(); renderChips();
+    quickChips.push(formatChip(v)); saveChips(); renderChips(); // "academia 5" -> "Academia £5"
     const el2 = document.getElementById("chipInput"); if (el2) el2.focus();
+  }
+  // Deixa o atalho bonito: 1ª letra maiúscula em cada palavra + moeda na frente do valor.
+  function formatChip(raw) {
+    const m = raw.match(/(\d+(?:[.,]\d{1,2})?)/);
+    const amount = m ? parseFloat(m[1].replace(",", ".")) : 0;
+    let name = raw
+      .replace(/\b(gastei|paguei|comprei|gasto|spent|paid|bought)\b/gi, "")
+      .replace(/\d+(?:[.,]\d+)?/g, "")
+      .replace(/£|€|\$|r\$|reais|libras?|pounds?|euros?|d[oó]lares?|dollars?/gi, "")
+      .replace(/\s+/g, " ").trim();
+    if (!name) name = "Item";
+    name = name.split(" ").map(w => w ? w.charAt(0).toUpperCase() + w.slice(1) : w).join(" ");
+    const sym = CURRENCIES[homeCurrency] || "£";
+    const amtStr = (amount % 1 === 0) ? String(amount) : amount.toFixed(2);
+    return name + " " + sym + amtStr;
   }
   function toggleEditChips() { editingChips = !editingChips; renderChips(); }
 
@@ -390,7 +431,9 @@
   // ---- Utilidades ----
   // ---- Moedas ----
   const CURRENCIES = { GBP: "£", EUR: "€", USD: "$", BRL: "R$" };
+  const FLAGS = { GBP: "🇬🇧", EUR: "🇪🇺", USD: "🇺🇸", BRL: "🇧🇷" };
   const CUR_ORDER = ["GBP", "EUR", "USD", "BRL"];
+  let curMenuOpen = false;
   function loadCur(key, def) { try { const r = localStorage.getItem(key); return (r && CURRENCIES[r]) ? r : def; } catch (e) { return def; } }
   let homeCurrency = loadCur("home_currency", "GBP");   // moeda de casa (fixos) — travada
   let curCurrency = loadCur("cur_currency", homeCurrency); // moeda que você está vendo/registrando agora
@@ -425,11 +468,14 @@
         quickChips.map((c, i) => '<button class="chip" onclick="quickAdd(' + i + ')">' + esc(c) + '</button>').join("") +
         '<button class="chip" style="border-style:dashed" onclick="toggleEditChips()">✎ ' + t("editChips") + '</button>';
     } else {
+      const canAdd = quickChips.length < MAX_CHIPS;
       box.innerHTML =
         quickChips.map((c, i) => '<span class="chip chip-editing">' + esc(c) + '<button class="chip-x" onclick="removeChip(' + i + ')">✕</button></span>').join("") +
-        '<input id="chipInput" class="chip-input" placeholder="' + t("addChipPh") + '" onkeydown="if(event.key===\'Enter\')addChipFromInput()" />' +
-        '<button class="chip" onclick="addChipFromInput()">＋</button>' +
-        '<button class="chip" style="background:var(--spent);color:#05230F;border:none" onclick="toggleEditChips()">' + t("okBtn") + '</button>';
+        (canAdd
+          ? '<input id="chipInput" class="chip-input" placeholder="' + t("addChipPh") + '" onkeydown="if(event.key===\'Enter\')addChipFromInput()" />' +
+            '<button class="chip" style="background:var(--spent);color:#05230F;border:none" onclick="addChipFromInput()">' + t("okBtn") + '</button>'
+          : "") +
+        '<button class="chip" onclick="toggleEditChips()">✕</button>';
     }
   }
 
@@ -446,8 +492,6 @@
     document.getElementById("receiptHead").textContent = t("receiptHead");
     document.getElementById("disclaimer").textContent = t("disclaimer");
     document.getElementById("langBtn").textContent = lang === "pt" ? "EN" : "PT";
-    document.getElementById("tabGastos").textContent = t("tabGastosLabel");
-    document.getElementById("tabCoach").textContent = t("tabCoachLabel");
     document.getElementById("profileTitle").textContent = t("profileTitle");
     document.getElementById("pIncome").setAttribute("placeholder", t("incomePh"));
     document.getElementById("pGoal").setAttribute("placeholder", t("goalPh"));
@@ -552,17 +596,13 @@
     }).join("");
   }
 
-  // ---- Coach: telas e envio ----
-  function setTab(name) {
-    document.getElementById("viewGastos").style.display = name === "coach" ? "none" : "";
-    document.getElementById("viewCoach").style.display = name === "coach" ? "" : "none";
-    document.getElementById("tabGastos").classList.toggle("active", name !== "coach");
-    document.getElementById("tabCoach").classList.toggle("active", name === "coach");
-  }
+  // ---- Coach: chat (dentro da bolinha) ----
   function renderChat() {
-    document.getElementById("chat").innerHTML =
+    const c = document.getElementById("chat");
+    c.innerHTML =
       coachMessages.map(m => '<div class="msg ' + (m.role === "user" ? "user" : "bot") + '">' + esc(m.content) + '</div>').join("") +
       (coachThinking ? '<div class="thinking">' + t("thinkingTxt") + '</div>' : "");
+    c.scrollTop = c.scrollHeight;
   }
   function renderSuggestions() {
     document.getElementById("suggestions").innerHTML =
@@ -651,14 +691,18 @@
   // ---- Seletor de moeda + detecção de local ----
   function setCurCurrency(code) {
     if (!CURRENCIES[code]) return;
-    curCurrency = code;
+    curCurrency = code; curMenuOpen = false;
     try { localStorage.setItem("cur_currency", code); } catch (e) {}
     render();
   }
+  function toggleCurMenu(e) { if (e) e.stopPropagation(); curMenuOpen = !curMenuOpen; renderCurrencyBar(); }
   function renderCurrencyBar() {
     document.getElementById("curbar").innerHTML =
-      CUR_ORDER.map(code => '<button class="cur-btn' + (code === curCurrency ? ' active' : '') + '" onclick="setCurCurrency(\'' + code + '\')">' + CURRENCIES[code] + '</button>').join("") +
-      '<button class="cur-detect" onclick="detectCurrency()">📍 ' + t("detectCur") + '</button>';
+      '<button class="cur-toggle" onclick="toggleCurMenu(event)">' + FLAGS[curCurrency] + ' ' + CURRENCIES[curCurrency] + ' <span class="caret">▾</span></button>' +
+      '<div class="cur-menu' + (curMenuOpen ? ' open' : '') + '">' +
+        CUR_ORDER.map(code => '<button class="cur-opt' + (code === curCurrency ? ' active' : '') + '" onclick="setCurCurrency(\'' + code + '\')">' + FLAGS[code] + ' ' + CURRENCIES[code] + '  ' + code + '</button>').join("") +
+        '<button class="cur-opt local" onclick="detectCurrency()">📍 ' + t("localCur") + '</button>' +
+      '</div>';
   }
   function renderOtherCur() {
     const parts = [];
@@ -688,6 +732,7 @@
     return null;
   }
   function detectCurrency() {
+    curMenuOpen = false; renderCurrencyBar();
     const apply = code => { if (code && CURRENCIES[code]) setCurCurrency(code); };
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -710,8 +755,6 @@
   };
 
   // ---- Coach wiring ----
-  document.getElementById("tabGastos").onclick = () => setTab("gastos");
-  document.getElementById("tabCoach").onclick = () => setTab("coach");
   document.getElementById("coachSend").onclick = () => askCoach();
   document.getElementById("coachInput").addEventListener("keydown", e => { if (e.key === "Enter") askCoach(); });
   document.getElementById("pIncome").addEventListener("input", e => { coachProfile.income = e.target.value; saveProfile(); });
@@ -720,10 +763,80 @@
   document.getElementById("shareBtn").onclick = () => shareSummary();
   document.getElementById("pdfBtn").onclick = () => exportPDF();
 
+  // ---- Bolinha do coach + painel deslizante ----
+  const bubble = document.getElementById("coachBubble");
+  const sheet = document.getElementById("coachSheet");
+  const panel = document.getElementById("sheetPanel");
+  function openSheet() { sheet.classList.add("open"); panel.style.transition = ""; panel.style.transform = ""; }
+  function closeSheet() {
+    panel.style.transition = "";
+    panel.style.transform = "translateX(-50%) translateY(100%)";
+    setTimeout(() => { sheet.classList.remove("open"); panel.style.transform = ""; }, 280);
+  }
+  function placeBubble(left, top) {
+    const w = bubble.offsetWidth || 56, h = bubble.offsetHeight || 56;
+    left = Math.max(8, Math.min(left, window.innerWidth - w - 8));
+    top = Math.max(8, Math.min(top, window.innerHeight - h - 8));
+    bubble.style.left = left + "px"; bubble.style.top = top + "px";
+    bubble.style.right = "auto"; bubble.style.bottom = "auto";
+    try { localStorage.setItem("bubble_pos", JSON.stringify({ left: left, top: top })); } catch (e) {}
+  }
+  (function () {
+    let pos = null;
+    try { const r = localStorage.getItem("bubble_pos"); if (r) pos = JSON.parse(r); } catch (e) {}
+    const w = 56;
+    let top = pos ? pos.top : (window.innerHeight - 140);
+    let left = pos ? pos.left : (window.innerWidth - w - 16);
+    const center = left + w / 2; // sempre começa grudada num dos lados
+    left = center < window.innerWidth / 2 ? 16 : window.innerWidth - w - 16;
+    placeBubble(left, top);
+  })();
+  // arrastar a bolinha, e diferenciar de um toque rápido
+  let bDrag = false, bMoved = false, bsx = 0, bsy = 0, bl0 = 0, bt0 = 0;
+  bubble.addEventListener("pointerdown", e => {
+    bDrag = true; bMoved = false; bsx = e.clientX; bsy = e.clientY;
+    bl0 = bubble.offsetLeft; bt0 = bubble.offsetTop;
+    bubble.style.transition = "none";
+    try { bubble.setPointerCapture(e.pointerId); } catch (er) {}
+  });
+  bubble.addEventListener("pointermove", e => {
+    if (!bDrag) return;
+    const dx = e.clientX - bsx, dy = e.clientY - bsy;
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) bMoved = true;
+    if (bMoved) placeBubble(bl0 + dx, bt0 + dy);
+  });
+  function snapBubbleToEdge() {
+    const w = bubble.offsetWidth || 56;
+    const center = bubble.offsetLeft + w / 2;
+    const left = center < window.innerWidth / 2 ? 16 : window.innerWidth - w - 16;
+    bubble.style.transition = "left 0.22s cubic-bezier(.2,.8,.2,1)";
+    placeBubble(left, bubble.offsetTop);
+    setTimeout(() => { bubble.style.transition = "none"; }, 240);
+  }
+  bubble.addEventListener("pointerup", () => {
+    if (!bDrag) return;
+    bDrag = false;
+    if (!bMoved) { openSheet(); return; }
+    snapBubbleToEdge(); // ao soltar, gruda no canto mais próximo (esquerdo ou direito)
+  });
+  // arrastar o painel pra baixo (pela alcinha) pra fechar
+  const grip = document.getElementById("sheetGrip");
+  let sDrag = false, ssy = 0, sdy = 0;
+  grip.addEventListener("pointerdown", e => { sDrag = true; ssy = e.clientY; sdy = 0; panel.style.transition = "none"; try { grip.setPointerCapture(e.pointerId); } catch (er) {} });
+  grip.addEventListener("pointermove", e => { if (!sDrag) return; sdy = e.clientY - ssy; if (sdy > 0) panel.style.transform = "translateX(-50%) translateY(" + sdy + "px)"; });
+  grip.addEventListener("pointerup", () => { if (!sDrag) return; sDrag = false; panel.style.transition = ""; if (sdy > 120) closeSheet(); else panel.style.transform = ""; });
+  document.getElementById("sheetBackdrop").addEventListener("click", closeSheet);
+  document.addEventListener("click", () => { if (curMenuOpen) { curMenuOpen = false; renderCurrencyBar(); } });
+  window.addEventListener("resize", () => {
+    const w = bubble.offsetWidth || 56;
+    const center = bubble.offsetLeft + w / 2;
+    const left = center < window.innerWidth / 2 ? 16 : window.innerWidth - w - 16;
+    placeBubble(left, bubble.offsetTop);
+  });
+
   applyStaticTexts();
   render();
   renderFixed();
-  setTab("gastos");
 </script>
 </body>
 </html>
