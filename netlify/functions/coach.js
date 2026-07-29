@@ -45,7 +45,7 @@ exports.handler = async (event) => {
         "Authorization": "Bearer " + process.env.NVIDIA_API_KEY, // mesma chave do cofre
       },
       body: JSON.stringify({
-        model: "meta/llama-3.3-70b-instruct", // modelo maior/mais esperto, bom pra conversar
+        model: "meta/llama-3.1-8b-instruct", // mesmo modelo da categorização: rápido e confiável (evita estourar o tempo)
         messages: chat,
         temperature: 0.6,
         max_tokens: 400,
