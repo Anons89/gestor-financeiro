@@ -103,6 +103,21 @@
   .suggestions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
   .coach-input-row { display: flex; gap: 8px; margin-top: 12px; }
 
+  .compare { font-size: 13px; color: var(--muted); margin-top: 8px; }
+  .curbar { display: flex; gap: 6px; margin-top: 10px; align-items: center; }
+  .cur-btn { padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 700; background: var(--panel); color: var(--muted); border: 1px solid var(--border); cursor: pointer; }
+  .cur-btn.active { background: var(--spent); color: #05230F; border-color: var(--spent); }
+  .cur-detect { margin-left: auto; padding: 6px 10px; border-radius: 999px; font-size: 12px; background: var(--panel); color: var(--cream); border: 1px solid var(--border); cursor: pointer; }
+  .othercur { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .actions { display: flex; gap: 8px; margin-top: 16px; }
+  .act { flex: 1; padding: 11px; border-radius: 12px; font-size: 13px; font-weight: 600; background: var(--panel); color: var(--cream); border: 1px solid var(--border); cursor: pointer; }
+  @media print {
+    body { background: #fff !important; color: #000 !important; padding: 12px !important; }
+    .tabs, .row, .chips, .lang, .actions, .curbar, #viewCoach, .disclaimer, .del, .fx-del, .check, .sub { display: none !important; }
+    .summary, .fixed { background: #fff !important; color: #000 !important; border: 1px solid #ddd !important; }
+    .summary .total, .eyebrow, h1, .fixed-title, .label, .fixed-total, .fx-name, .fx-amount, .fx-due, .compare, .note, .fixed-sub { color: #000 !important; }
+  }
+
   .disclaimer { font-size: 11px; text-align: center; margin-top: 16px; color: #6C7391; }
 </style>
 </head>
@@ -128,12 +143,16 @@
       <button class="primary" id="addBtn"></button>
     </div>
 
+    <div class="curbar" id="curbar"></div>
+
     <div class="chips" id="chips"></div>
 
     <div class="summary">
       <div class="label mono" id="totalLabel"></div>
       <div class="total mono" id="total">£0.00</div>
       <div class="note" id="note"></div>
+      <div class="compare" id="compare"></div>
+      <div class="othercur" id="othercur"></div>
     </div>
 
     <div class="fixed">
@@ -152,6 +171,11 @@
     <div class="receipt">
       <div class="head mono" id="receiptHead"></div>
       <div class="body mono" id="list"></div>
+    </div>
+
+    <div class="actions">
+      <button class="act" id="shareBtn"></button>
+      <button class="act" id="pdfBtn"></button>
     </div>
     </div><!-- /viewGastos -->
 
@@ -206,6 +230,9 @@
       coachGreeting: "Oi! Sou seu coach financeiro. Ajudo você a entender pra onde vai seu dinheiro e explico conceitos — mas não digo o que comprar. Registra alguns gastos e me pergunta o que quiser. 👇",
       suggestions: ["Onde eu mais gasto?", "Como posso economizar?", "O que é reserva de emergência?", "O que fazer com o que sobra?"],
       coachPh: "pergunta pro seu coach...", send: "Enviar", thinkingTxt: "coach pensando...", coachErr: "Tive um problema pra pensar agora. Tenta de novo?",
+      cmpThisMonth: "Esse mês:", cmpMore: "a mais que o mês passado", cmpLess: "a menos que o mês passado", cmpSame: "Igual ao mês passado.",
+      share: "↗ Compartilhar", pdf: "PDF", shareTitle: "meus gastos", copied: "Copiado!",
+      detectCur: "moeda daqui", otherCur: "Outras moedas:",
       cats: { "Alimentação": "Alimentação", "Transporte": "Transporte", "Mercado": "Mercado", "Lazer": "Lazer", "Contas": "Contas", "Compras": "Compras", "Saúde": "Saúde", "Outros": "Outros" },
     },
     en: {
@@ -229,6 +256,9 @@
       coachGreeting: "Hi! I'm your financial coach. I help you understand where your money goes and explain concepts — but I won't tell you what to buy. Log some spending and ask me anything. 👇",
       suggestions: ["Where do I spend most?", "How can I save?", "What is an emergency fund?", "What to do with leftover money?"],
       coachPh: "ask your coach...", send: "Send", thinkingTxt: "coach thinking...", coachErr: "I had a problem thinking. Try again?",
+      cmpThisMonth: "This month:", cmpMore: "more than last month", cmpLess: "less than last month", cmpSame: "Same as last month.",
+      share: "↗ Share", pdf: "PDF", shareTitle: "my spending", copied: "Copied!",
+      detectCur: "currency here", otherCur: "Other currencies:",
       cats: { "Alimentação": "Food", "Transporte": "Transport", "Mercado": "Groceries", "Lazer": "Leisure", "Contas": "Bills", "Compras": "Shopping", "Saúde": "Health", "Outros": "Other" },
     },
   };
@@ -256,7 +286,7 @@
     else if (/farm[aá]cia|pharmacy|rem[eé]dio|medicine|m[eé]dico|doctor|academia|gym|dentista|dentist/.test(s)) category = "Saúde";
     let desc = s
       .replace(/\b(gastei|paguei|comprei|gasto|spent|paid|bought)\b/g, "")
-      .replace(/\d+(?:[.,]\d+)?/g, "").replace(/£|r\$|reais|libras?|pounds?/gi, "")
+      .replace(/\d+(?:[.,]\d+)?/g, "").replace(/£|€|\$|r\$|reais|libras?|pounds?|euros?|d[oó]lares?|dollars?/gi, "")
       .replace(/\b(no|na|nos|nas|de|do|da|em|com|pra|para|o|a|um|uma|on|at|for|the|of|to|with|an)\b/g, "")
       .replace(/\s+/g, " ").trim();
     if (!desc) desc = catLabel(category);
@@ -312,7 +342,7 @@
     const btn = document.getElementById("addBtn");
     btn.disabled = true; btn.textContent = t("parsingTxt");
     const parsed = await parse(text);
-    expenses.unshift({ id: Date.now(), date: new Date().toISOString(), ...parsed });
+    expenses.unshift({ id: Date.now(), date: new Date().toISOString(), cur: curCurrency, ...parsed });
     save(); input.value = "";
     btn.disabled = false; btn.textContent = t("add");
     render();
@@ -358,7 +388,14 @@
   }
 
   // ---- Utilidades ----
-  const money = n => "£" + (Number(n) || 0).toFixed(2);
+  // ---- Moedas ----
+  const CURRENCIES = { GBP: "£", EUR: "€", USD: "$", BRL: "R$" };
+  const CUR_ORDER = ["GBP", "EUR", "USD", "BRL"];
+  function loadCur(key, def) { try { const r = localStorage.getItem(key); return (r && CURRENCIES[r]) ? r : def; } catch (e) { return def; } }
+  let homeCurrency = loadCur("home_currency", "GBP");   // moeda de casa (fixos) — travada
+  let curCurrency = loadCur("cur_currency", homeCurrency); // moeda que você está vendo/registrando agora
+  const money = (n, cur) => (CURRENCIES[cur || curCurrency] || "£") + (Number(n) || 0).toFixed(2);
+  const expCur = e => e.cur || homeCurrency; // gastos antigos sem moeda = moeda de casa
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const ts = e => e.date ? new Date(e.date).getTime() : e.id;
   const dayKey = tv => { const d = new Date(tv); return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate(); };
@@ -416,6 +453,8 @@
     document.getElementById("pGoal").setAttribute("placeholder", t("goalPh"));
     document.getElementById("coachInput").setAttribute("placeholder", t("coachPh"));
     document.getElementById("coachSend").textContent = t("send");
+    document.getElementById("shareBtn").textContent = t("share");
+    document.getElementById("pdfBtn").textContent = t("pdf");
     document.getElementById("pRisk").innerHTML =
       '<option value="">' + t("riskQ") + '</option>' +
       '<option value="baixo">' + t("riskLow") + '</option>' +
@@ -432,21 +471,25 @@
 
   // ---- Desenha os gastos do dia ----
   function render() {
-    const total = expenses.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+    const exp = expenses.filter(e => expCur(e) === curCurrency);
+    const total = exp.reduce((s, e) => s + (Number(e.amount) || 0), 0);
     totalEl.textContent = money(total);
 
     const byCat = {};
-    expenses.forEach(e => { byCat[e.category] = (byCat[e.category] || 0) + (Number(e.amount) || 0); });
+    exp.forEach(e => { byCat[e.category] = (byCat[e.category] || 0) + (Number(e.amount) || 0); });
     const biggest = Object.entries(byCat).sort((a, b) => b[1] - a[1])[0];
     if (biggest) {
       const heavy = biggest[1] > total * 0.4 ? t("heavy") : t("ok");
       noteEl.innerHTML = t("biggest") + ' <b style="color:' + CATEGORIES[biggest[0]] + '">' + catLabel(biggest[0]) + '</b> (' + money(biggest[1]) + '). ' + heavy;
     } else { noteEl.textContent = ""; }
+    renderCurrencyBar();
+    renderCompare();
+    renderOtherCur();
 
-    if (expenses.length === 0) { listEl.innerHTML = '<div class="empty">' + t("emptyExpenses") + '</div>'; return; }
+    if (exp.length === 0) { listEl.innerHTML = '<div class="empty">' + t("emptyExpenses") + '</div>'; return; }
 
     const groups = [];
-    expenses.forEach(e => {
+    exp.forEach(e => {
       const key = dayKey(ts(e));
       let g = groups.find(x => x.key === key);
       if (!g) { g = { key: key, label: dayLabel(ts(e)), total: 0, items: [] }; groups.push(g); }
@@ -478,12 +521,12 @@
   // ---- Desenha os fixos ----
   function renderFixed() {
     const total = recurring.reduce((s, f) => s + (Number(f.amount) || 0), 0);
-    fixedTotalEl.textContent = money(total) + t("perMonth");
+    fixedTotalEl.textContent = money(total, homeCurrency) + t("perMonth");
 
     const unpaid = recurring.filter(f => !isPaid(f)).reduce((s, f) => s + (Number(f.amount) || 0), 0);
     if (recurring.length === 0) fixedSubEl.textContent = "";
     else if (unpaid === 0) fixedSubEl.innerHTML = t("allPaid");
-    else fixedSubEl.innerHTML = t("remaining") + ' <b>' + money(unpaid) + '</b>';
+    else fixedSubEl.innerHTML = t("remaining") + ' <b>' + money(unpaid, homeCurrency) + '</b>';
 
     if (recurring.length === 0) { fixedListEl.innerHTML = '<div class="fixed-empty">' + t("emptyFixed") + '</div>'; return; }
     const sorted = [...recurring].sort((a, b) => {
@@ -502,7 +545,7 @@
           '</span>' +
         '</span>' +
         '<span class="fx-right">' +
-          '<span class="fx-amount">' + money(f.amount) + '</span>' +
+          '<span class="fx-amount">' + money(f.amount, homeCurrency) + '</span>' +
           '<button class="fx-del" onclick="removeFixed(' + f.id + ')">✕</button>' +
         '</span>' +
       '</div>';
@@ -533,11 +576,16 @@
     coachMessages.push({ role: "user", content: q });
     el.value = ""; coachThinking = true; renderChat();
 
-    // resumo dos gastos pra dar contexto ao coach
-    const byCat = {};
-    expenses.forEach(e => { byCat[e.category] = (byCat[e.category] || 0) + (Number(e.amount) || 0); });
-    const total = expenses.reduce((s, e) => s + (Number(e.amount) || 0), 0);
-    const spending = "Total " + money(total) + ". " + (Object.entries(byCat).map(([c, v]) => c + ": " + money(v)).join(", ") || "(sem gastos)");
+    // resumo dos gastos (separado por moeda) pra dar contexto ao coach
+    const spendParts = [];
+    CUR_ORDER.forEach(code => {
+      const exp = expenses.filter(e => expCur(e) === code);
+      if (!exp.length) return;
+      const tot = exp.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+      const bc = {}; exp.forEach(e => { bc[e.category] = (bc[e.category] || 0) + (Number(e.amount) || 0); });
+      spendParts.push(money(tot, code) + " (" + Object.entries(bc).map(([c, v]) => c + " " + money(v, code)).join(", ") + ")");
+    });
+    const spending = spendParts.length ? spendParts.join(" | ") : "(sem gastos)";
 
     const payload = {
       lang: lang,
@@ -555,6 +603,99 @@
       coachMessages.push({ role: "bot", content: t("coachErr") });
     }
     coachThinking = false; saveCoachMsgs(); renderChat();
+  }
+
+  // ---- Comparação mês a mês ----
+  function renderCompare() {
+    const el = document.getElementById("compare");
+    const now = new Date();
+    const kThis = now.getFullYear() + "-" + now.getMonth();
+    const lastD = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const kLast = lastD.getFullYear() + "-" + lastD.getMonth();
+    let thisM = 0, lastM = 0;
+    expenses.filter(e => expCur(e) === curCurrency).forEach(e => {
+      const d = new Date(ts(e)); const k = d.getFullYear() + "-" + d.getMonth();
+      if (k === kThis) thisM += Number(e.amount) || 0;
+      else if (k === kLast) lastM += Number(e.amount) || 0;
+    });
+    if (lastM === 0) { el.innerHTML = ""; return; } // ainda não há mês passado pra comparar
+    const diff = thisM - lastM;
+    if (Math.abs(diff) < 0.005) { el.innerHTML = t("cmpThisMonth") + " " + money(thisM) + ". " + t("cmpSame"); return; }
+    const up = diff > 0;
+    const color = up ? "#F87171" : "#4ADE80";
+    const arrow = up ? "↑" : "↓";
+    const word = up ? t("cmpMore") : t("cmpLess");
+    el.innerHTML = t("cmpThisMonth") + " " + money(thisM) + '. <span style="color:' + color + '">' + arrow + " " + money(Math.abs(diff)) + " " + word + "</span>";
+  }
+
+  // ---- Compartilhar / PDF ----
+  function summaryText() {
+    let out = "BudgetAI — " + t("shareTitle");
+    CUR_ORDER.forEach(code => {
+      const exp = expenses.filter(e => expCur(e) === code);
+      if (!exp.length) return;
+      const total = exp.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+      const byCat = {}; exp.forEach(e => { byCat[e.category] = (byCat[e.category] || 0) + (Number(e.amount) || 0); });
+      out += "\n\n" + t("totalLabel") + " (" + CURRENCIES[code] + "): " + money(total, code) + "\n" +
+        Object.entries(byCat).sort((a, b) => b[1] - a[1]).map(([c, v]) => "- " + catLabel(c) + ": " + money(v, code)).join("\n");
+    });
+    return out;
+  }
+  async function shareSummary() {
+    const text = summaryText();
+    if (navigator.share) { try { await navigator.share({ title: "BudgetAI", text: text }); } catch (e) {} return; }
+    try { await navigator.clipboard.writeText(text); alert(t("copied")); } catch (e) { alert(text); }
+  }
+  function exportPDF() { window.print(); }
+
+  // ---- Seletor de moeda + detecção de local ----
+  function setCurCurrency(code) {
+    if (!CURRENCIES[code]) return;
+    curCurrency = code;
+    try { localStorage.setItem("cur_currency", code); } catch (e) {}
+    render();
+  }
+  function renderCurrencyBar() {
+    document.getElementById("curbar").innerHTML =
+      CUR_ORDER.map(code => '<button class="cur-btn' + (code === curCurrency ? ' active' : '') + '" onclick="setCurCurrency(\'' + code + '\')">' + CURRENCIES[code] + '</button>').join("") +
+      '<button class="cur-detect" onclick="detectCurrency()">📍 ' + t("detectCur") + '</button>';
+  }
+  function renderOtherCur() {
+    const parts = [];
+    CUR_ORDER.forEach(code => {
+      if (code === curCurrency) return;
+      const tot = expenses.filter(e => expCur(e) === code).reduce((s, e) => s + (Number(e.amount) || 0), 0);
+      if (tot > 0) parts.push(money(tot, code));
+    });
+    document.getElementById("othercur").innerHTML = parts.length ? (t("otherCur") + " " + parts.join(" · ")) : "";
+  }
+  // Detecta a moeda do lugar (aproximado): 1º tenta GPS, 2º cai pro fuso horário. Nunca mexe nos fixos.
+  function currencyFromCoords(lat, lon) {
+    if (lat >= 49 && lat <= 61 && lon >= -11 && lon <= 2.5) return "GBP";
+    if (lat >= -34 && lat <= 6 && lon >= -74 && lon <= -34) return "BRL";
+    if (lat >= 18 && lat <= 50 && lon >= -125 && lon <= -66) return "USD";
+    if (lat >= 34 && lat <= 71 && lon >= -11 && lon <= 32) return "EUR";
+    return null;
+  }
+  function currencyFromTZ() {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+      if (tz === "Europe/London") return "GBP";
+      if (/Sao_Paulo|Bahia|Fortaleza|Recife|Manaus|Belem|Cuiaba/.test(tz)) return "BRL";
+      if (tz.indexOf("Europe/") === 0) return "EUR";
+      if (tz.indexOf("America/") === 0) return "USD";
+    } catch (e) {}
+    return null;
+  }
+  function detectCurrency() {
+    const apply = code => { if (code && CURRENCIES[code]) setCurCurrency(code); };
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        pos => apply(currencyFromCoords(pos.coords.latitude, pos.coords.longitude) || currencyFromTZ()),
+        () => apply(currencyFromTZ()),
+        { timeout: 8000 }
+      );
+    } else { apply(currencyFromTZ()); }
   }
 
   // ---- Liga os botões ----
@@ -576,6 +717,8 @@
   document.getElementById("pIncome").addEventListener("input", e => { coachProfile.income = e.target.value; saveProfile(); });
   document.getElementById("pGoal").addEventListener("input", e => { coachProfile.goal = e.target.value; saveProfile(); });
   document.getElementById("pRisk").addEventListener("change", e => { coachProfile.risk = e.target.value; saveProfile(); });
+  document.getElementById("shareBtn").onclick = () => shareSummary();
+  document.getElementById("pdfBtn").onclick = () => exportPDF();
 
   applyStaticTexts();
   render();
