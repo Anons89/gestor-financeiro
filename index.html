@@ -3,84 +3,46 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>Pra onde foi?</title>
+<title>BudgetAI</title>
 
-<!-- Faz o app ter cara de aplicativo quando adicionado à tela inicial do celular -->
-<meta name="theme-color" content="#13241D" />
+<meta name="theme-color" content="#000000" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="Pra onde foi?" />
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2313241D'/%3E%3Ctext x='50' y='70' font-size='58' font-family='monospace' font-weight='bold' fill='%23E4572E' text-anchor='middle'%3E£%3C/text%3E%3C/svg%3E" />
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2313241D'/%3E%3Ctext x='50' y='70' font-size='58' font-family='monospace' font-weight='bold' fill='%23E4572E' text-anchor='middle'%3E£%3C/text%3E%3C/svg%3E" />
+<meta name="apple-mobile-web-app-title" content="BudgetAI" />
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23000000'/%3E%3Ctext x='50' y='72' font-size='60' font-family='sans-serif' font-weight='bold' fill='%234ADE80' text-anchor='middle'%3EB%3C/text%3E%3C/svg%3E" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23000000'/%3E%3Ctext x='50' y='72' font-size='60' font-family='sans-serif' font-weight='bold' fill='%234ADE80' text-anchor='middle'%3EB%3C/text%3E%3C/svg%3E" />
 
 <style>
   :root {
-    --bg: #13241D;
-    --panel: #1D3329;
-    --border: #2C4A3C;
-    --cream: #E8E1D2;
-    --muted: #A9A296;
-    --spent: #E4572E;
-    --paper: #F4EFE3;
-    --ink: #2A2622;
+    --bg: #000000; --panel: #14161C; --border: #262A33; --cream: #E9ECF5;
+    --muted: #98A0B8; --spent: #4ADE80; --paper: #F3F3F9; --ink: #23232E;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    background: var(--bg);
-    color: var(--cream);
+    background: var(--bg); color: var(--cream);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    padding: 32px 16px calc(32px + env(safe-area-inset-bottom));
+    min-height: 100vh; display: flex; justify-content: center;
+    padding: calc(44px + env(safe-area-inset-top)) 16px calc(32px + env(safe-area-inset-bottom));
   }
   .app { width: 100%; max-width: 440px; }
   .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 
+  .head-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .lang { background: var(--panel); border: 1px solid var(--border); color: var(--cream); border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; flex-shrink: 0; }
   .eyebrow { color: var(--spent); letter-spacing: 0.18em; font-size: 11px; font-weight: 700; }
-  h1 { font-size: 26px; margin-top: 4px; }
-  .sub { font-size: 14px; color: var(--muted); margin-top: 4px; }
+  h1 { font-size: 26px; margin-top: 4px; letter-spacing: -0.01em; }
+  .sub { font-size: 14px; color: var(--muted); margin-top: 6px; }
 
-  .row { display: flex; gap: 8px; margin-top: 20px; }
-  input {
-    flex: 1; padding: 13px 16px; border-radius: 12px; font-size: 14px;
-    background: var(--panel); color: var(--cream); border: 1px solid var(--border); outline: none;
-  }
-  input::placeholder { color: #6E786F; }
-  button.primary {
-    padding: 13px 18px; border-radius: 12px; font-size: 14px; font-weight: 700;
-    background: var(--spent); color: #fff; border: none; cursor: pointer;
-  }
+  .row { display: flex; gap: 8px; margin-top: 18px; }
+  input { flex: 1; padding: 13px 16px; border-radius: 12px; font-size: 14px; background: var(--panel); color: var(--cream); border: 1px solid var(--border); outline: none; }
+  input::placeholder { color: #6C7391; }
+  button.primary { padding: 13px 18px; border-radius: 12px; font-size: 14px; font-weight: 700; background: var(--spent); color: #05230F; border: none; cursor: pointer; white-space: nowrap; }
 
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-  .chip {
-    font-size: 12px; padding: 5px 12px; border-radius: 999px; cursor: pointer;
-    background: var(--panel); color: var(--muted); border: 1px solid var(--border);
-  }
-
-  .summary { margin-top: 24px; border-radius: 16px; padding: 20px; background: var(--panel); border: 1px solid var(--border); }
-  .summary .label { font-size: 11px; color: var(--muted); letter-spacing: 0.05em; }
-  .summary .total { font-size: 40px; font-weight: 700; color: var(--spent); margin-top: 2px; }
-  .summary .note { font-size: 14px; margin-top: 8px; color: var(--cream); }
-
-  .receipt { margin-top: 24px; border-radius: 16px; overflow: hidden; background: var(--paper); color: var(--ink); }
-  .receipt .head { padding: 16px 20px 6px; color: #8C8072; font-size: 11px; letter-spacing: 0.12em; }
-  .receipt .body { padding: 0 20px 16px; }
-  .empty { padding: 32px 20px; text-align: center; color: #8C8072; font-size: 13px; line-height: 1.6; }
-  .item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed #D8CFBC; font-size: 14px; }
-  .item .left { display: flex; align-items: center; gap: 8px; min-width: 0; }
-  .dot { width: 8px; height: 8px; border-radius: 999px; flex-shrink: 0; }
-  .item .desc { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .item .cat { font-size: 11px; color: #8C8072; }
-  .item .right { display: flex; align-items: center; gap: 12px; }
-  .item .amount { font-weight: 700; color: var(--ink); }
-  .del { background: none; border: none; color: #C0B6A2; cursor: pointer; font-size: 13px; }
-  .grand { display: flex; justify-content: space-between; padding-top: 12px; font-weight: 700; color: var(--ink); font-size: 14px; }
-
-  .day { display: flex; justify-content: space-between; align-items: baseline; padding: 14px 0 6px; margin-top: 4px; border-top: 1px solid #E0D7C4; }
-  .day:first-child { border-top: none; margin-top: 0; padding-top: 4px; }
-  .day-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #6E6355; font-weight: 700; }
-  .day-total { font-size: 12px; color: #8C8072; font-weight: 700; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center; }
+  .chip { font-size: 12px; padding: 5px 12px; border-radius: 999px; cursor: pointer; background: var(--panel); color: var(--muted); border: 1px solid var(--border); }
+  .chip-editing { display: inline-flex; align-items: center; border-style: dashed; color: var(--cream); }
+  .chip-x { background: none; border: none; color: var(--muted); cursor: pointer; margin-left: 6px; font-size: 11px; padding: 0; }
+  .chip-input { flex: none; width: 140px; font-size: 12px; padding: 5px 12px; border-radius: 999px; background: var(--panel); color: var(--cream); border: 1px solid var(--border); outline: none; }
 
   .fixed { margin-top: 16px; border-radius: 16px; padding: 18px 20px; background: var(--panel); border: 1px solid var(--border); }
   .fixed-top { display: flex; justify-content: space-between; align-items: baseline; }
@@ -90,200 +52,263 @@
   .fixed-list { margin-top: 6px; }
   .fixed-item { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
   .fixed-item:last-child { border-bottom: none; }
-  .fx-name { color: var(--cream); }
-  .fx-right { display: flex; align-items: center; gap: 12px; }
-  .fx-amount { color: var(--cream); font-weight: 700; }
-  .fixed-empty { font-size: 13px; color: #6E786F; padding: 8px 0 2px; }
+  .fixed-empty { font-size: 13px; color: #6C7391; padding: 8px 0 2px; }
   .fixed-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
   .fixed-sub b { color: var(--spent); }
   .fx-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
   .fx-info { display: flex; flex-direction: column; min-width: 0; }
-  .fx-due { font-size: 11px; color: #8C8072; }
-  .check { width: 20px; height: 20px; border-radius: 999px; border: 1.5px solid #4A6152; background: transparent; color: #fff; font-size: 12px; line-height: 1; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; padding: 0; }
-  .check.on { background: #3E7C5A; border-color: #3E7C5A; }
+  .fx-name { color: var(--cream); }
+  .fx-due { font-size: 11px; color: #8890A6; }
+  .fx-right { display: flex; align-items: center; gap: 12px; }
+  .fx-amount { color: var(--cream); font-weight: 700; }
+  .fx-del { background: none; border: none; color: #7C86A0; cursor: pointer; font-size: 13px; }
+  .check { width: 20px; height: 20px; border-radius: 999px; border: 1.5px solid #38425C; background: transparent; color: #fff; font-size: 12px; line-height: 1; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; padding: 0; }
+  .check.on { background: #34C77B; border-color: #34C77B; }
   .fixed-item.paid .fx-name, .fixed-item.paid .fx-amount { text-decoration: line-through; opacity: 0.5; }
 
-  .disclaimer { font-size: 11px; text-align: center; margin-top: 16px; color: #6E786F; }
+  .summary { margin-top: 22px; border-radius: 16px; padding: 20px; background: var(--panel); border: 1px solid var(--border); }
+  .summary .label { font-size: 11px; color: var(--muted); letter-spacing: 0.05em; }
+  .summary .total { font-size: 40px; font-weight: 700; color: var(--spent); margin-top: 2px; }
+  .summary .note { font-size: 14px; margin-top: 8px; color: var(--cream); }
+
+  .receipt { margin-top: 16px; border-radius: 16px; overflow: hidden; background: var(--paper); color: var(--ink); }
+  .receipt .head { padding: 16px 20px 6px; color: #8A8A9A; font-size: 11px; letter-spacing: 0.12em; }
+  .receipt .body { padding: 0 20px 16px; }
+  .empty { padding: 32px 20px; text-align: center; color: #8A8A9A; font-size: 13px; line-height: 1.6; }
+  .item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed #E0E0EA; font-size: 14px; }
+  .item .left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .dot { width: 8px; height: 8px; border-radius: 999px; flex-shrink: 0; }
+  .item .desc { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .item .cat { font-size: 11px; color: #8A8A9A; }
+  .item .right { display: flex; align-items: center; gap: 12px; }
+  .item .amount { font-weight: 700; color: var(--ink); }
+  .del { background: none; border: none; color: #B4B4C2; cursor: pointer; font-size: 13px; }
+  .day { display: flex; justify-content: space-between; align-items: baseline; padding: 14px 0 6px; margin-top: 4px; border-top: 1px solid #E7E7EF; }
+  .day:first-child { border-top: none; margin-top: 0; padding-top: 4px; }
+  .day-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #6C6C7C; font-weight: 700; }
+  .day-total { font-size: 12px; color: #8A8A9A; font-weight: 700; }
+
+  .disclaimer { font-size: 11px; text-align: center; margin-top: 16px; color: #6C7391; }
 </style>
 </head>
 <body>
   <div class="app">
-    <div>
-      <div class="eyebrow mono">SEU DINHEIRO, SEM ENROLAÇÃO</div>
-      <h1>Pra onde foi?</h1>
-      <div class="sub">Escreve do seu jeito, tipo "gastei 15 no uber". O app anota e organiza.</div>
+    <div class="head-row">
+      <div>
+        <div class="eyebrow mono" id="eyebrow"></div>
+        <h1 id="title"></h1>
+      </div>
+      <button class="lang" id="langBtn"></button>
     </div>
+    <div class="sub" id="sub"></div>
 
     <div class="row">
-      <input id="input" placeholder="o que você gastou?" autocomplete="off" />
-      <button class="primary" id="addBtn">Anotar</button>
+      <input id="input" autocomplete="off" />
+      <button class="primary" id="addBtn"></button>
     </div>
 
     <div class="chips" id="chips"></div>
 
     <div class="summary">
-      <div class="label mono">TOTAL GASTO</div>
+      <div class="label mono" id="totalLabel"></div>
       <div class="total mono" id="total">£0.00</div>
       <div class="note" id="note"></div>
     </div>
 
     <div class="fixed">
       <div class="fixed-top">
-        <span class="fixed-title mono">FIXOS POR MÊS</span>
+        <span class="fixed-title mono" id="fixedTitleEl"></span>
         <span class="fixed-total mono" id="fixedTotal">£0.00</span>
       </div>
       <div class="fixed-sub" id="fixedSub"></div>
       <div class="row fixed-row">
-        <input id="fixedInput" placeholder="ex: academia 30 dia 15" autocomplete="off" />
-        <button class="primary" id="fixedBtn">+ Fixo</button>
+        <input id="fixedInput" autocomplete="off" />
+        <button class="primary" id="fixedBtn"></button>
       </div>
       <div id="fixedList" class="fixed-list"></div>
     </div>
 
     <div class="receipt">
-      <div class="head mono">———— SEUS GASTOS ————</div>
+      <div class="head mono" id="receiptHead"></div>
       <div class="body mono" id="list"></div>
     </div>
 
-    <div class="disclaimer">Organiza e mostra pra onde vai o dinheiro. Não dá dica de investimento.</div>
+    <div class="disclaimer" id="disclaimer"></div>
   </div>
 
 <script>
-  // ---- As categorias e suas cores ----
+  // ---- Cores das categorias (a CHAVE em português é o "id" interno; o texto exibido é traduzido) ----
   const CATEGORIES = {
-    "Alimentação": "#E4572E",
-    "Transporte":  "#3E7C5A",
-    "Mercado":     "#C99A2E",
-    "Lazer":       "#8A5CD1",
-    "Contas":      "#2E86AB",
-    "Compras":     "#D14D8A",
-    "Saúde":       "#3EA39E",
-    "Outros":      "#8C8072",
+    "Alimentação": "#FF6B5E", "Transporte": "#34C77B", "Mercado": "#F5B54A",
+    "Lazer": "#C084FC", "Contas": "#38BDF8", "Compras": "#F472B6",
+    "Saúde": "#2DD4BF", "Outros": "#94A0B8",
   };
-  const EXAMPLES = ["gastei 15 no uber", "£8 no ifood", "30 de mercado", "12 no cinema"];
 
-  // ---- O CÉREBRO (versão por palavra-chave) ----
-  // Lê o texto, acha o valor e decide a categoria pelas palavras que aparecem.
-  function parse(text) {
+  // ---- IDIOMAS ----
+  const STR = {
+    pt: {
+      eyebrow: "SEU DINHEIRO, SEM ENROLAÇÃO", title: "BudgetAI",
+      sub: 'Escreve do seu jeito, tipo "gastei 15 no uber". O app anota e organiza.',
+      inputPh: "o que você gastou?", add: "Anotar", parsingTxt: "IA lendo...",
+      totalLabel: "TOTAL GASTO", fixedTitle: "FIXOS POR MÊS", fixedPh: "ex: academia 30 dia 15", addFixed: "+ Fixo",
+      receiptHead: "———— SEUS GASTOS ————",
+      disclaimer: "Organiza e mostra pra onde vai o dinheiro. Não dá dica de investimento.",
+      emptyExpenses: "Nada anotado ainda.<br>Toca num atalho aí em cima pra ver funcionar.",
+      emptyFixed: 'Nenhum fixo ainda. Ex: "academia 30 dia 15".',
+      perMonth: "/mês", remaining: "Falta sair esse mês:", allPaid: "Tudo pago esse mês ✅",
+      biggest: "Maior peso:", heavy: "Tá pesando bastante, hein.", ok: "Sob controle por enquanto.",
+      dueDay: "cai dia", today: "Hoje", yesterday: "Ontem",
+      weekdays: ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"],
+      editChips: "editar", addChipPh: "novo atalho", okBtn: "ok",
+      cats: { "Alimentação": "Alimentação", "Transporte": "Transporte", "Mercado": "Mercado", "Lazer": "Lazer", "Contas": "Contas", "Compras": "Compras", "Saúde": "Saúde", "Outros": "Outros" },
+    },
+    en: {
+      eyebrow: "YOUR MONEY, NO NONSENSE", title: "BudgetAI",
+      sub: 'Just type it, like "spent 15 on uber". The app logs and sorts it.',
+      inputPh: "what did you spend on?", add: "Add", parsingTxt: "AI reading...",
+      totalLabel: "TOTAL SPENT", fixedTitle: "MONTHLY FIXED", fixedPh: "e.g. gym 30 day 15", addFixed: "+ Fixed",
+      receiptHead: "———— YOUR SPENDING ————",
+      disclaimer: "Organises and shows where your money goes. Not investment advice.",
+      emptyExpenses: "Nothing logged yet.<br>Tap a shortcut above to see it work.",
+      emptyFixed: 'No fixed costs yet. E.g. "gym 30 day 15".',
+      perMonth: "/mo", remaining: "Left to pay this month:", allPaid: "All paid this month ✅",
+      biggest: "Biggest chunk:", heavy: "That's weighing a lot.", ok: "Under control for now.",
+      dueDay: "due day", today: "Today", yesterday: "Yesterday",
+      weekdays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+      editChips: "edit", addChipPh: "new shortcut", okBtn: "done",
+      cats: { "Alimentação": "Food", "Transporte": "Transport", "Mercado": "Groceries", "Lazer": "Leisure", "Contas": "Bills", "Compras": "Shopping", "Saúde": "Health", "Outros": "Other" },
+    },
+  };
+
+  function detectLang() {
+    try { const saved = localStorage.getItem("lang"); if (saved === "pt" || saved === "en") return saved; } catch (e) {}
+    return (navigator.language || "en").toLowerCase().startsWith("pt") ? "pt" : "en";
+  }
+  let lang = detectLang();
+  const t = k => STR[lang][k];
+  const catLabel = c => STR[lang].cats[c] || c;
+
+  // ---- PLANO B do cérebro: palavra-chave (usado só se o porteiro/IA falhar) ----
+  function parseLocal(text) {
     const match = text.match(/(\d+(?:[.,]\d{1,2})?)/);
     const amount = match ? parseFloat(match[1].replace(",", ".")) : 0;
     const s = text.toLowerCase();
-
     let category = "Outros";
-    if (/uber|99|[oô]nibus|metr[oô]|trem|gasolina|transporte|passagem/.test(s)) category = "Transporte";
-    else if (/mercado|supermerc|feira|hortifruti/.test(s)) category = "Mercado";
-    else if (/comida|almo[cç]|jant|lanch|ifood|restaurante|caf[eé]|pizza|burger|padaria|hamb/.test(s)) category = "Alimentação";
-    else if (/cinema|jogo|bar|balada|netflix|spotify|lazer|show|role|rol[eê]|golfe|boliche|paintball|sinuca|kart|parque/.test(s)) category = "Lazer";
-    else if (/conta|luz|[aá]gua|aluguel|internet|telefone|celular|fatura/.test(s)) category = "Contas";
-    else if (/roupa|t[eê]nis|compra|amazon|loja|shopping|shein/.test(s)) category = "Compras";
-    else if (/farm[aá]cia|rem[eé]dio|m[eé]dico|academia|dentista/.test(s)) category = "Saúde";
-
-    // Monta uma descrição curtinha limpando o texto
+    if (/uber|99|taxi|[oô]nibus|bus|metr[oô]|tube|trem|train|gasolina|petrol|fuel|transporte|transport|passagem|ride/.test(s)) category = "Transporte";
+    else if (/mercado|supermerc|feira|hortifruti|groceries|grocery|supermarket|gopuff/.test(s)) category = "Mercado";
+    else if (/comida|food|almo[cç]|lunch|jant|dinner|breakfast|lanch|snack|ifood|restaurante|restaurant|caf[eé]|coffee|pizza|burger|padaria|hamb|meal|takeaway/.test(s)) category = "Alimentação";
+    else if (/cinema|movie|jogo|game|bar|pub|balada|club|netflix|spotify|lazer|leisure|show|concert|role|rol[eê]|golfe|golf|boliche|bowling|paintball|sinuca|kart|parque/.test(s)) category = "Lazer";
+    else if (/conta|bill|luz|electricity|[aá]gua|water|aluguel|rent|internet|telefone|phone|celular|fatura/.test(s)) category = "Contas";
+    else if (/roupa|clothes|t[eê]nis|compra|shopping|amazon|loja|shop|shein/.test(s)) category = "Compras";
+    else if (/farm[aá]cia|pharmacy|rem[eé]dio|medicine|m[eé]dico|doctor|academia|gym|dentista|dentist/.test(s)) category = "Saúde";
     let desc = s
-      .replace(/gastei|paguei|comprei|gasto/g, "")
-      .replace(/\d+(?:[.,]\d+)?/g, "")
-      .replace(/£|r\$|reais|libras?/g, "")
-      .replace(/\b(no|na|nos|nas|de|do|da|em|com|pra|para|o|a|um|uma)\b/g, "")
+      .replace(/\b(gastei|paguei|comprei|gasto|spent|paid|bought)\b/g, "")
+      .replace(/\d+(?:[.,]\d+)?/g, "").replace(/£|r\$|reais|libras?|pounds?/gi, "")
+      .replace(/\b(no|na|nos|nas|de|do|da|em|com|pra|para|o|a|um|uma|on|at|for|the|of|to|with|an)\b/g, "")
       .replace(/\s+/g, " ").trim();
-    if (!desc) desc = category;
+    if (!desc) desc = catLabel(category);
     desc = desc.charAt(0).toUpperCase() + desc.slice(1);
-
     return { amount, category, description: desc };
   }
 
-  // ---- A MEMÓRIA (localStorage: o "chapeleiro" no navegador) ----
-  function load() {
-    try { return JSON.parse(localStorage.getItem("expenses") || "[]"); }
-    catch (e) { return []; }
+  // ---- O CÉREBRO DE VERDADE: chama o porteiro (Netlify Function -> NVIDIA). Se falhar, usa o plano B. ----
+  async function parse(text) {
+    try {
+      const res = await fetch("/.netlify/functions/categorize", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: text }),
+      });
+      const data = await res.json();
+      if (data && data.ok && typeof data.amount !== "undefined") {
+        const cat = CATEGORIES[data.category] ? data.category : "Outros";
+        return { amount: Number(data.amount) || 0, category: cat, description: (data.description || text) };
+      }
+    } catch (e) {}
+    return parseLocal(text);
   }
-  function save() { localStorage.setItem("expenses", JSON.stringify(expenses)); }
 
+  // ---- MEMÓRIA ----
+  function load() { try { return JSON.parse(localStorage.getItem("expenses") || "[]"); } catch (e) { return []; } }
+  function save() { localStorage.setItem("expenses", JSON.stringify(expenses)); }
   let expenses = load();
 
-  // ---- Gastos fixos (repetem todo mês: academia, netflix, aluguel...) ----
-  function loadFixed() {
-    try { return JSON.parse(localStorage.getItem("recurring") || "[]"); }
-    catch (e) { return []; }
-  }
+  function loadFixed() { try { return JSON.parse(localStorage.getItem("recurring") || "[]"); } catch (e) { return []; } }
   function saveFixed() { localStorage.setItem("recurring", JSON.stringify(recurring)); }
   let recurring = loadFixed();
 
-  // ---- Ações ----
-  function addExpense(msg) {
+  // Atalhos editáveis (o usuário cria os próprios gastos frequentes)
+  const DEFAULT_CHIPS = ["Gastei £5.50 meal deal", "Gastei £15 gasolina", "Gastei £30 na Gopuff", "Gastei £20 no supermercado"];
+  function loadChips() { try { const r = localStorage.getItem("quickchips"); return r ? JSON.parse(r) : DEFAULT_CHIPS.slice(); } catch (e) { return DEFAULT_CHIPS.slice(); } }
+  function saveChips() { localStorage.setItem("quickchips", JSON.stringify(quickChips)); }
+  let quickChips = loadChips();
+  let editingChips = false;
+
+  // ---- Ações: gastos do dia ----
+  async function addExpense(msg) {
     const text = (msg !== undefined ? msg : input.value).trim();
     if (!text) return;
-    const p = parse(text);
-    expenses.unshift({ id: Date.now(), date: new Date().toISOString(), ...p });
-    save();
-    input.value = "";
+    const btn = document.getElementById("addBtn");
+    btn.disabled = true; btn.textContent = t("parsingTxt");
+    const parsed = await parse(text);
+    expenses.unshift({ id: Date.now(), date: new Date().toISOString(), ...parsed });
+    save(); input.value = "";
+    btn.disabled = false; btn.textContent = t("add");
     render();
   }
-  function removeExpense(id) {
-    expenses = expenses.filter(e => e.id !== id);
-    save();
-    render();
-  }
+  function removeExpense(id) { expenses = expenses.filter(e => e.id !== id); save(); render(); }
 
-  // Lê "academia 30 dia 15" e separa nome + valor + dia do desconto
+  // ---- Ações: atalhos ----
+  function quickAdd(i) { addExpense(quickChips[i]); }
+  function removeChip(i) { quickChips.splice(i, 1); saveChips(); renderChips(); }
+  function addChipFromInput() {
+    const el = document.getElementById("chipInput");
+    const v = el ? el.value.trim() : "";
+    if (!v) return;
+    quickChips.push(v); saveChips(); renderChips();
+    const el2 = document.getElementById("chipInput"); if (el2) el2.focus();
+  }
+  function toggleEditChips() { editingChips = !editingChips; renderChips(); }
+
+  // ---- Ações: fixos mensais ----
   function parseFixed(text) {
-    let s = text;
-    // 1) tira o "dia N" primeiro, pra ele não ser confundido com o valor
-    let dueDay = null;
-    const dm = s.match(/dia\s*(\d{1,2})/i);
+    let s = text; let dueDay = null;
+    const dm = s.match(/(?:dia|day)\s*(\d{1,2})/i);
     if (dm) { const d = parseInt(dm[1], 10); if (d >= 1 && d <= 31) dueDay = d; s = s.replace(dm[0], ""); }
-    // 2) agora o primeiro número que sobrar é o valor
     const m = s.match(/(\d+(?:[.,]\d{1,2})?)/);
     const amount = m ? parseFloat(m[1].replace(",", ".")) : 0;
-    let name = s.replace(/\d+(?:[.,]\d+)?/g, "").replace(/£|r\$|reais|libras?/gi, "").replace(/\s+/g, " ").trim();
+    let name = s.replace(/\d+(?:[.,]\d+)?/g, "").replace(/£|r\$|reais|libras?|pounds?/gi, "").replace(/\s+/g, " ").trim();
     if (!name) name = "Fixo";
     name = name.charAt(0).toUpperCase() + name.slice(1);
     return { name, amount, dueDay };
   }
   function addFixed() {
-    const text = fixedInput.value.trim();
-    if (!text) return;
+    const text = fixedInput.value.trim(); if (!text) return;
     recurring.unshift({ id: Date.now(), ...parseFixed(text) });
-    saveFixed();
-    fixedInput.value = "";
-    renderFixed();
+    saveFixed(); fixedInput.value = ""; renderFixed();
   }
-  function removeFixed(id) {
-    recurring = recurring.filter(x => x.id !== id);
-    saveFixed();
-    renderFixed();
-  }
-  // "Mês atual" tipo "2026-7". É a chave da mágica do reset automático.
+  function removeFixed(id) { recurring = recurring.filter(x => x.id !== id); saveFixed(); renderFixed(); }
   function monthKey() { const d = new Date(); return d.getFullYear() + "-" + (d.getMonth() + 1); }
-  // Um fixo está "pago" só se foi marcado NESTE mês. Mês que vem, a chave muda e ele volta sozinho.
   function isPaid(f) { return f.paidMonth === monthKey(); }
   function togglePaid(id) {
-    const f = recurring.find(x => x.id === id);
-    if (!f) return;
+    const f = recurring.find(x => x.id === id); if (!f) return;
     f.paidMonth = isPaid(f) ? null : monthKey();
-    saveFixed();
-    renderFixed();
+    saveFixed(); renderFixed();
   }
 
+  // ---- Utilidades ----
   const money = n => "£" + (Number(n) || 0).toFixed(2);
-  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
-
-  // ---- Datas ----
-  // Pega a hora do gasto. Gastos antigos (salvos antes dessa atualização) não têm
-  // o campo "date", então a gente usa o "id" — que também é a hora da criação.
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const ts = e => e.date ? new Date(e.date).getTime() : e.id;
-  const dayKey = t => { const d = new Date(t); return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate(); };
-  function dayLabel(t) {
-    const d = new Date(t), now = new Date();
-    const yest = new Date(); yest.setDate(now.getDate() - 1);
-    if (dayKey(t) === dayKey(now)) return "Hoje";
-    if (dayKey(t) === dayKey(yest)) return "Ontem";
-    const dias = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
-    const dd = String(d.getDate()).padStart(2, "0");
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    return dias[d.getDay()] + ", " + dd + "/" + mm;
+  const dayKey = tv => { const d = new Date(tv); return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate(); };
+  function dayLabel(tv) {
+    const d = new Date(tv), now = new Date(); const yest = new Date(); yest.setDate(now.getDate() - 1);
+    if (dayKey(tv) === dayKey(now)) return t("today");
+    if (dayKey(tv) === dayKey(yest)) return t("yesterday");
+    const dd = String(d.getDate()).padStart(2, "0"), mm = String(d.getMonth() + 1).padStart(2, "0");
+    return t("weekdays")[d.getDay()] + ", " + dd + "/" + mm;
   }
 
-  // ---- Desenha a tela ----
+  // ---- Referências ----
   const input = document.getElementById("input");
   const listEl = document.getElementById("list");
   const totalEl = document.getElementById("total");
@@ -293,34 +318,59 @@
   const fixedTotalEl = document.getElementById("fixedTotal");
   const fixedSubEl = document.getElementById("fixedSub");
 
+  // ---- Atalhos (editáveis) ----
+  function renderChips() {
+    const box = document.getElementById("chips");
+    if (!editingChips) {
+      box.innerHTML =
+        quickChips.map((c, i) => '<button class="chip" onclick="quickAdd(' + i + ')">' + esc(c) + '</button>').join("") +
+        '<button class="chip" style="border-style:dashed" onclick="toggleEditChips()">✎ ' + t("editChips") + '</button>';
+    } else {
+      box.innerHTML =
+        quickChips.map((c, i) => '<span class="chip chip-editing">' + esc(c) + '<button class="chip-x" onclick="removeChip(' + i + ')">✕</button></span>').join("") +
+        '<input id="chipInput" class="chip-input" placeholder="' + t("addChipPh") + '" onkeydown="if(event.key===\'Enter\')addChipFromInput()" />' +
+        '<button class="chip" onclick="addChipFromInput()">＋</button>' +
+        '<button class="chip" style="background:var(--spent);color:#05230F;border:none" onclick="toggleEditChips()">' + t("okBtn") + '</button>';
+    }
+  }
+
+  function applyStaticTexts() {
+    document.getElementById("eyebrow").textContent = t("eyebrow");
+    document.getElementById("title").textContent = t("title");
+    document.getElementById("sub").textContent = t("sub");
+    input.setAttribute("placeholder", t("inputPh"));
+    document.getElementById("addBtn").textContent = t("add");
+    document.getElementById("totalLabel").textContent = t("totalLabel");
+    document.getElementById("fixedTitleEl").textContent = t("fixedTitle");
+    fixedInput.setAttribute("placeholder", t("fixedPh"));
+    document.getElementById("fixedBtn").textContent = t("addFixed");
+    document.getElementById("receiptHead").textContent = t("receiptHead");
+    document.getElementById("disclaimer").textContent = t("disclaimer");
+    document.getElementById("langBtn").textContent = lang === "pt" ? "EN" : "PT";
+    renderChips();
+  }
+
+  // ---- Desenha os gastos do dia ----
   function render() {
     const total = expenses.reduce((s, e) => s + (Number(e.amount) || 0), 0);
     totalEl.textContent = money(total);
 
-    // Acha a maior categoria pra dar o "tapa de consciência"
     const byCat = {};
     expenses.forEach(e => { byCat[e.category] = (byCat[e.category] || 0) + (Number(e.amount) || 0); });
     const biggest = Object.entries(byCat).sort((a, b) => b[1] - a[1])[0];
     if (biggest) {
-      const heavy = biggest[1] > total * 0.4 ? "Tá pesando bastante, hein." : "Sob controle por enquanto.";
-      noteEl.innerHTML = 'Maior peso: <b style="color:' + CATEGORIES[biggest[0]] + '">' + biggest[0] + '</b> (' + money(biggest[1]) + '). ' + heavy;
-    } else {
-      noteEl.textContent = "";
-    }
+      const heavy = biggest[1] > total * 0.4 ? t("heavy") : t("ok");
+      noteEl.innerHTML = t("biggest") + ' <b style="color:' + CATEGORIES[biggest[0]] + '">' + catLabel(biggest[0]) + '</b> (' + money(biggest[1]) + '). ' + heavy;
+    } else { noteEl.textContent = ""; }
 
-    if (expenses.length === 0) {
-      listEl.innerHTML = '<div class="empty">Nada anotado ainda.<br>Toca num exemplo aí em cima pra ver funcionar.</div>';
-      return;
-    }
+    if (expenses.length === 0) { listEl.innerHTML = '<div class="empty">' + t("emptyExpenses") + '</div>'; return; }
 
-    // Agrupa os gastos por dia, mantendo a ordem (mais novo primeiro)
     const groups = [];
     expenses.forEach(e => {
       const key = dayKey(ts(e));
       let g = groups.find(x => x.key === key);
       if (!g) { g = { key: key, label: dayLabel(ts(e)), total: 0, items: [] }; groups.push(g); }
-      g.total += Number(e.amount) || 0;
-      g.items.push(e);
+      g.total += Number(e.amount) || 0; g.items.push(e);
     });
 
     const itemHtml = e =>
@@ -329,7 +379,7 @@
           '<span class="dot" style="background:' + CATEGORIES[e.category] + '"></span>' +
           '<div style="min-width:0">' +
             '<div class="desc">' + esc(e.description) + '</div>' +
-            '<div class="cat">' + e.category + '</div>' +
+            '<div class="cat">' + catLabel(e.category) + '</div>' +
           '</div>' +
         '</div>' +
         '<div class="right">' +
@@ -338,32 +388,29 @@
         '</div>' +
       '</div>';
 
-    listEl.innerHTML =
-      groups.map(g =>
-        '<div class="day"><span class="day-label">' + g.label + '</span>' +
-        '<span class="day-total">' + money(g.total) + '</span></div>' +
-        g.items.map(itemHtml).join("")
-      ).join("") +
-      '<div class="grand"><span>TOTAL GERAL</span><span>' + money(total) + '</span></div>';
+    listEl.innerHTML = groups.map(g =>
+      '<div class="day"><span class="day-label">' + g.label + '</span>' +
+      '<span class="day-total">' + money(g.total) + '</span></div>' +
+      g.items.map(itemHtml).join("")
+    ).join("");
   }
 
   // ---- Desenha os fixos ----
   function renderFixed() {
     const total = recurring.reduce((s, f) => s + (Number(f.amount) || 0), 0);
-    fixedTotalEl.textContent = money(total) + "/mês";
+    fixedTotalEl.textContent = money(total) + t("perMonth");
 
-    // "Falta sair" = só os fixos que ainda não foram marcados como pagos neste mês
     const unpaid = recurring.filter(f => !isPaid(f)).reduce((s, f) => s + (Number(f.amount) || 0), 0);
     if (recurring.length === 0) fixedSubEl.textContent = "";
-    else if (unpaid === 0) fixedSubEl.innerHTML = "Tudo pago esse mês ✅";
-    else fixedSubEl.innerHTML = "Falta sair esse mês: <b>" + money(unpaid) + "</b>";
+    else if (unpaid === 0) fixedSubEl.innerHTML = t("allPaid");
+    else fixedSubEl.innerHTML = t("remaining") + ' <b>' + money(unpaid) + '</b>';
 
-    if (recurring.length === 0) {
-      fixedListEl.innerHTML = '<div class="fixed-empty">Nenhum fixo ainda. Ex: "academia 30 dia 15".</div>';
-      return;
-    }
-    // Ordena por dia do desconto, do menor pro maior. Fixos sem dia vão pro fim.
-    const sorted = [...recurring].sort((a, b) => (a.dueDay || 999) - (b.dueDay || 999));
+    if (recurring.length === 0) { fixedListEl.innerHTML = '<div class="fixed-empty">' + t("emptyFixed") + '</div>'; return; }
+    const sorted = [...recurring].sort((a, b) => {
+      const pa = isPaid(a) ? 1 : 0, pb = isPaid(b) ? 1 : 0;
+      if (pa !== pb) return pa - pb;
+      return (a.dueDay || 999) - (b.dueDay || 999);
+    });
     fixedListEl.innerHTML = sorted.map(f => {
       const paid = isPaid(f);
       return '<div class="fixed-item' + (paid ? ' paid' : '') + '">' +
@@ -371,12 +418,12 @@
           '<button class="check' + (paid ? ' on' : '') + '" onclick="togglePaid(' + f.id + ')">' + (paid ? '✓' : '') + '</button>' +
           '<span class="fx-info">' +
             '<span class="fx-name">' + esc(f.name) + '</span>' +
-            (f.dueDay ? '<span class="fx-due">cai dia ' + f.dueDay + '</span>' : '') +
+            (f.dueDay ? '<span class="fx-due">' + t("dueDay") + ' ' + f.dueDay + '</span>' : '') +
           '</span>' +
         '</span>' +
         '<span class="fx-right">' +
           '<span class="fx-amount">' + money(f.amount) + '</span>' +
-          '<button class="del" onclick="removeFixed(' + f.id + ')">✕</button>' +
+          '<button class="fx-del" onclick="removeFixed(' + f.id + ')">✕</button>' +
         '</span>' +
       '</div>';
     }).join("");
@@ -387,10 +434,13 @@
   input.addEventListener("keydown", e => { if (e.key === "Enter") addExpense(); });
   document.getElementById("fixedBtn").onclick = () => addFixed();
   fixedInput.addEventListener("keydown", e => { if (e.key === "Enter") addFixed(); });
+  document.getElementById("langBtn").onclick = () => {
+    lang = lang === "pt" ? "en" : "pt";
+    try { localStorage.setItem("lang", lang); } catch (e) {}
+    applyStaticTexts(); render(); renderFixed();
+  };
 
-  document.getElementById("chips").innerHTML =
-    EXAMPLES.map(ex => '<button class="chip" onclick="addExpense(\'' + ex + '\')">' + ex + '</button>').join("");
-
+  applyStaticTexts();
   render();
   renderFixed();
 </script>
