@@ -297,6 +297,7 @@
       authFillErr: "Preenche o email e a senha.", authLoading: "Só um segundo...",
       signupOk: "Conta criada! Confere seu email pra confirmar e depois entra.",
       badLogin: "Email ou senha errados.", genericErr: "Deu algum erro. Tenta de novo.",
+      saveErr: "Não consegui salvar agora. Confere sua conexão e tenta de novo.",
       cats: { "Alimentação": "Alimentação", "Transporte": "Transporte", "Mercado": "Mercado", "Lazer": "Lazer", "Contas": "Contas", "Compras": "Compras", "Saúde": "Saúde", "Outros": "Outros" },
     },
     en: {
@@ -328,6 +329,7 @@
       authFillErr: "Fill in your email and password.", authLoading: "One sec...",
       signupOk: "Account created! Check your email to confirm, then sign in.",
       badLogin: "Wrong email or password.", genericErr: "Something went wrong. Try again.",
+      saveErr: "Couldn't save right now. Check your connection and try again.",
       cats: { "Alimentação": "Food", "Transporte": "Transport", "Mercado": "Groceries", "Lazer": "Leisure", "Contas": "Bills", "Compras": "Shopping", "Saúde": "Health", "Outros": "Other" },
     },
   };
@@ -412,12 +414,28 @@
     const btn = document.getElementById("addBtn");
     btn.disabled = true; btn.textContent = t("parsingTxt");
     const parsed = await parse(text);
-    expenses.unshift({ id: Date.now(), date: new Date().toISOString(), cur: curCurrency, ...parsed });
-    save(); input.value = "";
+    const obj = { date: new Date().toISOString(), cur: curCurrency, ...parsed };
+    if (sbClient) {
+      // salva na nuvem, na conta da pessoa, e usa a linha que o banco devolve (com o id de verdade)
+      const saved = await cloudInsertExpense(obj);
+      if (!saved) {
+        btn.disabled = false; btn.textContent = t("add");
+        alert(t("saveErr"));
+        return;
+      }
+      expenses.unshift(saved); save();
+    } else {
+      // sem nuvem disponível: mantém o jeito antigo, salvando no aparelho
+      expenses.unshift({ id: Date.now(), ...obj }); save();
+    }
+    input.value = "";
     btn.disabled = false; btn.textContent = t("add");
     render();
   }
-  function removeExpense(id) { expenses = expenses.filter(e => e.id !== id); save(); render(); }
+  async function removeExpense(id) {
+    if (sbClient) { await cloudDeleteExpense(id); }
+    expenses = expenses.filter(e => e.id !== id); save(); render();
+  }
 
   // ---- Ações: atalhos ----
   function quickAdd(i) { addExpense(quickChips[i]); }
@@ -892,8 +910,67 @@
   try { sbClient = window.supabase.createClient(SUPA_URL, SUPA_KEY); } catch (e) {}
 
   const authScreen = document.getElementById("authScreen");
-  function showApp() { authScreen.classList.add("hidden"); }
+  function showApp() { authScreen.classList.add("hidden"); syncCloud(); }
   function showLogin() { authScreen.classList.remove("hidden"); }
+
+  // ---- NUVEM: gastos no Supabase, amarrados à conta logada ----
+  function expenseFromRow(r) {
+    return { id: r.id, date: r.date, cur: r.cur, amount: Number(r.amount) || 0, category: r.category, description: r.description };
+  }
+  async function cloudLoadExpenses() {
+    if (!sbClient) return null;
+    try {
+      const { data, error } = await sbClient.from("expenses").select("*").order("date", { ascending: false });
+      if (error || !data) return null;
+      return data.map(expenseFromRow);
+    } catch (e) { return null; }
+  }
+  async function cloudInsertExpense(obj) {
+    if (!sbClient) return null;
+    try {
+      const { data, error } = await sbClient.from("expenses")
+        .insert({ date: obj.date, cur: obj.cur, amount: obj.amount, category: obj.category, description: obj.description })
+        .select().single();
+      if (error || !data) return null;
+      return expenseFromRow(data);
+    } catch (e) { return null; }
+  }
+  async function cloudDeleteExpense(id) {
+    if (!sbClient) return false;
+    try {
+      const { error } = await sbClient.from("expenses").delete().eq("id", id);
+      return !error;
+    } catch (e) { return false; }
+  }
+  // Leva pra nuvem, UMA vez, o que já estava salvo no aparelho antes do login existir
+  async function migrateLocalExpenses() {
+    if (!sbClient) return;
+    try {
+      if (localStorage.getItem("migrated_expenses_v1") === "1") return;
+      let local = [];
+      try { local = JSON.parse(localStorage.getItem("expenses") || "[]"); } catch (e) { local = []; }
+      if (local.length) {
+        const rows = local.map(e => ({
+          date: e.date || new Date().toISOString(),
+          cur: e.cur || homeCurrency,
+          amount: Number(e.amount) || 0,
+          category: e.category || "Outros",
+          description: e.description || ""
+        }));
+        const { error } = await sbClient.from("expenses").insert(rows);
+        if (error) return; // se falhou, não marca como migrado — tenta de novo na próxima
+      }
+      localStorage.setItem("migrated_expenses_v1", "1");
+    } catch (e) {}
+  }
+  let cloudSynced = false;
+  async function syncCloud() {
+    if (!sbClient || cloudSynced) return;
+    cloudSynced = true;
+    await migrateLocalExpenses();
+    const cloud = await cloudLoadExpenses();
+    if (cloud) { expenses = cloud; save(); render(); }
+  }
   function setAuthMsg(text, kind) {
     const m = document.getElementById("authMsg");
     m.textContent = text || "";
@@ -934,6 +1011,8 @@
   }
   async function doLogout() {
     if (sbClient) { try { await sbClient.auth.signOut(); } catch (e) {} }
+    cloudSynced = false;
+    expenses = []; save(); render(); // limpa a tela pra ninguém ver os gastos de quem saiu
     showLogin();
   }
   async function checkSession() {
