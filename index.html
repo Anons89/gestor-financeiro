@@ -387,20 +387,20 @@
   let expenses = load();
 
   function loadFixed() { try { return JSON.parse(localStorage.getItem("recurring") || "[]"); } catch (e) { return []; } }
-  function saveFixed() { localStorage.setItem("recurring", JSON.stringify(recurring)); }
+  function saveFixed() { localStorage.setItem("recurring", JSON.stringify(recurring)); queueSettingsSave(); }
   let recurring = loadFixed();
 
   // Atalhos editáveis (o usuário cria os próprios gastos frequentes)
   const MAX_CHIPS = 3;
   const DEFAULT_CHIPS = ["Café £3.20", "Meal Deal £3.85", "Bus £1.75"];
   function loadChips() { try { const r = localStorage.getItem("quickchips_v3"); return (r ? JSON.parse(r) : DEFAULT_CHIPS.slice()).slice(0, MAX_CHIPS); } catch (e) { return DEFAULT_CHIPS.slice(); } }
-  function saveChips() { localStorage.setItem("quickchips_v3", JSON.stringify(quickChips)); }
+  function saveChips() { localStorage.setItem("quickchips_v3", JSON.stringify(quickChips)); queueSettingsSave(); }
   let quickChips = loadChips();
   let editingChips = false;
 
   // ---- Coach: perfil + conversa (memória) ----
   function loadProfile() { try { return JSON.parse(localStorage.getItem("coach_profile") || "{}"); } catch (e) { return {}; } }
-  function saveProfile() { localStorage.setItem("coach_profile", JSON.stringify(coachProfile)); }
+  function saveProfile() { localStorage.setItem("coach_profile", JSON.stringify(coachProfile)); queueSettingsSave(); }
   let coachProfile = loadProfile();
   function loadCoachMsgs() { try { const r = localStorage.getItem("coach_msgs"); if (r) return JSON.parse(r); } catch (e) {} return [{ role: "bot", content: STR[lang].coachGreeting }]; }
   function saveCoachMsgs() { localStorage.setItem("coach_msgs", JSON.stringify(coachMessages)); }
@@ -756,6 +756,7 @@
     if (!CURRENCIES[code]) return;
     curCurrency = code; curMenuOpen = false;
     try { localStorage.setItem("cur_currency", code); } catch (e) {}
+    queueSettingsSave();
     render();
   }
   function toggleCurMenu(e) { if (e) e.stopPropagation(); curMenuOpen = !curMenuOpen; renderCurrencyBar(); }
@@ -908,6 +909,9 @@
   const SUPA_KEY = "sb_publishable_C9sNWRMrJFzyQQLEi9592Q_dgAYpaBM";
   let sbClient = null;
   try { sbClient = window.supabase.createClient(SUPA_URL, SUPA_KEY); } catch (e) {}
+  let currentUserId = null;     // id da pessoa logada (pra carimbar a ficha de configurações)
+  let settingsTimer = null;     // espera um tiquinho antes de mandar pra nuvem (evita mandar toda hora)
+  let applyingRemote = false;   // enquanto aplico o que veio da nuvem, não reenvio de volta
 
   const authScreen = document.getElementById("authScreen");
   function showApp() { authScreen.classList.add("hidden"); syncCloud(); }
@@ -967,9 +971,62 @@
   async function syncCloud() {
     if (!sbClient || cloudSynced) return;
     cloudSynced = true;
+    try { const { data: u } = await sbClient.auth.getUser(); currentUserId = (u && u.user) ? u.user.id : null; } catch (e) {}
     await migrateLocalExpenses();
     const cloud = await cloudLoadExpenses();
     if (cloud) { expenses = cloud; save(); render(); }
+    await syncSettings();
+  }
+
+  // ---- NUVEM: configurações (fixos, perfil do coach, atalhos, moeda) numa ficha só ----
+  function collectSettings() {
+    return {
+      recurring: recurring,
+      quickchips: quickChips,
+      coach_profile: coachProfile,
+      home_currency: homeCurrency,
+      cur_currency: curCurrency
+    };
+  }
+  async function cloudSaveSettings() {
+    if (!sbClient || !currentUserId) return;
+    try {
+      await sbClient.from("settings").upsert(
+        { user_id: currentUserId, data: collectSettings(), updated_at: new Date().toISOString() },
+        { onConflict: "user_id" }
+      );
+    } catch (e) {}
+  }
+  function queueSettingsSave() {
+    if (!sbClient || applyingRemote) return;
+    if (settingsTimer) clearTimeout(settingsTimer);
+    settingsTimer = setTimeout(cloudSaveSettings, 800);
+  }
+  async function cloudLoadSettings() {
+    if (!sbClient) return null;
+    try {
+      const { data, error } = await sbClient.from("settings").select("data").maybeSingle();
+      if (error || !data) return null;
+      return data.data || null;
+    } catch (e) { return null; }
+  }
+  async function syncSettings() {
+    if (!sbClient) return;
+    const remote = await cloudLoadSettings();
+    if (remote && typeof remote === "object") {
+      // veio ficha da nuvem: aplica por cima (sem reenviar de volta)
+      applyingRemote = true;
+      if (Array.isArray(remote.recurring)) { recurring = remote.recurring; saveFixed(); }
+      if (Array.isArray(remote.quickchips)) { quickChips = remote.quickchips.slice(0, MAX_CHIPS); saveChips(); }
+      if (remote.coach_profile && typeof remote.coach_profile === "object") { coachProfile = remote.coach_profile; saveProfile(); }
+      if (remote.home_currency && CURRENCIES[remote.home_currency]) homeCurrency = remote.home_currency;
+      if (remote.cur_currency && CURRENCIES[remote.cur_currency]) { curCurrency = remote.cur_currency; try { localStorage.setItem("cur_currency", curCurrency); } catch (e) {} }
+      applyingRemote = false;
+      applyStaticTexts(); renderFixed(); renderCurrencyBar(); render();
+    } else {
+      // ainda não há ficha na nuvem: cria com o que a pessoa já tem no aparelho
+      await cloudSaveSettings();
+    }
   }
   function setAuthMsg(text, kind) {
     const m = document.getElementById("authMsg");
@@ -1011,8 +1068,11 @@
   }
   async function doLogout() {
     if (sbClient) { try { await sbClient.auth.signOut(); } catch (e) {} }
-    cloudSynced = false;
-    expenses = []; save(); render(); // limpa a tela pra ninguém ver os gastos de quem saiu
+    cloudSynced = false; currentUserId = null;
+    expenses = []; save();
+    // limpa dados pessoais da memória; a próxima conta recarrega os seus da nuvem
+    recurring = []; quickChips = DEFAULT_CHIPS.slice(); coachProfile = {};
+    applyStaticTexts(); renderFixed(); renderCurrencyBar(); render();
     showLogin();
   }
   async function checkSession() {
