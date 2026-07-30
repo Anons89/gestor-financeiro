@@ -1010,23 +1010,34 @@
       return data.data || null;
     } catch (e) { return null; }
   }
+  // Une duas listas sem duplicar (pelo id) — assim nunca se perde o que existe de um lado
+  function mergeById(a, b) {
+    const out = []; const seen = {};
+    [].concat(Array.isArray(a) ? a : [], Array.isArray(b) ? b : []).forEach(item => {
+      if (!item || typeof item !== "object") return;
+      const key = (item.id != null) ? String(item.id) : JSON.stringify(item);
+      if (seen[key]) return;
+      seen[key] = 1; out.push(item);
+    });
+    return out;
+  }
   async function syncSettings() {
     if (!sbClient) return;
     const remote = await cloudLoadSettings();
-    if (remote && typeof remote === "object") {
-      // veio ficha da nuvem: aplica por cima (sem reenviar de volta)
-      applyingRemote = true;
-      if (Array.isArray(remote.recurring)) { recurring = remote.recurring; saveFixed(); }
-      if (Array.isArray(remote.quickchips)) { quickChips = remote.quickchips.slice(0, MAX_CHIPS); saveChips(); }
-      if (remote.coach_profile && typeof remote.coach_profile === "object") { coachProfile = remote.coach_profile; saveProfile(); }
-      if (remote.home_currency && CURRENCIES[remote.home_currency]) homeCurrency = remote.home_currency;
-      if (remote.cur_currency && CURRENCIES[remote.cur_currency]) { curCurrency = remote.cur_currency; try { localStorage.setItem("cur_currency", curCurrency); } catch (e) {} }
-      applyingRemote = false;
-      applyStaticTexts(); renderFixed(); renderCurrencyBar(); render();
-    } else {
-      // ainda não há ficha na nuvem: cria com o que a pessoa já tem no aparelho
-      await cloudSaveSettings();
-    }
+    const r = (remote && typeof remote === "object") ? remote : {};
+    applyingRemote = true;
+    // FIXOS: JUNTA aparelho + nuvem (nunca apaga um lado pelo outro)
+    recurring = mergeById(recurring, r.recurring); saveFixed();
+    // ATALHOS: só usa os da nuvem se ela tiver algum
+    if (Array.isArray(r.quickchips) && r.quickchips.length) { quickChips = r.quickchips.slice(0, MAX_CHIPS); saveChips(); }
+    // PERFIL: só usa o da nuvem se estiver preenchido
+    if (r.coach_profile && typeof r.coach_profile === "object" && Object.keys(r.coach_profile).length) { coachProfile = r.coach_profile; saveProfile(); }
+    if (r.home_currency && CURRENCIES[r.home_currency]) homeCurrency = r.home_currency;
+    if (r.cur_currency && CURRENCIES[r.cur_currency]) { curCurrency = r.cur_currency; try { localStorage.setItem("cur_currency", curCurrency); } catch (e) {} }
+    applyingRemote = false;
+    // devolve a versão JUNTA pra nuvem, pra ela ficar sempre com o conjunto completo
+    await cloudSaveSettings();
+    applyStaticTexts(); renderFixed(); renderCurrencyBar(); render();
   }
   function setAuthMsg(text, kind) {
     const m = document.getElementById("authMsg");
