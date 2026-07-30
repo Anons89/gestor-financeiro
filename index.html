@@ -135,15 +135,45 @@
   .act { flex: 1; padding: 11px; border-radius: 12px; font-size: 13px; font-weight: 600; background: var(--panel); color: var(--cream); border: 1px solid var(--border); cursor: pointer; }
   @media print {
     body { background: #fff !important; color: #000 !important; padding: 12px !important; }
-    .tabs, .row, .chips, .lang, .actions, .curbar, .bubble, .sheet, .disclaimer, .del, .fx-del, .check, .sub { display: none !important; }
+    .tabs, .row, .chips, .lang, .actions, .curbar, .bubble, .sheet, .disclaimer, .del, .fx-del, .check, .sub, .logout-wrap { display: none !important; }
     .summary, .fixed { background: #fff !important; color: #000 !important; border: 1px solid #ddd !important; }
     .summary .total, .eyebrow, h1, .fixed-title, .label, .fixed-total, .fx-name, .fx-amount, .fx-due, .compare, .note, .fixed-sub { color: #000 !important; }
   }
 
   .disclaimer { font-size: 11px; text-align: center; margin-top: 16px; color: #6C7391; }
+
+  /* ---- Tela de login ---- */
+  .auth-screen { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 24px calc(24px + env(safe-area-inset-right)) 24px calc(24px + env(safe-area-inset-left)); }
+  .auth-screen.hidden { display: none; }
+  .auth-card { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 12px; text-align: center; }
+  .auth-logo { width: 68px; height: 68px; margin: 0 auto 2px; display: block; }
+  .auth-brand { font-size: 30px; font-weight: 700; letter-spacing: -0.01em; }
+  .auth-tag { font-size: 14px; color: var(--muted); margin-bottom: 10px; line-height: 1.4; }
+  .auth-card input { width: 100%; text-align: left; }
+  .auth-btn { width: 100%; }
+  .auth-btn2 { width: 100%; background: transparent; color: var(--spent); border: 1px solid var(--border); padding: 13px 18px; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .auth-msg { font-size: 13px; min-height: 18px; color: var(--muted); line-height: 1.4; }
+  .auth-msg.err { color: #FF6B5E; }
+  .auth-msg.ok { color: var(--spent); }
+
+  .logout-wrap { text-align: center; margin-top: 20px; }
+  .logout-btn { background: none; border: none; color: var(--muted); font-size: 12px; cursor: pointer; text-decoration: underline; padding: 6px; }
 </style>
 </head>
 <body>
+  <div id="authScreen" class="auth-screen">
+    <div class="auth-card">
+      <svg class="auth-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#000000"/><rect x="22" y="23" width="56" height="50" rx="7" fill="none" stroke="#FFFFFF" stroke-width="5"/><circle cx="45" cy="48" r="12" fill="none" stroke="#FFFFFF" stroke-width="5"/><circle cx="45" cy="48" r="2.6" fill="#FFFFFF"/><line x1="45" y1="48" x2="45" y2="39" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/><line x1="66" y1="41" x2="66" y2="55" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/><line x1="30" y1="73" x2="30" y2="79" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/><line x1="70" y1="73" x2="70" y2="79" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/></svg>
+      <div class="auth-brand">BudgetAI</div>
+      <div class="auth-tag" id="authTag"></div>
+      <input id="authEmail" type="email" autocomplete="email" />
+      <input id="authPass" type="password" autocomplete="current-password" />
+      <button class="primary auth-btn" id="authLoginBtn"></button>
+      <button class="auth-btn2" id="authSignupBtn"></button>
+      <div class="auth-msg" id="authMsg"></div>
+    </div>
+  </div>
+
   <div class="app">
     <div class="head-row">
       <div>
@@ -199,6 +229,8 @@
 
     <div class="disclaimer" id="disclaimer"></div>
 
+    <div class="logout-wrap"><button id="logoutBtn" class="logout-btn"></button></div>
+
     <button id="coachBubble" class="bubble">AI</button>
 
     <div id="coachSheet" class="sheet">
@@ -225,6 +257,7 @@
     </div>
   </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   // ---- Cores das categorias (a CHAVE em português é o "id" interno; o texto exibido é traduzido) ----
   const CATEGORIES = {
@@ -259,6 +292,11 @@
       cmpThisMonth: "Esse mês:", cmpMore: "a mais que o mês passado", cmpLess: "a menos que o mês passado", cmpSame: "Igual ao mês passado.",
       share: "↗ Compartilhar", pdf: "PDF", shareTitle: "meus gastos", copied: "Copiado!",
       detectCur: "moeda daqui", otherCur: "Outras moedas:", localCur: "Moeda local",
+      authTag: "Entra ou cria sua conta pra começar.", emailPh: "seu email", passPh: "sua senha",
+      login: "Entrar", signup: "Criar conta", logout: "Sair",
+      authFillErr: "Preenche o email e a senha.", authLoading: "Só um segundo...",
+      signupOk: "Conta criada! Confere seu email pra confirmar e depois entra.",
+      badLogin: "Email ou senha errados.", genericErr: "Deu algum erro. Tenta de novo.",
       cats: { "Alimentação": "Alimentação", "Transporte": "Transporte", "Mercado": "Mercado", "Lazer": "Lazer", "Contas": "Contas", "Compras": "Compras", "Saúde": "Saúde", "Outros": "Outros" },
     },
     en: {
@@ -285,6 +323,11 @@
       cmpThisMonth: "This month:", cmpMore: "more than last month", cmpLess: "less than last month", cmpSame: "Same as last month.",
       share: "↗ Share", pdf: "PDF", shareTitle: "my spending", copied: "Copied!",
       detectCur: "currency here", otherCur: "Other currencies:", localCur: "Local currency",
+      authTag: "Sign in or create your account to start.", emailPh: "your email", passPh: "your password",
+      login: "Sign in", signup: "Create account", logout: "Log out",
+      authFillErr: "Fill in your email and password.", authLoading: "One sec...",
+      signupOk: "Account created! Check your email to confirm, then sign in.",
+      badLogin: "Wrong email or password.", genericErr: "Something went wrong. Try again.",
       cats: { "Alimentação": "Food", "Transporte": "Transport", "Mercado": "Groceries", "Lazer": "Leisure", "Contas": "Bills", "Compras": "Shopping", "Saúde": "Health", "Outros": "Other" },
     },
   };
@@ -753,7 +796,7 @@
   document.getElementById("langBtn").onclick = () => {
     lang = lang === "pt" ? "en" : "pt";
     try { localStorage.setItem("lang", lang); } catch (e) {}
-    applyStaticTexts(); render(); renderFixed();
+    applyStaticTexts(); render(); renderFixed(); applyAuthTexts();
   };
 
   // ---- Coach wiring ----
@@ -839,6 +882,75 @@
   applyStaticTexts();
   render();
   renderFixed();
+
+  // ---- LOGIN (Supabase Auth) ----
+  // A publishable key é feita pra viver aqui no navegador — quem protege os dados
+  // são as regras de segurança (RLS) que a gente monta no último degrau.
+  const SUPA_URL = "https://efytffndatdkvbzeoxgm.supabase.co";
+  const SUPA_KEY = "sb_publishable_C9sNWRMrJFzyQQLEi9592Q_dgAYpaBM";
+  let sbClient = null;
+  try { sbClient = window.supabase.createClient(SUPA_URL, SUPA_KEY); } catch (e) {}
+
+  const authScreen = document.getElementById("authScreen");
+  function showApp() { authScreen.classList.add("hidden"); }
+  function showLogin() { authScreen.classList.remove("hidden"); }
+  function setAuthMsg(text, kind) {
+    const m = document.getElementById("authMsg");
+    m.textContent = text || "";
+    m.className = "auth-msg" + (kind ? " " + kind : "");
+  }
+  function applyAuthTexts() {
+    document.getElementById("authTag").textContent = t("authTag");
+    document.getElementById("authEmail").placeholder = t("emailPh");
+    document.getElementById("authPass").placeholder = t("passPh");
+    document.getElementById("authLoginBtn").textContent = t("login");
+    document.getElementById("authSignupBtn").textContent = t("signup");
+    const lo = document.getElementById("logoutBtn"); if (lo) lo.textContent = t("logout");
+  }
+  async function doLogin() {
+    const email = document.getElementById("authEmail").value.trim();
+    const pass = document.getElementById("authPass").value;
+    if (!email || !pass) { setAuthMsg(t("authFillErr"), "err"); return; }
+    if (!sbClient) { setAuthMsg(t("genericErr"), "err"); return; }
+    setAuthMsg(t("authLoading"), "");
+    try {
+      const { error } = await sbClient.auth.signInWithPassword({ email: email, password: pass });
+      if (error) { setAuthMsg(t("badLogin"), "err"); return; }
+      setAuthMsg("", ""); showApp();
+    } catch (e) { setAuthMsg(t("genericErr"), "err"); }
+  }
+  async function doSignup() {
+    const email = document.getElementById("authEmail").value.trim();
+    const pass = document.getElementById("authPass").value;
+    if (!email || !pass) { setAuthMsg(t("authFillErr"), "err"); return; }
+    if (!sbClient) { setAuthMsg(t("genericErr"), "err"); return; }
+    setAuthMsg(t("authLoading"), "");
+    try {
+      const { data, error } = await sbClient.auth.signUp({ email: email, password: pass });
+      if (error) { setAuthMsg(error.message || t("genericErr"), "err"); return; }
+      if (data && data.session) { setAuthMsg("", ""); showApp(); return; } // confirmação de email desligada
+      setAuthMsg(t("signupOk"), "ok");
+    } catch (e) { setAuthMsg(t("genericErr"), "err"); }
+  }
+  async function doLogout() {
+    if (sbClient) { try { await sbClient.auth.signOut(); } catch (e) {} }
+    showLogin();
+  }
+  async function checkSession() {
+    if (!sbClient) { showApp(); return; } // se o Supabase não carregar, não trava o app
+    try {
+      const { data } = await sbClient.auth.getSession();
+      if (data && data.session) showApp(); else showLogin();
+    } catch (e) { showLogin(); }
+  }
+  document.getElementById("authLoginBtn").onclick = doLogin;
+  document.getElementById("authSignupBtn").onclick = doSignup;
+  document.getElementById("authPass").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+  document.getElementById("authEmail").addEventListener("keydown", e => { if (e.key === "Enter") document.getElementById("authPass").focus(); });
+  const _logoutBtn = document.getElementById("logoutBtn");
+  if (_logoutBtn) _logoutBtn.onclick = doLogout;
+  applyAuthTexts();
+  checkSession();
 </script>
 </body>
 </html>
