@@ -29,6 +29,7 @@
 
   .head-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
   .lang { background: var(--panel); border: 1px solid var(--border); color: var(--cream); border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; flex-shrink: 0; }
+  .head-controls { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
   .eyebrow { color: var(--spent); letter-spacing: 0.18em; font-size: 11px; font-weight: 700; }
   h1 { font-size: 26px; margin-top: 4px; letter-spacing: -0.01em; }
   .sub { font-size: 14px; color: var(--muted); margin-top: 6px; }
@@ -121,10 +122,10 @@
   .sheet-body .chat { flex: 1; overflow-y: auto; min-height: 0; margin-top: 12px; }
 
   .compare { font-size: 13px; color: var(--muted); margin-top: 8px; }
-  .curbar { position: relative; display: inline-block; margin-top: 10px; }
-  .cur-toggle { padding: 7px 14px; border-radius: 999px; font-size: 14px; font-weight: 700; background: var(--panel); color: var(--cream); border: 1px solid var(--border); cursor: pointer; }
+  .curbar { position: relative; display: inline-block; }
+  .cur-toggle { padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 700; background: var(--panel); color: var(--cream); border: 1px solid var(--border); cursor: pointer; }
   .caret { color: var(--muted); font-size: 12px; }
-  .cur-menu { position: absolute; top: calc(100% + 6px); left: 0; z-index: 40; min-width: 160px; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 6px; box-shadow: 0 12px 30px rgba(0,0,0,0.55); display: none; }
+  .cur-menu { position: absolute; top: calc(100% + 6px); right: 0; left: auto; z-index: 40; min-width: 170px; max-height: 60vh; overflow-y: auto; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 6px; box-shadow: 0 12px 30px rgba(0,0,0,0.55); display: none; }
   .cur-menu.open { display: block; }
   .cur-opt { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 10px 12px; border-radius: 10px; font-size: 14px; background: none; border: none; color: var(--cream); cursor: pointer; }
   .cur-opt.active { color: var(--spent); font-weight: 700; }
@@ -149,7 +150,10 @@
         <div class="eyebrow mono" id="eyebrow"></div>
         <h1 id="title"></h1>
       </div>
-      <button class="lang" id="langBtn"></button>
+      <div class="head-controls">
+        <div class="curbar" id="curbar"></div>
+        <button class="lang" id="langBtn"></button>
+      </div>
     </div>
     <div class="sub" id="sub"></div>
 
@@ -158,8 +162,6 @@
       <input id="input" autocomplete="off" />
       <button class="primary" id="addBtn"></button>
     </div>
-
-    <div class="curbar" id="curbar"></div>
 
     <div class="chips" id="chips"></div>
 
@@ -430,9 +432,9 @@
 
   // ---- Utilidades ----
   // ---- Moedas ----
-  const CURRENCIES = { GBP: "£", EUR: "€", USD: "$", BRL: "R$" };
-  const FLAGS = { GBP: "🇬🇧", EUR: "🇪🇺", USD: "🇺🇸", BRL: "🇧🇷" };
-  const CUR_ORDER = ["GBP", "EUR", "USD", "BRL"];
+  const CURRENCIES = { GBP: "£", EUR: "€", USD: "$", BRL: "R$", JPY: "¥", AUD: "A$", CAD: "C$", CHF: "CHF", CNY: "CN¥" };
+  const FLAGS = { GBP: "🇬🇧", EUR: "🇪🇺", USD: "🇺🇸", BRL: "🇧🇷", JPY: "🇯🇵", AUD: "🇦🇺", CAD: "🇨🇦", CHF: "🇨🇭", CNY: "🇨🇳" };
+  const CUR_ORDER = ["GBP", "EUR", "USD", "BRL", "JPY", "AUD", "CAD", "CHF", "CNY"];
   let curMenuOpen = false;
   function loadCur(key, def) { try { const r = localStorage.getItem(key); return (r && CURRENCIES[r]) ? r : def; } catch (e) { return def; } }
   let homeCurrency = loadCur("home_currency", "GBP");   // moeda de casa (fixos) — travada
