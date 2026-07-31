@@ -1154,22 +1154,26 @@
   }
   // ---- ASSINATURA: abre a tela de pagamento do Stripe ----
   async function startCheckout() {
-    if (!sbClient || !currentUserId) { alert(t("subErr")); return; }
+    if (!sbClient) { alert(t("subErr")); return; }
     const btn = document.getElementById("subscribeBtn");
     if (btn) { btn.disabled = true; btn.textContent = t("subLoading"); }
     try {
-      let email = "";
-      try { const { data } = await sbClient.auth.getUser(); email = (data && data.user) ? data.user.email : ""; } catch (e) {}
+      let uid = currentUserId, email = "";
+      try {
+        const { data } = await sbClient.auth.getUser();
+        if (data && data.user) { uid = data.user.id; email = data.user.email || ""; }
+      } catch (e) {}
+      if (!uid) { throw new Error("Sem usuário logado"); }
       const res = await fetch("/.netlify/functions/create-checkout", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: currentUserId, email: email, origin: window.location.origin })
+        body: JSON.stringify({ userId: uid, email: email, origin: window.location.origin })
       });
       const data = await res.json();
       if (data && data.url) { window.location.href = data.url; return; }
-      throw new Error("no url");
+      throw new Error((data && data.error) ? data.error : "sem resposta do pagamento");
     } catch (e) {
       if (btn) { btn.disabled = false; btn.textContent = t("subscribe"); }
-      alert(t("subErr"));
+      alert(t("subErr") + "\n\n( " + (e && e.message ? e.message : e) + " )");
     }
   }
   // Quando a pessoa volta do pagamento, agradece e limpa o ?paid=1 da barra de endereço
