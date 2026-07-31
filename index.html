@@ -124,7 +124,7 @@
   .sheet-panel { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%) translateY(100%); width: 100%; max-width: 440px; height: 82vh; background: var(--bg); border: 1px solid var(--border); border-bottom: none; border-top-left-radius: 20px; border-top-right-radius: 20px; transition: transform 0.28s cubic-bezier(.2,.8,.2,1); display: flex; flex-direction: column; overflow: hidden; padding: 0 16px calc(12px + env(safe-area-inset-bottom)); }
   .sheet.open .sheet-panel { transform: translateX(-50%) translateY(0); }
   .sheet-grip { padding: 14px 0 10px; display: flex; justify-content: center; cursor: grab; touch-action: none; flex-shrink: 0; }
-  .sheet-close { position: absolute; top: 10px; right: 12px; width: 34px; height: 34px; border-radius: 999px; border: 1px solid var(--border); background: var(--panel); color: var(--cream); font-size: 15px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 3; }
+  .sheet-close { position: absolute; top: 10px; right: 12px; width: 40px; height: 40px; border-radius: 999px; border: 1px solid var(--border); background: var(--panel); color: var(--cream); font-size: 17px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 3; }
   .grip-bar { width: 40px; height: 5px; border-radius: 999px; background: var(--border); }
   .sheet-body { display: flex; flex-direction: column; flex: 1; min-height: 0; }
   .sheet-body .profile { margin-top: 6px; }
@@ -171,6 +171,7 @@
   .oauth-btn:disabled { opacity: 0.6; cursor: default; }
   .auth-divider { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 12px; margin: 4px 0; }
   .auth-divider::before, .auth-divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+  .forgot-link { background: none; border: none; color: var(--muted); font-size: 12px; cursor: pointer; text-decoration: underline; padding: 4px; }
 
   .logout-wrap { text-align: center; margin-top: 20px; }
   .logout-btn { background: none; border: none; color: var(--muted); font-size: 12px; cursor: pointer; text-decoration: underline; padding: 6px; }
@@ -202,6 +203,7 @@
       <input id="authPass" type="password" autocomplete="current-password" />
       <button class="primary auth-btn" id="authLoginBtn"></button>
       <button class="auth-btn2" id="authSignupBtn"></button>
+      <button class="forgot-link" id="forgotBtn"></button>
       <div class="auth-msg" id="authMsg"></div>
     </div>
   </div>
@@ -329,6 +331,10 @@
       detectCur: "moeda daqui", otherCur: "Outras moedas:", localCur: "Moeda local",
       authTag: "Entra ou cria sua conta pra começar.", emailPh: "seu email", passPh: "sua senha",
       google: "Continuar com Google", apple: "Continuar com Apple", authOr: "ou",
+      forgot: "Esqueci minha senha", typeEmailFirst: "Escreve seu email no campo acima primeiro, aí toca aqui.",
+      resetSent: "Pronto! Mandei um link pro seu email pra você criar uma senha nova.",
+      setNewPw: "Escolhe uma senha nova e salva.", saveNewPw: "Salvar nova senha",
+      pwTooShort: "A senha precisa de pelo menos 6 caracteres.",
       login: "Entrar", signup: "Criar conta", logout: "Sair",
       authFillErr: "Preenche o email e a senha.", authLoading: "Só um segundo...",
       signupOk: "Conta criada! Confere seu email pra confirmar e depois entra.",
@@ -346,9 +352,9 @@
       totalLabel: "TOTAL SPENT", fixedTitle: "MONTHLY FIXED", fixedPh: "e.g. gym 30 day 15", addFixed: "+ Fixed",
       receiptHead: "———— YOUR SPENDING ————",
       disclaimer: "Organises and shows where your money goes. Not investment advice.",
-      emptyExpenses: "Nothing logged yet.<br>Tap a shortcut above to see it work.",
+      emptyExpenses: "Nothing logged yet.<br>Tap a shortcut above to see how it works.",
       emptyFixed: 'No fixed costs yet. E.g. "gym 30 day 15".',
-      perMonth: "/mo", remaining: "Left to pay this month:", allPaid: "All paid this month ✅",
+      perMonth: "/mth", remaining: "Left to pay this month:", allPaid: "All paid this month ✅",
       biggest: "Biggest chunk:", heavy: "That's weighing a lot.", ok: "Under control for now.",
       dueDay: "due day", today: "Today", yesterday: "Yesterday",
       weekdays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
@@ -357,7 +363,7 @@
       profileTitle: "YOUR PROFILE (optional — helps the coach)", incomePh: "income/mo £",
       riskQ: "risk?", riskLow: "low risk", riskMed: "medium risk", riskHigh: "high risk",
       goalPh: "your goal (e.g. save for a trip)",
-      coachGreeting: "Hi! I'm your financial coach. I help you understand where your money goes and explain concepts — but I won't tell you what to buy. Log some spending and ask me anything. 👇",
+      coachGreeting: "Hello! I'm your money coach. I help you understand where your money goes and explain concepts — but I won't tell you what to buy. Log some spending and ask me anything. 👇",
       suggestions: ["Where do I spend most?", "How can I save?", "What is an emergency fund?", "What to do with leftover money?"],
       coachPh: "ask your coach...", send: "Send", thinkingTxt: "coach thinking...", coachErr: "I had a problem thinking. Try again?",
       cmpThisMonth: "This month:", cmpMore: "more than last month", cmpLess: "less than last month", cmpSame: "Same as last month.",
@@ -365,12 +371,16 @@
       detectCur: "currency here", otherCur: "Other currencies:", localCur: "Local currency",
       authTag: "Sign in or create your account to start.", emailPh: "your email", passPh: "your password",
       google: "Continue with Google", apple: "Continue with Apple", authOr: "or",
+      forgot: "Forgotten your password?", typeEmailFirst: "Pop your email in the box above first, then tap here.",
+      resetSent: "Done — I've sent a link to your email so you can set a new password.",
+      setNewPw: "Choose a new password and save.", saveNewPw: "Save new password",
+      pwTooShort: "Your password needs at least 6 characters.",
       login: "Sign in", signup: "Create account", logout: "Log out",
-      authFillErr: "Fill in your email and password.", authLoading: "One sec...",
+      authFillErr: "Please fill in your email and password.", authLoading: "One moment...",
       signupOk: "Account created! Check your email to confirm, then sign in.",
       badLogin: "Wrong email or password.", genericErr: "Something went wrong. Try again.",
       saveErr: "Couldn't save right now. Check your connection and try again.",
-      subscribe: "✦ Subscribe — £2.99/mo", subLoading: "Opening payment...",
+      subscribe: "✦ Subscribe — £2.99 a month", subLoading: "Opening payment...",
       subErr: "Couldn't open payment right now. Try again?",
       subThanks: "Subscription started! Your 30 free days have begun. 🎉",
       cats: { "Alimentação": "Food", "Transporte": "Transport", "Mercado": "Groceries", "Lazer": "Leisure", "Contas": "Bills", "Compras": "Shopping", "Saúde": "Health", "Outros": "Other" },
@@ -931,7 +941,7 @@
   let sDrag = false, ssy = 0, sdy = 0;
   grip.addEventListener("pointerdown", e => { sDrag = true; ssy = e.clientY; sdy = 0; panel.style.transition = "none"; try { grip.setPointerCapture(e.pointerId); } catch (er) {} });
   grip.addEventListener("pointermove", e => { if (!sDrag) return; sdy = e.clientY - ssy; if (sdy > 0) panel.style.transform = "translateX(-50%) translateY(" + sdy + "px)"; });
-  grip.addEventListener("pointerup", () => { if (!sDrag) return; sDrag = false; panel.style.transition = ""; if (sdy > 70) closeSheet(); else panel.style.transform = ""; });
+  grip.addEventListener("pointerup", () => { if (!sDrag) return; sDrag = false; panel.style.transition = ""; if (sdy > 45) closeSheet(); else panel.style.transform = ""; });
   document.getElementById("sheetBackdrop").addEventListener("click", closeSheet);
   const _sheetClose = document.getElementById("sheetClose"); if (_sheetClose) _sheetClose.onclick = closeSheet;
   document.addEventListener("click", () => { if (curMenuOpen) { curMenuOpen = false; renderCurrencyBar(); } });
@@ -1097,6 +1107,7 @@
     const gt = document.getElementById("googleTxt"); if (gt) gt.textContent = t("google");
     const at = document.getElementById("appleTxt"); if (at) at.textContent = t("apple");
     const ao = document.getElementById("authOr"); if (ao) ao.textContent = t("authOr");
+    const fg = document.getElementById("forgotBtn"); if (fg) fg.textContent = t("forgot");
     const lo = document.getElementById("logoutBtn"); if (lo) lo.textContent = t("logout");
     const sb = document.getElementById("subscribeBtn"); if (sb) sb.textContent = t("subscribe");
   }
@@ -1183,8 +1194,56 @@
     } catch (e) { setAuthMsg(t("genericErr"), "err"); }
   }
 
-  document.getElementById("authLoginBtn").onclick = doLogin;
+  // ---- ESQUECI A SENHA / TROCAR SENHA ----
+  let recoveryMode = false;
+  async function doForgot() {
+    const email = document.getElementById("authEmail").value.trim();
+    if (!email) { setAuthMsg(t("typeEmailFirst"), "err"); return; }
+    if (!sbClient) { setAuthMsg(t("genericErr"), "err"); return; }
+    setAuthMsg(t("authLoading"), "");
+    try {
+      const { error } = await sbClient.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
+      if (error) { setAuthMsg(t("genericErr"), "err"); return; }
+      setAuthMsg(t("resetSent"), "ok");
+    } catch (e) { setAuthMsg(t("genericErr"), "err"); }
+  }
+  // Quando a pessoa volta do link do email, mostra só o campo de nova senha
+  function enterRecoveryMode() {
+    recoveryMode = true;
+    showLogin();
+    ["googleBtn", "appleBtn", "authEmail", "authSignupBtn", "forgotBtn"].forEach(id => {
+      const el = document.getElementById(id); if (el) el.style.display = "none";
+    });
+    const div = document.querySelector(".auth-divider"); if (div) div.style.display = "none";
+    document.getElementById("authTag").textContent = t("setNewPw");
+    document.getElementById("authPass").value = "";
+    document.getElementById("authLoginBtn").textContent = t("saveNewPw");
+    setAuthMsg("", "");
+  }
+  async function saveNewPassword() {
+    const pass = document.getElementById("authPass").value;
+    if (!pass || pass.length < 6) { setAuthMsg(t("pwTooShort"), "err"); return; }
+    if (!sbClient) { setAuthMsg(t("genericErr"), "err"); return; }
+    setAuthMsg(t("authLoading"), "");
+    try {
+      const { error } = await sbClient.auth.updateUser({ password: pass });
+      if (error) { setAuthMsg(t("genericErr"), "err"); return; }
+      recoveryMode = false;
+      setAuthMsg("", "");
+      try { history.replaceState({}, "", window.location.pathname); } catch (e) {}
+      showApp();
+    } catch (e) { setAuthMsg(t("genericErr"), "err"); }
+  }
+  function doLoginOrRecover() { return recoveryMode ? saveNewPassword() : doLogin(); }
+  if (sbClient) {
+    try {
+      sbClient.auth.onAuthStateChange((evt) => { if (evt === "PASSWORD_RECOVERY") enterRecoveryMode(); });
+    } catch (e) {}
+  }
+
+  document.getElementById("authLoginBtn").onclick = doLoginOrRecover;
   document.getElementById("authSignupBtn").onclick = doSignup;
+  const _forgotBtn = document.getElementById("forgotBtn"); if (_forgotBtn) _forgotBtn.onclick = doForgot;
   const _gBtn = document.getElementById("googleBtn"); if (_gBtn) _gBtn.onclick = () => oauth("google");
   const _aBtn = document.getElementById("appleBtn"); if (_aBtn) _aBtn.onclick = () => oauth("apple");
   document.getElementById("authPass").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
