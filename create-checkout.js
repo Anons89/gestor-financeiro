@@ -1,4 +1,3 @@
-
 // ---- PORTEIRO DO STRIPE: cria a tela de pagamento (Checkout) da assinatura ----
 // A chave secreta do Stripe vive SÓ no cofre do Netlify (STRIPE_SECRET_KEY).
 // Nunca no navegador, nunca no GitHub, nunca no chat.
@@ -10,7 +9,7 @@ exports.handler = async (event) => {
 
   // O preço não é segredo (é só o "nome da prateleira"), então fica embutido aqui.
   // Deixar fixo aqui impede que o navegador peça um preço diferente.
-  const PRICE_ID = "price_1Tz3vV4EPh8AkpdXUVujSGrn"; // £2,99/mês
+  const PRICE_ID = "price_1TzOyyD57sRDEP71gmEeSUc6"; // £2,99/mês (conta nova, modo teste)
   const TRIAL_DAYS = 30;
 
   const key = process.env.STRIPE_SECRET_KEY;
