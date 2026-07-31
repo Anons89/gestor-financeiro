@@ -401,13 +401,13 @@
     const amount = match ? parseFloat(match[1].replace(",", ".")) : 0;
     const s = text.toLowerCase();
     let category = "Outros";
-    if (/uber|99|taxi|[oô]nibus|bus|metr[oô]|tube|trem|train|gasolina|petrol|fuel|transporte|transport|passagem|ride/.test(s)) category = "Transporte";
-    else if (/mercado|supermerc|feira|hortifruti|groceries|grocery|supermarket|gopuff/.test(s)) category = "Mercado";
-    else if (/comida|food|almo[cç]|lunch|jant|dinner|breakfast|lanch|snack|ifood|restaurante|restaurant|caf[eé]|coffee|pizza|burger|padaria|hamb|meal|takeaway/.test(s)) category = "Alimentação";
-    else if (/cinema|movie|jogo|game|bar|pub|balada|club|netflix|spotify|lazer|leisure|show|concert|role|rol[eê]|golfe|golf|boliche|bowling|paintball|sinuca|kart|parque/.test(s)) category = "Lazer";
-    else if (/conta|bill|luz|electricity|[aá]gua|water|aluguel|rent|internet|telefone|phone|celular|fatura/.test(s)) category = "Contas";
-    else if (/roupa|clothes|t[eê]nis|compra|shopping|amazon|loja|shop|shein/.test(s)) category = "Compras";
-    else if (/farm[aá]cia|pharmacy|rem[eé]dio|medicine|m[eé]dico|doctor|academia|gym|dentista|dentist/.test(s)) category = "Saúde";
+    if (/uber|bolt|99|taxi|[oô]nibus|bus|metr[oô]|tube|trem|train|trainline|tfl|oyster|lime|gasolina|petrol|fuel|transporte|transport|passagem|ride/.test(s)) category = "Transporte";
+    else if (/mercado|supermerc|feira|hortifruti|groceries|grocery|supermarket|gopuff|tesco|sainsbury|asda|aldi|lidl|morrison|waitrose|iceland|ocado|co-?op|m&s|marks & spencer/.test(s)) category = "Mercado";
+    else if (/comida|food|almo[cç]|lunch|jant|dinner|breakfast|lanch|snack|ifood|restaurante|restaurant|caf[eé]|coffee|pizza|burger|padaria|hamb|meal|takeaway|pret|greggs|mcdonald|kfc|nando|subway|costa|starbucks|nero|deliveroo|just *eat|domino|wagamama|five guys/.test(s)) category = "Alimentação";
+    else if (/cinema|movie|jogo|game|bar|pub|balada|club|netflix|spotify|lazer|leisure|show|concert|gig|role|rol[eê]|golfe|golf|boliche|bowling|paintball|sinuca|kart|parque|cineworld|vue|odeon|steam|playstation|xbox|nintendo|disney/.test(s)) category = "Lazer";
+    else if (/conta|bill|luz|electricity|[aá]gua|water|aluguel|rent|internet|telefone|phone|celular|fatura|vodafone|giffgaff|british gas|octopus|council tax|virgin media|now tv|thames water/.test(s)) category = "Contas";
+    else if (/roupa|clothes|t[eê]nis|compra|shopping|amazon|loja|shop|shein|primark|asos|zara|h&m|argos|ebay|john lewis|trainers/.test(s)) category = "Compras";
+    else if (/farm[aá]cia|pharmacy|rem[eé]dio|medicine|m[eé]dico|doctor|academia|gym|dentista|dentist|boots|superdrug|puregym|pure gym|nuffield/.test(s)) category = "Saúde";
     let desc = s
       .replace(/\b(gastei|paguei|comprei|gasto|spent|paid|bought)\b/g, "")
       .replace(/\d+(?:[.,]\d+)?/g, "").replace(/£|€|\$|r\$|reais|libras?|pounds?|euros?|d[oó]lares?|dollars?/gi, "")
