@@ -3,29 +3,37 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>BudgetAI</title>
+<title>Algent</title>
 
-<meta name="theme-color" content="#000000" />
+<meta name="theme-color" content="#0A0B12" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="BudgetAI" />
+<meta name="apple-mobile-web-app-title" content="Algent" />
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23000000'/%3E%3Crect x='22' y='23' width='56' height='50' rx='7' fill='none' stroke='%23FFFFFF' stroke-width='5'/%3E%3Ccircle cx='45' cy='48' r='12' fill='none' stroke='%23FFFFFF' stroke-width='5'/%3E%3Ccircle cx='45' cy='48' r='2.6' fill='%23FFFFFF'/%3E%3Cline x1='45' y1='48' x2='45' y2='39' stroke='%23FFFFFF' stroke-width='4' stroke-linecap='round'/%3E%3Cline x1='66' y1='41' x2='66' y2='55' stroke='%23FFFFFF' stroke-width='5' stroke-linecap='round'/%3E%3Cline x1='30' y1='73' x2='30' y2='79' stroke='%23FFFFFF' stroke-width='5' stroke-linecap='round'/%3E%3Cline x1='70' y1='73' x2='70' y2='79' stroke='%23FFFFFF' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23000000'/%3E%3Crect x='22' y='23' width='56' height='50' rx='7' fill='none' stroke='%23FFFFFF' stroke-width='5'/%3E%3Ccircle cx='45' cy='48' r='12' fill='none' stroke='%23FFFFFF' stroke-width='5'/%3E%3Ccircle cx='45' cy='48' r='2.6' fill='%23FFFFFF'/%3E%3Cline x1='45' y1='48' x2='45' y2='39' stroke='%23FFFFFF' stroke-width='4' stroke-linecap='round'/%3E%3Cline x1='66' y1='41' x2='66' y2='55' stroke='%23FFFFFF' stroke-width='5' stroke-linecap='round'/%3E%3Cline x1='30' y1='73' x2='30' y2='79' stroke='%23FFFFFF' stroke-width='5' stroke-linecap='round'/%3E%3Cline x1='70' y1='73' x2='70' y2='79' stroke='%23FFFFFF' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E" />
 
 <style>
   :root {
-    --bg: #000000; --panel: #14161C; --border: #262A33; --cream: #E9ECF5;
+    --bg: #0A0B12; --panel: #171A22; --border: #2A2F3B; --cream: #E9ECF5;
     --muted: #98A0B8; --spent: #4ADE80; --paper: #F3F3F9; --ink: #23232E;
+    --accent: #8B93FF; --accent-2: #C084FC; --accent-3: #38E0C8;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    background: var(--bg); color: var(--cream);
+    background:
+      radial-gradient(1100px 560px at 100% -8%, rgba(139,147,255,0.14), transparent 58%),
+      radial-gradient(950px 480px at -12% 6%, rgba(56,224,200,0.10), transparent 55%),
+      radial-gradient(900px 700px at 50% 115%, rgba(192,132,252,0.10), transparent 60%),
+      var(--bg);
+    background-attachment: fixed;
+    color: var(--cream);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     min-height: 100vh; display: flex; justify-content: center;
     padding: calc(44px + env(safe-area-inset-top)) 16px calc(32px + env(safe-area-inset-bottom));
   }
   .app { width: 100%; max-width: 440px; }
   .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  .brand-grad { background: linear-gradient(105deg, var(--spent) 0%, var(--accent-3) 45%, var(--accent) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
 
   .head-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
   .lang { background: var(--panel); border: 1px solid var(--border); color: var(--cream); border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; flex-shrink: 0; }
@@ -67,7 +75,7 @@
   .check.on { background: #34C77B; border-color: #34C77B; }
   .fixed-item.paid .fx-name, .fixed-item.paid .fx-amount { text-decoration: line-through; opacity: 0.5; }
 
-  .summary { margin-top: 22px; border-radius: 16px; padding: 20px; background: var(--panel); border: 1px solid var(--border); }
+  .summary { margin-top: 22px; border-radius: 16px; padding: 20px; background: linear-gradient(155deg, rgba(139,147,255,0.12), rgba(56,224,200,0.06) 55%, var(--panel) 100%); border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(139,147,255,0.08); }
   .summary .label { font-size: 11px; color: var(--muted); letter-spacing: 0.05em; }
   .summary .total { font-size: 40px; font-weight: 700; color: var(--spent); margin-top: 2px; }
   .summary .note { font-size: 14px; margin-top: 8px; color: var(--cream); }
@@ -115,7 +123,8 @@
   .sheet-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.35); }
   .sheet-panel { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%) translateY(100%); width: 100%; max-width: 440px; height: 82vh; background: var(--bg); border: 1px solid var(--border); border-bottom: none; border-top-left-radius: 20px; border-top-right-radius: 20px; transition: transform 0.28s cubic-bezier(.2,.8,.2,1); display: flex; flex-direction: column; overflow: hidden; padding: 0 16px calc(12px + env(safe-area-inset-bottom)); }
   .sheet.open .sheet-panel { transform: translateX(-50%) translateY(0); }
-  .sheet-grip { padding: 10px 0 4px; display: flex; justify-content: center; cursor: grab; touch-action: none; flex-shrink: 0; }
+  .sheet-grip { padding: 14px 0 10px; display: flex; justify-content: center; cursor: grab; touch-action: none; flex-shrink: 0; }
+  .sheet-close { position: absolute; top: 10px; right: 12px; width: 34px; height: 34px; border-radius: 999px; border: 1px solid var(--border); background: var(--panel); color: var(--cream); font-size: 15px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 3; }
   .grip-bar { width: 40px; height: 5px; border-radius: 999px; background: var(--border); }
   .sheet-body { display: flex; flex-direction: column; flex: 1; min-height: 0; }
   .sheet-body .profile { margin-top: 6px; }
@@ -156,6 +165,13 @@
   .auth-msg.err { color: #FF6B5E; }
   .auth-msg.ok { color: var(--spent); }
 
+  .oauth-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px 16px; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; border: 1px solid var(--border); }
+  .oauth-google { background: #FFFFFF; color: #1F1F1F; border-color: #FFFFFF; }
+  .oauth-apple { background: #000000; color: #FFFFFF; border-color: #3A3A3A; }
+  .oauth-btn:disabled { opacity: 0.6; cursor: default; }
+  .auth-divider { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 12px; margin: 4px 0; }
+  .auth-divider::before, .auth-divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
   .logout-wrap { text-align: center; margin-top: 20px; }
   .logout-btn { background: none; border: none; color: var(--muted); font-size: 12px; cursor: pointer; text-decoration: underline; padding: 6px; }
 
@@ -168,8 +184,20 @@
   <div id="authScreen" class="auth-screen">
     <div class="auth-card">
       <svg class="auth-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#000000"/><rect x="22" y="23" width="56" height="50" rx="7" fill="none" stroke="#FFFFFF" stroke-width="5"/><circle cx="45" cy="48" r="12" fill="none" stroke="#FFFFFF" stroke-width="5"/><circle cx="45" cy="48" r="2.6" fill="#FFFFFF"/><line x1="45" y1="48" x2="45" y2="39" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/><line x1="66" y1="41" x2="66" y2="55" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/><line x1="30" y1="73" x2="30" y2="79" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/><line x1="70" y1="73" x2="70" y2="79" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/></svg>
-      <div class="auth-brand">BudgetAI</div>
+      <div class="auth-brand brand-grad">Algent</div>
       <div class="auth-tag" id="authTag"></div>
+
+      <button class="oauth-btn oauth-google" id="googleBtn">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.28-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        <span id="googleTxt"></span>
+      </button>
+      <button class="oauth-btn oauth-apple" id="appleBtn">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 12.04c-.03-2.6 2.12-3.85 2.22-3.91-1.21-1.77-3.1-2.01-3.77-2.04-1.6-.16-3.13.94-3.94.94-.81 0-2.07-.92-3.4-.9-1.75.03-3.36 1.02-4.26 2.58-1.82 3.16-.47 7.83 1.3 10.39.86 1.25 1.89 2.66 3.24 2.61 1.3-.05 1.79-.84 3.36-.84 1.57 0 2.01.84 3.39.81 1.4-.02 2.29-1.28 3.15-2.54.99-1.45 1.4-2.85 1.42-2.93-.03-.01-2.73-1.05-2.76-4.15M14.53 4.15c.72-.87 1.2-2.08 1.07-3.28-1.03.04-2.28.69-3.02 1.55-.66.77-1.24 2-1.08 3.18 1.15.09 2.32-.58 3.03-1.45"/></svg>
+        <span id="appleTxt"></span>
+      </button>
+
+      <div class="auth-divider"><span id="authOr"></span></div>
+
       <input id="authEmail" type="email" autocomplete="email" />
       <input id="authPass" type="password" autocomplete="current-password" />
       <button class="primary auth-btn" id="authLoginBtn"></button>
@@ -182,7 +210,7 @@
     <div class="head-row">
       <div>
         <div class="eyebrow mono" id="eyebrow"></div>
-        <h1 id="title"></h1>
+        <h1 id="title" class="brand-grad"></h1>
       </div>
       <div class="head-controls">
         <div class="curbar" id="curbar"></div>
@@ -243,6 +271,7 @@
       <div class="sheet-backdrop" id="sheetBackdrop"></div>
       <div class="sheet-panel" id="sheetPanel">
         <div class="sheet-grip" id="sheetGrip"><span class="grip-bar"></span></div>
+        <button class="sheet-close" id="sheetClose" aria-label="Fechar">✕</button>
         <div class="sheet-body">
           <div class="profile">
             <div class="profile-title" id="profileTitle"></div>
@@ -275,7 +304,7 @@
   // ---- IDIOMAS ----
   const STR = {
     pt: {
-      eyebrow: "SEU DINHEIRO, SEM ENROLAÇÃO", title: "BudgetAI",
+      eyebrow: "SEU DINHEIRO, SEM ENROLAÇÃO", title: "Algent",
       sub: 'Escreve do seu jeito, tipo "gastei 15 no uber". O app anota e organiza.',
       inputPh: "o que você gastou?", add: "Anotar", parsingTxt: "IA lendo...",
       totalLabel: "TOTAL GASTO", fixedTitle: "FIXOS POR MÊS", fixedPh: "ex: academia 30 dia 15", addFixed: "+ Fixo",
@@ -299,6 +328,7 @@
       share: "↗ Compartilhar", pdf: "PDF", shareTitle: "meus gastos", copied: "Copiado!",
       detectCur: "moeda daqui", otherCur: "Outras moedas:", localCur: "Moeda local",
       authTag: "Entra ou cria sua conta pra começar.", emailPh: "seu email", passPh: "sua senha",
+      google: "Continuar com Google", apple: "Continuar com Apple", authOr: "ou",
       login: "Entrar", signup: "Criar conta", logout: "Sair",
       authFillErr: "Preenche o email e a senha.", authLoading: "Só um segundo...",
       signupOk: "Conta criada! Confere seu email pra confirmar e depois entra.",
@@ -310,7 +340,7 @@
       cats: { "Alimentação": "Alimentação", "Transporte": "Transporte", "Mercado": "Mercado", "Lazer": "Lazer", "Contas": "Contas", "Compras": "Compras", "Saúde": "Saúde", "Outros": "Outros" },
     },
     en: {
-      eyebrow: "YOUR MONEY, NO NONSENSE", title: "BudgetAI",
+      eyebrow: "YOUR MONEY, NO NONSENSE", title: "Algent",
       sub: 'Just type it, like "spent 15 on uber". The app logs and sorts it.',
       inputPh: "what did you spend on?", add: "Add", parsingTxt: "AI reading...",
       totalLabel: "TOTAL SPENT", fixedTitle: "MONTHLY FIXED", fixedPh: "e.g. gym 30 day 15", addFixed: "+ Fixed",
@@ -334,6 +364,7 @@
       share: "↗ Share", pdf: "PDF", shareTitle: "my spending", copied: "Copied!",
       detectCur: "currency here", otherCur: "Other currencies:", localCur: "Local currency",
       authTag: "Sign in or create your account to start.", emailPh: "your email", passPh: "your password",
+      google: "Continue with Google", apple: "Continue with Apple", authOr: "or",
       login: "Sign in", signup: "Create account", logout: "Log out",
       authFillErr: "Fill in your email and password.", authLoading: "One sec...",
       signupOk: "Account created! Check your email to confirm, then sign in.",
@@ -745,7 +776,7 @@
 
   // ---- Compartilhar / PDF ----
   function summaryText() {
-    let out = "BudgetAI — " + t("shareTitle");
+    let out = "Algent — " + t("shareTitle");
     CUR_ORDER.forEach(code => {
       const exp = expenses.filter(e => expCur(e) === code);
       if (!exp.length) return;
@@ -758,7 +789,7 @@
   }
   async function shareSummary() {
     const text = summaryText();
-    if (navigator.share) { try { await navigator.share({ title: "BudgetAI", text: text }); } catch (e) {} return; }
+    if (navigator.share) { try { await navigator.share({ title: "Algent", text: text }); } catch (e) {} return; }
     try { await navigator.clipboard.writeText(text); alert(t("copied")); } catch (e) { alert(text); }
   }
   function exportPDF() { window.print(); }
@@ -900,8 +931,9 @@
   let sDrag = false, ssy = 0, sdy = 0;
   grip.addEventListener("pointerdown", e => { sDrag = true; ssy = e.clientY; sdy = 0; panel.style.transition = "none"; try { grip.setPointerCapture(e.pointerId); } catch (er) {} });
   grip.addEventListener("pointermove", e => { if (!sDrag) return; sdy = e.clientY - ssy; if (sdy > 0) panel.style.transform = "translateX(-50%) translateY(" + sdy + "px)"; });
-  grip.addEventListener("pointerup", () => { if (!sDrag) return; sDrag = false; panel.style.transition = ""; if (sdy > 120) closeSheet(); else panel.style.transform = ""; });
+  grip.addEventListener("pointerup", () => { if (!sDrag) return; sDrag = false; panel.style.transition = ""; if (sdy > 70) closeSheet(); else panel.style.transform = ""; });
   document.getElementById("sheetBackdrop").addEventListener("click", closeSheet);
+  const _sheetClose = document.getElementById("sheetClose"); if (_sheetClose) _sheetClose.onclick = closeSheet;
   document.addEventListener("click", () => { if (curMenuOpen) { curMenuOpen = false; renderCurrencyBar(); } });
   window.addEventListener("resize", () => {
     const w = bubble.offsetWidth || 56;
@@ -1062,6 +1094,9 @@
     document.getElementById("authPass").placeholder = t("passPh");
     document.getElementById("authLoginBtn").textContent = t("login");
     document.getElementById("authSignupBtn").textContent = t("signup");
+    const gt = document.getElementById("googleTxt"); if (gt) gt.textContent = t("google");
+    const at = document.getElementById("appleTxt"); if (at) at.textContent = t("apple");
+    const ao = document.getElementById("authOr"); if (ao) ao.textContent = t("authOr");
     const lo = document.getElementById("logoutBtn"); if (lo) lo.textContent = t("logout");
     const sb = document.getElementById("subscribeBtn"); if (sb) sb.textContent = t("subscribe");
   }
@@ -1139,8 +1174,19 @@
     } catch (e) {}
   }
 
+  async function oauth(provider) {
+    if (!sbClient) { setAuthMsg(t("genericErr"), "err"); return; }
+    setAuthMsg(t("authLoading"), "");
+    try {
+      const { error } = await sbClient.auth.signInWithOAuth({ provider: provider, options: { redirectTo: window.location.origin } });
+      if (error) { setAuthMsg(t("genericErr"), "err"); }
+    } catch (e) { setAuthMsg(t("genericErr"), "err"); }
+  }
+
   document.getElementById("authLoginBtn").onclick = doLogin;
   document.getElementById("authSignupBtn").onclick = doSignup;
+  const _gBtn = document.getElementById("googleBtn"); if (_gBtn) _gBtn.onclick = () => oauth("google");
+  const _aBtn = document.getElementById("appleBtn"); if (_aBtn) _aBtn.onclick = () => oauth("apple");
   document.getElementById("authPass").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
   document.getElementById("authEmail").addEventListener("keydown", e => { if (e.key === "Enter") document.getElementById("authPass").focus(); });
   const _logoutBtn = document.getElementById("logoutBtn");
