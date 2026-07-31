@@ -12,7 +12,7 @@ exports.handler = async (event) => {
     const messages = Array.isArray(body.messages) ? body.messages : [];
     const profile = body.profile || {};
     const spending = body.spending || "(sem dados)";
-    const langName = body.lang === "en" ? "English" : "português";
+    const langName = body.lang === "en" ? "British English (UK spelling and tone — organise, favourite, £, everyday British phrasing, not American)" : "português";
 
     const prof =
       "Renda mensal: " + (profile.income ? "£" + profile.income : "não informada") +
