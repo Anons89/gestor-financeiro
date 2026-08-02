@@ -176,7 +176,8 @@
   .logout-wrap { text-align: center; margin-top: 20px; }
   .logout-btn { background: none; border: none; color: var(--muted); font-size: 12px; cursor: pointer; text-decoration: underline; padding: 6px; }
 
-  .sub-cta { text-align: center; margin-top: 22px; }
+  .sub-cta { display: none; }
+  .pay-title { font-size: 20px; font-weight: 700; margin-top: 4px; line-height: 1.3; }
   .subscribe-btn { width: 100%; max-width: 320px; padding: 14px 18px; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; color: #05230F; border: none; background: linear-gradient(135deg, #5AE88F, #22C55E); box-shadow: 0 6px 18px rgba(34,197,94,0.28); }
   .subscribe-btn:disabled { opacity: 0.6; cursor: default; }
 </style>
@@ -192,10 +193,6 @@
         <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.28-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
         <span id="googleTxt"></span>
       </button>
-      <button class="oauth-btn oauth-apple" id="appleBtn">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 12.04c-.03-2.6 2.12-3.85 2.22-3.91-1.21-1.77-3.1-2.01-3.77-2.04-1.6-.16-3.13.94-3.94.94-.81 0-2.07-.92-3.4-.9-1.75.03-3.36 1.02-4.26 2.58-1.82 3.16-.47 7.83 1.3 10.39.86 1.25 1.89 2.66 3.24 2.61 1.3-.05 1.79-.84 3.36-.84 1.57 0 2.01.84 3.39.81 1.4-.02 2.29-1.28 3.15-2.54.99-1.45 1.4-2.85 1.42-2.93-.03-.01-2.73-1.05-2.76-4.15M14.53 4.15c.72-.87 1.2-2.08 1.07-3.28-1.03.04-2.28.69-3.02 1.55-.66.77-1.24 2-1.08 3.18 1.15.09 2.32-.58 3.03-1.45"/></svg>
-        <span id="appleTxt"></span>
-      </button>
 
       <div class="auth-divider"><span id="authOr"></span></div>
 
@@ -205,6 +202,18 @@
       <button class="auth-btn2" id="authSignupBtn"></button>
       <button class="forgot-link" id="forgotBtn">Esqueci minha senha</button>
       <div class="auth-msg" id="authMsg"></div>
+    </div>
+  </div>
+
+  <div id="payScreen" class="auth-screen hidden">
+    <div class="auth-card">
+      <svg class="auth-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#000000"/><rect x="22" y="23" width="56" height="50" rx="7" fill="none" stroke="#FFFFFF" stroke-width="5"/><circle cx="45" cy="48" r="12" fill="none" stroke="#FFFFFF" stroke-width="5"/><circle cx="45" cy="48" r="2.6" fill="#FFFFFF"/><line x1="45" y1="48" x2="45" y2="39" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/><line x1="66" y1="41" x2="66" y2="55" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/><line x1="30" y1="73" x2="30" y2="79" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/><line x1="70" y1="73" x2="70" y2="79" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/></svg>
+      <div class="auth-brand brand-grad">Algent</div>
+      <div class="pay-title" id="payTitle"></div>
+      <div class="auth-tag" id="paySub"></div>
+      <button class="primary auth-btn" id="payBtn"></button>
+      <div class="auth-msg" id="payMsg"></div>
+      <button class="logout-btn" id="payLogout" style="margin-top:6px"></button>
     </div>
   </div>
 
@@ -343,6 +352,9 @@
       subscribe: "✦ Assinar — £2,99/mês", subLoading: "Abrindo pagamento...",
       subErr: "Não consegui abrir o pagamento agora. Tenta de novo?",
       subThanks: "Assinatura iniciada! Seus 30 dias grátis começaram. 🎉",
+      payStart: "Comece seus 30 dias grátis", payStartSub: "Use o Algent completo por 30 dias, de graça. Só depois vem a cobrança de £2,99/mês, e você cancela quando quiser.",
+      payEnded: "Seu teste acabou", payEndedSub: "Assine pra continuar usando o Algent — £2,99/mês.",
+      payBtnTxt: "Começar teste grátis",
       cats: { "Alimentação": "Alimentação", "Transporte": "Transporte", "Mercado": "Mercado", "Lazer": "Lazer", "Contas": "Contas", "Compras": "Compras", "Saúde": "Saúde", "Outros": "Outros" },
     },
     en: {
@@ -383,6 +395,9 @@
       subscribe: "✦ Subscribe — £2.99 a month", subLoading: "Opening payment...",
       subErr: "Couldn't open payment right now. Try again?",
       subThanks: "Subscription started! Your 30 free days have begun. 🎉",
+      payStart: "Start your 30 free days", payStartSub: "Use the full Algent free for 30 days. Only then does the £2.99/mo charge begin, and you can cancel anytime.",
+      payEnded: "Your trial has ended", payEndedSub: "Subscribe to keep using Algent — £2.99/mo.",
+      payBtnTxt: "Start free trial",
       cats: { "Alimentação": "Food", "Transporte": "Transport", "Mercado": "Groceries", "Lazer": "Leisure", "Contas": "Bills", "Compras": "Shopping", "Saúde": "Health", "Outros": "Other" },
     },
   };
@@ -968,8 +983,33 @@
   let applyingRemote = false;   // enquanto aplico o que veio da nuvem, não reenvio de volta
 
   const authScreen = document.getElementById("authScreen");
-  function showApp() { authScreen.classList.add("hidden"); syncCloud(); }
+  function showApp() { authScreen.classList.add("hidden"); syncCloud(); gate(); }
   function showLogin() { authScreen.classList.remove("hidden"); }
+
+  // ---- TRAVA DE ASSINANTE (paywall) ----
+  // "Tem acesso" = está no teste grátis (trialing) ou pagando (active). Qualquer outra coisa = trava.
+  function hasAccess(status) { return status === "trialing" || status === "active"; }
+  async function fetchSubStatus() {
+    if (!sbClient) return null;
+    try {
+      const { data, error } = await sbClient.from("subscriptions").select("status").maybeSingle();
+      if (error || !data) return null;
+      return data.status || null;
+    } catch (e) { return null; }
+  }
+  function showPaywall(status) {
+    // se já teve algum status antes (e perdeu), fala "seu teste acabou"; senão, "comece seu teste"
+    const returning = status && status !== "trialing" && status !== "active";
+    document.getElementById("payTitle").textContent = returning ? t("payEnded") : t("payStart");
+    document.getElementById("paySub").textContent = returning ? t("payEndedSub") : t("payStartSub");
+    document.getElementById("payScreen").classList.remove("hidden");
+  }
+  function hidePaywall() { document.getElementById("payScreen").classList.add("hidden"); }
+  async function gate() {
+    if (!sbClient) { hidePaywall(); return; } // se a nuvem falhar, não tranca ninguém (libera)
+    const status = await fetchSubStatus();
+    if (hasAccess(status)) hidePaywall(); else showPaywall(status);
+  }
 
   // ---- NUVEM: gastos no Supabase, amarrados à conta logada ----
   function expenseFromRow(r) {
@@ -1105,11 +1145,12 @@
     document.getElementById("authLoginBtn").textContent = t("login");
     document.getElementById("authSignupBtn").textContent = t("signup");
     const gt = document.getElementById("googleTxt"); if (gt) gt.textContent = t("google");
-    const at = document.getElementById("appleTxt"); if (at) at.textContent = t("apple");
     const ao = document.getElementById("authOr"); if (ao) ao.textContent = t("authOr");
     const fg = document.getElementById("forgotBtn"); if (fg) fg.textContent = t("forgot");
     const lo = document.getElementById("logoutBtn"); if (lo) lo.textContent = t("logout");
     const sb = document.getElementById("subscribeBtn"); if (sb) sb.textContent = t("subscribe");
+    const pb = document.getElementById("payBtn"); if (pb) pb.textContent = t("payBtnTxt");
+    const pl = document.getElementById("payLogout"); if (pl) pl.textContent = t("logout");
   }
   async function doLogin() {
     const email = document.getElementById("authEmail").value.trim();
@@ -1143,6 +1184,7 @@
     // limpa dados pessoais da memória; a próxima conta recarrega os seus da nuvem
     recurring = []; quickChips = DEFAULT_CHIPS.slice(); coachProfile = {};
     applyStaticTexts(); renderFixed(); renderCurrencyBar(); render();
+    hidePaywall();
     showLogin();
   }
   async function checkSession() {
@@ -1155,8 +1197,8 @@
   // ---- ASSINATURA: abre a tela de pagamento do Stripe ----
   async function startCheckout() {
     if (!sbClient) { alert(t("subErr")); return; }
-    const btn = document.getElementById("subscribeBtn");
-    if (btn) { btn.disabled = true; btn.textContent = t("subLoading"); }
+    const btn = document.getElementById("payBtn") || document.getElementById("subscribeBtn");
+    if (btn) { btn.disabled = true; btn.dataset.label = btn.textContent; btn.textContent = t("subLoading"); }
     try {
       let uid = currentUserId, email = "";
       try {
@@ -1172,7 +1214,7 @@
       if (data && data.url) { window.location.href = data.url; return; }
       throw new Error((data && data.error) ? data.error : "sem resposta do pagamento");
     } catch (e) {
-      if (btn) { btn.disabled = false; btn.textContent = t("subscribe"); }
+      if (btn) { btn.disabled = false; btn.textContent = btn.dataset.label || t("payBtnTxt"); }
       alert(t("subErr") + "\n\n( " + (e && e.message ? e.message : e) + " )");
     }
   }
@@ -1183,6 +1225,8 @@
       if (q.get("paid") === "1") {
         setTimeout(() => alert(t("subThanks")), 400);
         history.replaceState({}, "", window.location.pathname);
+        hidePaywall(); // acabou de pagar: libera na hora
+        setTimeout(gate, 4000); // e confirma o status de verdade uns segundos depois
       } else if (q.get("canceled") === "1") {
         history.replaceState({}, "", window.location.pathname);
       }
@@ -1215,7 +1259,7 @@
   function enterRecoveryMode() {
     recoveryMode = true;
     showLogin();
-    ["googleBtn", "appleBtn", "authEmail", "authSignupBtn", "forgotBtn"].forEach(id => {
+    ["googleBtn", "authEmail", "authSignupBtn", "forgotBtn"].forEach(id => {
       const el = document.getElementById(id); if (el) el.style.display = "none";
     });
     const div = document.querySelector(".auth-divider"); if (div) div.style.display = "none";
@@ -1249,7 +1293,8 @@
   document.getElementById("authSignupBtn").onclick = doSignup;
   const _forgotBtn = document.getElementById("forgotBtn"); if (_forgotBtn) _forgotBtn.onclick = doForgot;
   const _gBtn = document.getElementById("googleBtn"); if (_gBtn) _gBtn.onclick = () => oauth("google");
-  const _aBtn = document.getElementById("appleBtn"); if (_aBtn) _aBtn.onclick = () => oauth("apple");
+  const _payBtn = document.getElementById("payBtn"); if (_payBtn) _payBtn.onclick = startCheckout;
+  const _payLogout = document.getElementById("payLogout"); if (_payLogout) _payLogout.onclick = doLogout;
   document.getElementById("authPass").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
   document.getElementById("authEmail").addEventListener("keydown", e => { if (e.key === "Enter") document.getElementById("authPass").focus(); });
   const _logoutBtn = document.getElementById("logoutBtn");
