@@ -9,7 +9,7 @@ exports.handler = async (event) => {
 
   // O preço não é segredo (é só o "nome da prateleira"), então fica embutido aqui.
   // Deixar fixo aqui impede que o navegador peça um preço diferente.
-  const PRICE_ID = "price_1TzOyyD57sRDEP71gmEeSUc6"; // £2,99/mês (conta nova, modo teste)
+  const PRICE_ID = "price_1Tzy4iD57sRDEP71XJlyoAkY"; // £2,99/mês (MODO REAL / live)
   const TRIAL_DAYS = 30;
 
   const key = process.env.STRIPE_SECRET_KEY;
