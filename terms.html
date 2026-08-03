@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Terms of Use — Algent</title>
+<style>
+  :root {
+    --bg: #0A0B12; --panel: #171A22; --border: #2A2F3B; --cream: #E9ECF5;
+    --muted: #98A0B8; --accent: #8B93FF; --accent-2: #C084FC; --accent-3: #38E0C8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--cream);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.65; padding: 0 20px 80px;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 22px 0 8px; }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .brand-name {
+    font-size: 20px; font-weight: 800;
+    background: linear-gradient(105deg, #4ADE80 0%, var(--accent-3) 45%, var(--accent) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+  }
+  .logo { width: 30px; height: 30px; border-radius: 8px; display: block; }
+  .lang-toggle {
+    background: var(--panel); border: 1px solid var(--border); color: var(--cream);
+    border-radius: 999px; padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer;
+  }
+  h1 { font-size: 26px; margin: 26px 0 4px; }
+  .updated { color: var(--muted); font-size: 13px; margin-bottom: 26px; }
+  h2 { font-size: 18px; margin: 30px 0 8px; color: #fff; }
+  p, li { color: #D2D7E6; font-size: 15px; }
+  a { color: var(--accent-3); }
+  ul { padding-left: 20px; }
+  li { margin-bottom: 6px; }
+  .back { display: inline-block; margin-top: 34px; color: var(--muted); font-size: 14px; text-decoration: none; border-bottom: 1px solid var(--border); padding-bottom: 2px; }
+  .note { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; font-size: 14px; color: var(--muted); margin-top: 18px; }
+  [data-lang] { display: none; }
+  body.lang-en [data-lang="en"] { display: revert; }
+  body.lang-pt [data-lang="pt"] { display: revert; }
+</style>
+</head>
+<body class="lang-en">
+  <div class="wrap">
+    <div class="topbar">
+      <a class="brand" href="/">
+        <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#000000"/><rect x="22" y="23" width="56" height="50" rx="7" fill="none" stroke="#FFFFFF" stroke-width="5"/><circle cx="45" cy="48" r="12" fill="none" stroke="#FFFFFF" stroke-width="5"/><circle cx="45" cy="48" r="2.6" fill="#FFFFFF"/><line x1="45" y1="48" x2="45" y2="39" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/><line x1="66" y1="41" x2="66" y2="55" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/><line x1="30" y1="73" x2="30" y2="79" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/><line x1="70" y1="73" x2="70" y2="79" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/></svg>
+        <span class="brand-name">Algent</span>
+      </a>
+      <button class="lang-toggle" id="langToggle">Português</button>
+    </div>
+
+    <!-- ================= ENGLISH ================= -->
+    <div data-lang="en">
+      <h1>Terms of Use</h1>
+      <div class="updated">Last updated: 3 August 2026</div>
+
+      <p>These Terms of Use ("Terms") are an agreement between you and Algent ("we", "us", "the app") for your use of the Algent app at <a href="https://algent.co.uk">algent.co.uk</a>. By creating an account or using the app, you agree to these Terms. If you do not agree, please do not use the app.</p>
+
+      <h2>1. What Algent is</h2>
+      <p>Algent is a tool that helps you record your spending and organise where your money goes, including features that categorise what you type and an educational money coach. Algent is an organisational and educational tool only.</p>
+
+      <h2>2. Not financial advice</h2>
+      <p>Algent does <strong>not</strong> provide financial, investment, tax or legal advice, and nothing in the app should be treated as a recommendation to buy, sell or hold any product or investment. The coach explains concepts and helps you understand your own spending; it does not tell you what to do with your money. For advice about your personal situation, speak to a qualified professional regulated by the Financial Conduct Authority (FCA). You are responsible for your own financial decisions.</p>
+
+      <h2>3. Your account</h2>
+      <p>You must give accurate information when you create your account, keep your password secure, and you are responsible for activity that happens under your account. You must be at least 16 years old to use Algent.</p>
+
+      <h2>4. Subscription, free trial and billing</h2>
+      <ul>
+        <li>Algent is offered as a subscription costing <strong>£2.99 per month</strong>.</li>
+        <li>New subscriptions start with a <strong>30-day free trial</strong>. You will not be charged during the trial.</li>
+        <li>If you do not cancel before the trial ends, your subscription begins and the monthly fee is charged to your payment method.</li>
+        <li>The subscription renews automatically each month until you cancel.</li>
+        <li>Payments are handled by Stripe. By subscribing, you authorise us, through Stripe, to charge your payment method the recurring fee.</li>
+        <li>Prices may change in the future; we will give you reasonable notice before any change affects you.</li>
+      </ul>
+
+      <h2>5. Cancelling</h2>
+      <p>You can cancel at any time from within the app, or by contacting us. When you cancel, your subscription will not renew again, and you keep access until the end of the period you have already paid for (or until the end of your free trial). Because of the low monthly price and the 30-day free trial that lets you try everything first, we do not generally provide refunds for periods already started, except where required by law.</p>
+
+      <h2>6. Acceptable use</h2>
+      <p>You agree not to misuse the app: for example, not to attempt to break, overload or gain unauthorised access to it, not to use it for anything unlawful, and not to copy or resell the service. We may suspend or close accounts that break these Terms.</p>
+
+      <h2>7. Your data</h2>
+      <p>The data you enter (such as your expenses) belongs to you. How we handle your personal data is explained in our <a href="/privacy.html">Privacy Policy</a>, which forms part of these Terms.</p>
+
+      <h2>8. Availability</h2>
+      <p>We work to keep Algent running well, but we provide the app "as is" and cannot promise it will always be available, uninterrupted or error-free. We may update, change or pause features over time.</p>
+
+      <h2>9. Limitation of liability</h2>
+      <p>To the extent permitted by law, Algent is not liable for any indirect or consequential loss, or for financial decisions you make based on your use of the app. Nothing in these Terms limits liability that cannot be limited by law. If we are found liable, our total liability to you is limited to the amount you paid us in the 12 months before the claim.</p>
+
+      <h2>10. Changes to these Terms</h2>
+      <p>We may update these Terms from time to time. When we make significant changes, we will update the "last updated" date and, where appropriate, let you know in the app.</p>
+
+      <h2>11. Governing law</h2>
+      <p>These Terms are governed by the laws of England and Wales, and disputes are subject to the courts of England and Wales.</p>
+
+      <h2>12. Contact</h2>
+      <p>Questions about these Terms? Email us at <a href="mailto:support@algent.co.uk">support@algent.co.uk</a>.</p>
+
+      <div class="note">Algent organises and shows you where your money goes. It is an educational and organisational tool — it does not provide financial or investment advice.</div>
+
+      <a class="back" href="/">← Back to Algent</a>
+    </div>
+
+    <!-- ================= PORTUGUÊS ================= -->
+    <div data-lang="pt">
+      <h1>Termos de Uso</h1>
+      <div class="updated">Última atualização: 3 de agosto de 2026</div>
+
+      <p>Estes Termos de Uso ("Termos") são um acordo entre você e o Algent ("nós", "o app") para o seu uso do app Algent em <a href="https://algent.co.uk">algent.co.uk</a>. Ao criar uma conta ou usar o app, você concorda com estes Termos. Se não concordar, por favor não use o app.</p>
+
+      <h2>1. O que é o Algent</h2>
+      <p>O Algent é uma ferramenta que ajuda você a registrar os seus gastos e organizar para onde vai o seu dinheiro, incluindo recursos que categorizam o que você digita e um coach educativo de finanças. O Algent é apenas uma ferramenta de organização e educação.</p>
+
+      <h2>2. Não é aconselhamento financeiro</h2>
+      <p>O Algent <strong>não</strong> fornece aconselhamento financeiro, de investimento, fiscal ou jurídico, e nada no app deve ser tratado como recomendação de comprar, vender ou manter qualquer produto ou investimento. O coach explica conceitos e ajuda você a entender os seus próprios gastos; ele não diz o que você deve fazer com o seu dinheiro. Para orientação sobre a sua situação pessoal, fale com um profissional qualificado e regulado pela autoridade competente (no Reino Unido, a Financial Conduct Authority, FCA). Você é responsável pelas suas próprias decisões financeiras.</p>
+
+      <h2>3. A sua conta</h2>
+      <p>Você deve fornecer informações corretas ao criar a sua conta, manter a sua senha segura, e é responsável pela atividade que acontece na sua conta. Você precisa ter pelo menos 16 anos para usar o Algent.</p>
+
+      <h2>4. Assinatura, teste grátis e cobrança</h2>
+      <ul>
+        <li>O Algent é oferecido como assinatura no valor de <strong>£2,99 por mês</strong>.</li>
+        <li>Novas assinaturas começam com um <strong>teste grátis de 30 dias</strong>. Você não é cobrado durante o teste.</li>
+        <li>Se você não cancelar antes do fim do teste, a sua assinatura começa e a mensalidade é cobrada no seu meio de pagamento.</li>
+        <li>A assinatura renova automaticamente todo mês até você cancelar.</li>
+        <li>Os pagamentos são processados pela Stripe. Ao assinar, você nos autoriza, através da Stripe, a cobrar a mensalidade recorrente no seu meio de pagamento.</li>
+        <li>Os preços podem mudar no futuro; avisaremos você com uma antecedência razoável antes que qualquer mudança te afete.</li>
+      </ul>
+
+      <h2>5. Cancelamento</h2>
+      <p>Você pode cancelar a qualquer momento dentro do app, ou entrando em contato conosco. Ao cancelar, a sua assinatura não renova de novo, e você mantém o acesso até o fim do período que já pagou (ou até o fim do seu teste grátis). Por causa do preço mensal baixo e do teste grátis de 30 dias que permite experimentar tudo antes, em geral não fornecemos reembolso de períodos já iniciados, exceto quando exigido por lei.</p>
+
+      <h2>6. Uso aceitável</h2>
+      <p>Você concorda em não usar o app de forma indevida: por exemplo, não tentar quebrar, sobrecarregar ou obter acesso não autorizado ao app, não usá-lo para nada ilegal, e não copiar ou revender o serviço. Podemos suspender ou encerrar contas que violem estes Termos.</p>
+
+      <h2>7. Os seus dados</h2>
+      <p>Os dados que você insere (como os seus gastos) pertencem a você. Como tratamos os seus dados pessoais está explicado na nossa <a href="/privacy.html">Política de Privacidade</a>, que faz parte destes Termos.</p>
+
+      <h2>8. Disponibilidade</h2>
+      <p>Trabalhamos para manter o Algent funcionando bem, mas fornecemos o app "no estado em que se encontra" e não podemos prometer que ele estará sempre disponível, sem interrupções ou sem erros. Podemos atualizar, mudar ou pausar recursos ao longo do tempo.</p>
+
+      <h2>9. Limitação de responsabilidade</h2>
+      <p>Na medida permitida por lei, o Algent não se responsabiliza por perdas indiretas ou consequentes, nem por decisões financeiras que você tome com base no uso do app. Nada nestes Termos limita responsabilidades que não podem ser limitadas por lei. Caso sejamos considerados responsáveis, a nossa responsabilidade total perante você fica limitada ao valor que você nos pagou nos 12 meses anteriores à reclamação.</p>
+
+      <h2>10. Mudanças nestes Termos</h2>
+      <p>Podemos atualizar estes Termos de tempos em tempos. Quando fizermos mudanças relevantes, atualizaremos a data de "última atualização" e, quando apropriado, avisaremos você no app.</p>
+
+      <h2>11. Lei aplicável</h2>
+      <p>Estes Termos são regidos pelas leis da Inglaterra e do País de Gales, e as disputas ficam sujeitas aos tribunais da Inglaterra e do País de Gales.</p>
+
+      <h2>12. Contato</h2>
+      <p>Dúvidas sobre estes Termos? Envie um email para <a href="mailto:support@algent.co.uk">support@algent.co.uk</a>.</p>
+
+      <div class="note">O Algent organiza e mostra para onde vai o seu dinheiro. É uma ferramenta educativa e de organização — não fornece aconselhamento financeiro nem de investimento.</div>
+
+      <a class="back" href="/">← Voltar para o Algent</a>
+    </div>
+  </div>
+
+<script>
+  (function () {
+    var body = document.body;
+    var btn = document.getElementById("langToggle");
+    function setLang(l) {
+      body.className = "lang-" + l;
+      btn.textContent = (l === "en") ? "Português" : "English";
+      try { localStorage.setItem("lang", l); } catch (e) {}
+    }
+    var saved = null;
+    try { saved = localStorage.getItem("lang"); } catch (e) {}
+    var start = (saved === "pt" || saved === "en") ? saved
+              : ((navigator.language || "en").toLowerCase().indexOf("pt") === 0 ? "pt" : "en");
+    setLang(start);
+    btn.onclick = function () { setLang(body.classList.contains("lang-en") ? "pt" : "en"); };
+  })();
+</script>
+</body>
+</html>
