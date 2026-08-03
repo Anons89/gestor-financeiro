@@ -175,6 +175,11 @@
 
   .logout-wrap { text-align: center; margin-top: 20px; }
   .logout-btn { background: none; border: none; color: var(--muted); font-size: 12px; cursor: pointer; text-decoration: underline; padding: 6px; }
+  .cancel-sub-btn { background: none; border: none; color: var(--muted); font-size: 12px; cursor: pointer; text-decoration: underline; padding: 6px; display: none; }
+  .cancel-sub-btn:disabled { opacity: 0.55; cursor: default; }
+  .legal-links { text-align: center; margin-top: 14px; font-size: 11px; color: var(--muted); }
+  .legal-links a { color: var(--muted); text-decoration: underline; }
+  .legal-links span { opacity: 0.5; margin: 0 6px; }
 
   .sub-cta { display: none; }
   .pay-title { font-size: 20px; font-weight: 700; margin-top: 4px; line-height: 1.3; }
@@ -202,6 +207,11 @@
       <button class="auth-btn2" id="authSignupBtn"></button>
       <button class="forgot-link" id="forgotBtn">Esqueci minha senha</button>
       <div class="auth-msg" id="authMsg"></div>
+      <div class="legal-links" style="margin-top:16px">
+        <a href="/privacy.html" class="js-legal-priv" target="_blank" rel="noopener"></a>
+        <span>·</span>
+        <a href="/terms.html" class="js-legal-terms" target="_blank" rel="noopener"></a>
+      </div>
     </div>
   </div>
 
@@ -214,6 +224,11 @@
       <button class="primary auth-btn" id="payBtn"></button>
       <div class="auth-msg" id="payMsg"></div>
       <button class="logout-btn" id="payLogout" style="margin-top:6px"></button>
+      <div class="legal-links" style="margin-top:16px">
+        <a href="/privacy.html" class="js-legal-priv" target="_blank" rel="noopener"></a>
+        <span>·</span>
+        <a href="/terms.html" class="js-legal-terms" target="_blank" rel="noopener"></a>
+      </div>
     </div>
   </div>
 
@@ -274,7 +289,16 @@
 
     <div class="sub-cta"><button id="subscribeBtn" class="subscribe-btn"></button></div>
 
-    <div class="logout-wrap"><button id="logoutBtn" class="logout-btn"></button></div>
+    <div class="logout-wrap">
+      <button id="cancelSubBtn" class="cancel-sub-btn"></button>
+      <button id="logoutBtn" class="logout-btn"></button>
+    </div>
+
+    <div class="legal-links">
+      <a href="/privacy.html" class="js-legal-priv" target="_blank" rel="noopener"></a>
+      <span>·</span>
+      <a href="/terms.html" class="js-legal-terms" target="_blank" rel="noopener"></a>
+    </div>
 
     <button id="coachBubble" class="bubble">AI</button>
 
@@ -355,6 +379,13 @@
       payStart: "Comece seus 30 dias grátis", payStartSub: "Use o Algent completo por 30 dias, de graça. Só depois vem a cobrança de £2,99/mês, e você cancela quando quiser.",
       payEnded: "Seu teste acabou", payEndedSub: "Assine pra continuar usando o Algent — £2,99/mês.",
       payBtnTxt: "Começar teste grátis",
+      cancelSub: "Cancelar assinatura", cancelBusy: "Cancelando...",
+      cancelConfirm: "Tem certeza que quer cancelar? Você mantém o acesso até o fim do período que já pagou (ou do seu teste grátis), e não será cobrado de novo.",
+      cancelDone: "Assinatura cancelada. Você continua com acesso até {date} e não será cobrado de novo.",
+      cancelDoneNoDate: "Pronto, sua assinatura foi cancelada. Você não será cobrado de novo.",
+      cancelNothing: "Não encontrei uma assinatura ativa pra cancelar por aqui.",
+      cancelErr: "Não consegui cancelar agora. Tenta de novo daqui a pouco?",
+      legalPrivacy: "Privacidade", legalTerms: "Termos",
       cats: { "Alimentação": "Alimentação", "Transporte": "Transporte", "Mercado": "Mercado", "Lazer": "Lazer", "Contas": "Contas", "Compras": "Compras", "Saúde": "Saúde", "Outros": "Outros" },
     },
     en: {
@@ -398,6 +429,13 @@
       payStart: "Start your 30 free days", payStartSub: "Use the full Algent free for 30 days. Only then does the £2.99/mo charge begin, and you can cancel anytime.",
       payEnded: "Your trial has ended", payEndedSub: "Subscribe to keep using Algent — £2.99/mo.",
       payBtnTxt: "Start free trial",
+      cancelSub: "Cancel subscription", cancelBusy: "Cancelling...",
+      cancelConfirm: "Are you sure you want to cancel? You keep access until the end of the period you've already paid for (or your free trial), and you won't be charged again.",
+      cancelDone: "Subscription cancelled. You keep access until {date}, and you won't be charged again.",
+      cancelDoneNoDate: "Done — your subscription has been cancelled. You won't be charged again.",
+      cancelNothing: "I couldn't find an active subscription to cancel here.",
+      cancelErr: "I couldn't cancel right now. Try again in a moment?",
+      legalPrivacy: "Privacy", legalTerms: "Terms",
       cats: { "Alimentação": "Food", "Transporte": "Transport", "Mercado": "Groceries", "Lazer": "Leisure", "Contas": "Bills", "Compras": "Shopping", "Saúde": "Health", "Outros": "Other" },
     },
   };
@@ -1005,10 +1043,17 @@
     document.getElementById("payScreen").classList.remove("hidden");
   }
   function hidePaywall() { document.getElementById("payScreen").classList.add("hidden"); }
+  // O botão "cancelar assinatura" só aparece pra quem tem assinatura (teste ou ativa)
+  function updateCancelVisibility(status) {
+    const btn = document.getElementById("cancelSubBtn");
+    if (!btn) return;
+    btn.style.display = hasAccess(status) ? "inline-block" : "none";
+  }
   async function gate() {
-    if (!sbClient) { hidePaywall(); return; } // se a nuvem falhar, não tranca ninguém (libera)
+    if (!sbClient) { hidePaywall(); updateCancelVisibility(null); return; } // se a nuvem falhar, não tranca ninguém (libera)
     const status = await fetchSubStatus();
     if (hasAccess(status)) hidePaywall(); else showPaywall(status);
+    updateCancelVisibility(status);
   }
 
   // ---- NUVEM: gastos no Supabase, amarrados à conta logada ----
@@ -1151,6 +1196,9 @@
     const sb = document.getElementById("subscribeBtn"); if (sb) sb.textContent = t("subscribe");
     const pb = document.getElementById("payBtn"); if (pb) pb.textContent = t("payBtnTxt");
     const pl = document.getElementById("payLogout"); if (pl) pl.textContent = t("logout");
+    const cs = document.getElementById("cancelSubBtn"); if (cs && !cs.disabled) cs.textContent = t("cancelSub");
+    document.querySelectorAll(".js-legal-priv").forEach(a => { a.textContent = t("legalPrivacy"); });
+    document.querySelectorAll(".js-legal-terms").forEach(a => { a.textContent = t("legalTerms"); });
   }
   async function doLogin() {
     const email = document.getElementById("authEmail").value.trim();
@@ -1216,6 +1264,41 @@
     } catch (e) {
       if (btn) { btn.disabled = false; btn.textContent = btn.dataset.label || t("payBtnTxt"); }
       alert(t("subErr") + "\n\n( " + (e && e.message ? e.message : e) + " )");
+    }
+  }
+  // ---- CANCELAR ASSINATURA ----
+  async function cancelSubscription() {
+    if (!sbClient) { alert(t("cancelErr")); return; }
+    if (!confirm(t("cancelConfirm"))) return;
+    const btn = document.getElementById("cancelSubBtn");
+    if (btn) { btn.disabled = true; btn.textContent = t("cancelBusy"); }
+    try {
+      // pega o token da sessão pra provar, no servidor, quem é a pessoa
+      let token = "";
+      try {
+        const { data } = await sbClient.auth.getSession();
+        if (data && data.session) token = data.session.access_token || "";
+      } catch (e) {}
+      if (!token) throw new Error("no session");
+      const res = await fetch("/.netlify/functions/cancel-subscription", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accessToken: token })
+      });
+      const data = await res.json();
+      if (!res.ok || !data || !data.ok) throw new Error((data && data.error) || "failed");
+      if (data.nothing) {
+        alert(t("cancelNothing"));
+      } else if (data.periodEnd) {
+        const d = new Date(data.periodEnd * 1000);
+        const ds = d.toLocaleDateString(lang === "pt" ? "pt-BR" : "en-GB", { day: "numeric", month: "long", year: "numeric" });
+        alert(t("cancelDone").replace("{date}", ds));
+      } else {
+        alert(t("cancelDoneNoDate"));
+      }
+    } catch (e) {
+      alert(t("cancelErr"));
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = t("cancelSub"); }
     }
   }
   // Quando a pessoa volta do pagamento, agradece e limpa o ?paid=1 da barra de endereço
@@ -1299,6 +1382,8 @@
   document.getElementById("authEmail").addEventListener("keydown", e => { if (e.key === "Enter") document.getElementById("authPass").focus(); });
   const _logoutBtn = document.getElementById("logoutBtn");
   if (_logoutBtn) _logoutBtn.onclick = doLogout;
+  const _cancelSubBtn = document.getElementById("cancelSubBtn");
+  if (_cancelSubBtn) _cancelSubBtn.onclick = cancelSubscription;
   const _subBtn = document.getElementById("subscribeBtn");
   if (_subBtn) _subBtn.onclick = startCheckout;
   applyAuthTexts();
