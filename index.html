@@ -185,6 +185,25 @@
   .pay-title { font-size: 20px; font-weight: 700; margin-top: 4px; line-height: 1.3; }
   .subscribe-btn { width: 100%; max-width: 320px; padding: 14px 18px; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; color: #05230F; border: none; background: linear-gradient(135deg, #5AE88F, #22C55E); box-shadow: 0 6px 18px rgba(34,197,94,0.28); }
   .subscribe-btn:disabled { opacity: 0.6; cursor: default; }
+
+  /* ---- Gráfico (barras / pizza) ---- */
+  .chart-card { margin-top: 16px; border-radius: 16px; padding: 18px 20px; background: var(--panel); border: 1px solid var(--border); }
+  .chart-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+  .chart-title { font-size: 11px; letter-spacing: 0.1em; color: var(--muted); font-weight: 700; text-transform: uppercase; }
+  .chart-toggle { display: inline-flex; background: var(--bg); border: 1px solid var(--border); border-radius: 999px; padding: 3px; gap: 2px; }
+  .chart-tab { border: none; background: none; color: var(--muted); font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 999px; cursor: pointer; transition: background .15s, color .15s; }
+  .chart-tab.active { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; }
+  .chart-body { display: flex; justify-content: center; align-items: center; min-height: 180px; }
+  .chart-body svg { max-width: 100%; height: auto; overflow: visible; }
+  .bar-track { fill: var(--bg); }
+  .chart-legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 16px; }
+  .legend-item { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--cream); }
+  .legend-swatch { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .legend-val { color: var(--muted); }
+  .pie-center-total { fill: var(--cream); font-weight: 800; }
+  .pie-center-label { fill: var(--muted); }
+  .bar-label { fill: var(--cream); font-size: 12px; }
+  .bar-value { fill: var(--muted); font-size: 11px; }
 </style>
 </head>
 <body>
@@ -259,6 +278,18 @@
       <div class="note" id="note"></div>
       <div class="compare" id="compare"></div>
       <div class="othercur" id="othercur"></div>
+    </div>
+
+    <div class="chart-card" id="chartCard" style="display:none">
+      <div class="chart-head">
+        <div class="chart-title" id="chartTitle"></div>
+        <div class="chart-toggle">
+          <button class="chart-tab" id="chartTabBar" data-type="bar"></button>
+          <button class="chart-tab" id="chartTabPie" data-type="pie"></button>
+        </div>
+      </div>
+      <div class="chart-body" id="chartBody"></div>
+      <div class="chart-legend" id="chartLegend"></div>
     </div>
 
     <div class="fixed">
@@ -349,6 +380,7 @@
       emptyFixed: 'Nenhum fixo ainda. Ex: "academia 30 dia 15".',
       perMonth: "/mês", remaining: "Falta sair esse mês:", allPaid: "Tudo pago esse mês ✅",
       biggest: "Maior peso:", heavy: "Tá pesando bastante, hein.", ok: "Sob controle por enquanto.",
+      chartTitle: "Para onde vai seu dinheiro", chartBar: "Barras", chartPie: "Pizza",
       dueDay: "cai dia", today: "Hoje", yesterday: "Ontem",
       weekdays: ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"],
       editChips: "editar", addChipPh: "novo atalho", okBtn: "ok",
@@ -399,6 +431,7 @@
       emptyFixed: 'No fixed costs yet. E.g. "gym 30 day 15".',
       perMonth: "/mth", remaining: "Left to pay this month:", allPaid: "All paid this month ✅",
       biggest: "Biggest chunk:", heavy: "That's weighing a lot.", ok: "Under control for now.",
+      chartTitle: "Where your money goes", chartBar: "Bars", chartPie: "Pie",
       dueDay: "due day", today: "Today", yesterday: "Yesterday",
       weekdays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
       editChips: "edit", addChipPh: "new shortcut", okBtn: "done",
@@ -698,6 +731,7 @@
     renderCurrencyBar();
     renderCompare();
     renderOtherCur();
+    renderChart();
 
     if (exp.length === 0) { listEl.innerHTML = '<div class="empty">' + t("emptyExpenses") + '</div>'; return; }
 
@@ -729,6 +763,98 @@
       '<span class="day-total">' + money(g.total) + '</span></div>' +
       g.items.map(itemHtml).join("")
     ).join("");
+  }
+
+  // ---- GRÁFICO: para onde vai o dinheiro (barras ou pizza) ----
+  // A pessoa escolhe o tipo; a escolha fica salva pra próxima vez.
+  let chartType = (function () {
+    try { const v = localStorage.getItem("chart_type"); return (v === "pie" || v === "bar") ? v : "bar"; }
+    catch (e) { return "bar"; }
+  })();
+
+  // Junta os gastos por categoria, na moeda ativa (mesmos números do resto do app)
+  function chartData() {
+    const exp = expenses.filter(e => expCur(e) === curCurrency);
+    const byCat = {};
+    exp.forEach(e => { byCat[e.category] = (byCat[e.category] || 0) + (Number(e.amount) || 0); });
+    const rows = Object.entries(byCat)
+      .filter(([, v]) => v > 0)
+      .sort((a, b) => b[1] - a[1])
+      .map(([cat, val]) => ({ cat: cat, val: val, color: CATEGORIES[cat] || "#94A0B8" }));
+    const total = rows.reduce((s, r) => s + r.val, 0);
+    return { rows: rows, total: total };
+  }
+
+  // Desenha o gráfico de BARRAS (cada barra proporcional à maior)
+  function barSVG(rows, total) {
+    const W = 300, rowH = 44, padTop = 2;
+    const maxVal = rows[0].val || 1;
+    const H = padTop + rows.length * rowH;
+    let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" role="img">';
+    rows.forEach((r, i) => {
+      const y = padTop + i * rowH;
+      const barY = y + 20, barH = 12;
+      const w = Math.max(4, (r.val / maxVal) * W);
+      const pct = total > 0 ? Math.round(r.val / total * 100) : 0;
+      s += '<text class="bar-label" x="0" y="' + (y + 13) + '">' + esc(catLabel(r.cat)) + '</text>';
+      s += '<text class="bar-value" x="' + W + '" y="' + (y + 13) + '" text-anchor="end">' + esc(money(r.val)) + ' · ' + pct + '%</text>';
+      s += '<rect class="bar-track" x="0" y="' + barY + '" width="' + W + '" height="' + barH + '" rx="6"/>';
+      s += '<rect x="0" y="' + barY + '" width="' + w + '" height="' + barH + '" rx="6" fill="' + r.color + '"/>';
+    });
+    s += '</svg>';
+    return s;
+  }
+
+  // Desenha o gráfico de PIZZA (rosquinha, com o total no meio)
+  function pieSVG(rows, total) {
+    const size = 200, cx = size / 2, cy = size / 2, thickness = 34;
+    const radius = (size / 2) - thickness / 2 - 2;
+    const C = 2 * Math.PI * radius;
+    let offset = 0;
+    let s = '<svg viewBox="0 0 ' + size + ' ' + size + '" xmlns="http://www.w3.org/2000/svg" role="img">';
+    s += '<g transform="rotate(-90 ' + cx + ' ' + cy + ')">';
+    s += '<circle cx="' + cx + '" cy="' + cy + '" r="' + radius + '" fill="none" stroke="var(--bg)" stroke-width="' + thickness + '"/>';
+    rows.forEach(r => {
+      const frac = total > 0 ? r.val / total : 0;
+      const len = frac * C;
+      s += '<circle cx="' + cx + '" cy="' + cy + '" r="' + radius + '" fill="none" stroke="' + r.color +
+           '" stroke-width="' + thickness + '" stroke-dasharray="' + len + ' ' + (C - len) +
+           '" stroke-dashoffset="' + (-offset) + '"/>';
+      offset += len;
+    });
+    s += '</g>';
+    s += '<text class="pie-center-total" x="' + cx + '" y="' + (cy - 1) + '" text-anchor="middle" font-size="19">' + esc(money(total)) + '</text>';
+    s += '<text class="pie-center-label" x="' + cx + '" y="' + (cy + 15) + '" text-anchor="middle" font-size="9">' + esc(t("totalLabel")) + '</text>';
+    s += '</svg>';
+    return s;
+  }
+
+  function chartLegendHTML(rows, total) {
+    return rows.map(r => {
+      const pct = total > 0 ? Math.round(r.val / total * 100) : 0;
+      return '<div class="legend-item"><span class="legend-swatch" style="background:' + r.color + '"></span>' +
+             esc(catLabel(r.cat)) + ' <span class="legend-val">' + esc(money(r.val)) + ' · ' + pct + '%</span></div>';
+    }).join("");
+  }
+
+  function renderChart() {
+    const card = document.getElementById("chartCard");
+    if (!card) return;
+    const d = chartData();
+    if (d.rows.length === 0) { card.style.display = "none"; return; }
+    card.style.display = "block";
+    document.getElementById("chartTitle").textContent = t("chartTitle");
+    const barBtn = document.getElementById("chartTabBar"), pieBtn = document.getElementById("chartTabPie");
+    if (barBtn) { barBtn.textContent = t("chartBar"); barBtn.classList.toggle("active", chartType === "bar"); }
+    if (pieBtn) { pieBtn.textContent = t("chartPie"); pieBtn.classList.toggle("active", chartType === "pie"); }
+    document.getElementById("chartBody").innerHTML = chartType === "pie" ? pieSVG(d.rows, d.total) : barSVG(d.rows, d.total);
+    document.getElementById("chartLegend").innerHTML = chartLegendHTML(d.rows, d.total);
+  }
+
+  function setChartType(tp) {
+    chartType = tp;
+    try { localStorage.setItem("chart_type", tp); } catch (e) {}
+    renderChart();
   }
 
   // ---- Desenha os fixos ----
@@ -923,6 +1049,9 @@
     try { localStorage.setItem("lang", lang); } catch (e) {}
     applyStaticTexts(); render(); renderFixed(); applyAuthTexts();
   };
+
+  const _ctBar = document.getElementById("chartTabBar"); if (_ctBar) _ctBar.onclick = () => setChartType("bar");
+  const _ctPie = document.getElementById("chartTabPie"); if (_ctPie) _ctPie.onclick = () => setChartType("pie");
 
   // ---- Coach wiring ----
   document.getElementById("coachSend").onclick = () => askCoach();
