@@ -21,9 +21,9 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     background:
-      radial-gradient(1100px 560px at 100% -8%, rgba(139,147,255,0.14), transparent 58%),
+      radial-gradient(1100px 560px at 100% -8%, rgba(74,222,128,0.13), transparent 58%),
       radial-gradient(950px 480px at -12% 6%, rgba(56,224,200,0.10), transparent 55%),
-      radial-gradient(900px 700px at 50% 115%, rgba(192,132,252,0.10), transparent 60%),
+      radial-gradient(900px 700px at 50% 115%, rgba(56,224,200,0.09), transparent 60%),
       var(--bg);
     background-attachment: fixed;
     color: var(--cream);
@@ -31,7 +31,45 @@
     min-height: 100vh; display: flex; justify-content: center;
     padding: calc(44px + env(safe-area-inset-top)) 16px calc(32px + env(safe-area-inset-bottom));
   }
-  .app { width: 100%; max-width: 440px; }
+  .app { width: 100%; max-width: 440px; padding-bottom: calc(78px + env(safe-area-inset-bottom)); }
+
+  /* ===== topbar ===== */
+  .topbar { display: flex; align-items: baseline; gap: 10px; padding-bottom: 2px; }
+  .topbar .eyebrow { font-size: 11px; }
+
+  /* ===== telas (abas) ===== */
+  .screen { display: none; animation: fadeScreen .22s ease; }
+  .screen.active { display: block; }
+  @keyframes fadeScreen { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  /* ===== barra de navegação ===== */
+  .nav { position: fixed; left: 50%; transform: translateX(-50%); bottom: 0; width: 100%; max-width: 440px; z-index: 60;
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    background: color-mix(in srgb, var(--panel) 92%, transparent); backdrop-filter: saturate(160%) blur(14px); -webkit-backdrop-filter: saturate(160%) blur(14px);
+    border-top: 1px solid var(--border); padding: 8px 6px calc(8px + env(safe-area-inset-bottom)); }
+  .nav-btn { background: none; border: none; cursor: pointer; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; padding: 4px 0; }
+  .nav-btn .ico { width: 23px; height: 23px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .nav-btn.on { color: var(--spent); }
+
+  /* ===== tela de ajustes ===== */
+  .plan-card { background: linear-gradient(160deg, var(--accent), var(--spent)); color: #04220E; border-radius: 18px; padding: 16px 18px; margin-bottom: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.35); }
+  .plan-1 { font-size: 13px; opacity: 0.9; font-weight: 700; }
+  .plan-2 { font-size: 19px; font-weight: 800; margin: 3px 0 8px; }
+  .plan-mo { font-size: 13px; font-weight: 600; opacity: 0.85; }
+  .plan-3 { font-size: 12.5px; opacity: 0.85; font-weight: 600; }
+  .set-group { margin-bottom: 16px; }
+  .glabel { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; padding: 0 4px 8px; }
+  .set-list { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+  .set-item { display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-bottom: 1px solid var(--border); }
+  .set-item:last-child { border-bottom: none; }
+  .set-item .ic { width: 32px; height: 32px; border-radius: 9px; background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .set-item .lbl { flex: 1; font-weight: 600; font-size: 15px; color: var(--cream); }
+  .set-item .curbar { margin: 0; }
+  .account-btns { display: flex; flex-direction: column; gap: 10px; }
+  .set-foot { text-align: center; font-size: 12px; color: var(--muted); padding: 12px 0 4px; }
+  .analysis-card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-top: 14px; }
+  .analysis-title { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 10px; }
+  .analysis-empty { text-align: center; color: var(--muted); font-size: 13px; padding: 24px 10px; }
   .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
   .brand-grad { background: linear-gradient(105deg, var(--spent) 0%, var(--accent-3) 45%, var(--accent) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
 
@@ -289,19 +327,14 @@
   </div>
 
   <div class="app">
-    <div class="head-row">
-      <div>
-        <div class="eyebrow mono" id="eyebrow"></div>
-        <h1 id="title" class="brand-grad"></h1>
-      </div>
-      <div class="head-controls">
-        <div class="curbar" id="curbar"></div>
-        <button class="lang" id="langBtn"></button>
-      </div>
+    <div class="topbar">
+      <span class="eyebrow mono" id="eyebrow"></span>
+      <h1 id="title" class="brand-grad"></h1>
     </div>
     <div class="sub" id="sub"></div>
 
-    <div id="viewGastos">
+    <!-- ===== ABA: INÍCIO ===== -->
+    <section class="screen active" id="s-home">
     <div class="row">
       <input id="input" autocomplete="off" />
       <button class="primary" id="addBtn"></button>
@@ -309,40 +342,16 @@
 
     <div class="chips" id="chips"></div>
 
-    <div id="movableZone">
-
-    <div class="summary" data-block="total">
-      <div class="block-head">
-        <span class="mover"><button class="mv-btn mv-up" aria-label="up">▲</button><button class="mv-btn mv-down" aria-label="down">▼</button></span>
-        <div class="label mono" id="totalLabel"></div>
-      </div>
+    <div class="summary">
+      <div class="label mono" id="totalLabel"></div>
       <div class="total mono" id="total">£0.00</div>
       <div class="note" id="note"></div>
-      <div class="compare" id="compare"></div>
       <div class="othercur" id="othercur"></div>
-    </div>
-
-    <div class="chart-card" id="chartCard" data-block="chart" style="display:none">
-      <div class="chart-head">
-        <div class="head-left">
-          <span class="mover"><button class="mv-btn mv-up" aria-label="up">▲</button><button class="mv-btn mv-down" aria-label="down">▼</button></span>
-          <div class="chart-title" id="chartTitle"></div>
-        </div>
-        <div class="chart-toggle">
-          <button class="chart-tab" id="chartTabBar" data-type="bar"></button>
-          <button class="chart-tab" id="chartTabPie" data-type="pie"></button>
-        </div>
-      </div>
-      <div class="chart-body" id="chartBody"></div>
-      <div class="chart-legend" id="chartLegend"></div>
     </div>
 
     <div class="fixed" data-block="fixed">
       <div class="fixed-top">
-        <div class="head-left">
-          <span class="mover"><button class="mv-btn mv-up" aria-label="up">▲</button><button class="mv-btn mv-down" aria-label="down">▼</button></span>
-          <span class="fixed-title mono" id="fixedTitleEl"></span>
-        </div>
+        <span class="fixed-title mono" id="fixedTitleEl"></span>
         <span class="fixed-total mono" id="fixedTotal">£0.00</span>
       </div>
       <div class="fixed-sub" id="fixedSub"></div>
@@ -353,8 +362,6 @@
       <div id="fixedList" class="fixed-list"></div>
     </div>
 
-    </div><!-- /movableZone -->
-
     <div class="receipt">
       <div class="head mono" id="receiptHead"></div>
       <div class="body mono" id="list"></div>
@@ -364,24 +371,91 @@
       <button class="act" id="shareBtn"></button>
       <button class="act" id="pdfBtn"></button>
     </div>
-    </div><!-- /viewGastos -->
+    </section><!-- /s-home -->
 
-    <div class="disclaimer" id="disclaimer"></div>
+    <!-- ===== ABA: ANÁLISE ===== -->
+    <section class="screen" id="s-stats">
+      <div class="chart-card" id="chartCard" style="display:none">
+        <div class="chart-head">
+          <div class="chart-title" id="chartTitle"></div>
+          <div class="chart-toggle">
+            <button class="chart-tab" id="chartTabBar" data-type="bar"></button>
+            <button class="chart-tab" id="chartTabPie" data-type="pie"></button>
+          </div>
+        </div>
+        <div class="chart-body" id="chartBody"></div>
+        <div class="chart-legend" id="chartLegend"></div>
+      </div>
+      <div class="analysis-card">
+        <div class="analysis-title" id="compareTitle"></div>
+        <div class="compare" id="compare"></div>
+      </div>
+      <div class="analysis-empty" id="statsEmpty"></div>
+    </section><!-- /s-stats -->
 
-    <div class="sub-cta"><button id="subscribeBtn" class="subscribe-btn"></button></div>
+    <!-- ===== ABA: AJUSTES ===== -->
+    <section class="screen" id="s-set">
+      <div class="plan-card">
+        <div class="plan-1" id="planLabel"></div>
+        <div class="plan-2">Algent · £2.99<span class="plan-mo">/<span id="planMonth"></span></span></div>
+        <div class="plan-3" id="planTrial"></div>
+      </div>
 
-    <div class="logout-wrap">
-      <button id="cancelSubBtn" class="cancel-sub-btn"></button>
-      <button id="logoutBtn" class="logout-btn"></button>
-    </div>
+      <div class="set-group">
+        <div class="glabel" id="prefLabel"></div>
+        <div class="set-list">
+          <div class="set-item">
+            <div class="ic">🌐</div>
+            <div class="lbl" id="langRowLabel"></div>
+            <button class="lang" id="langBtn"></button>
+          </div>
+          <div class="set-item">
+            <div class="ic">💱</div>
+            <div class="lbl" id="curRowLabel"></div>
+            <div class="curbar" id="curbar"></div>
+          </div>
+        </div>
+      </div>
 
-    <div class="legal-links">
-      <a href="/privacy.html" class="js-legal-priv" target="_blank" rel="noopener"></a>
-      <span>·</span>
-      <a href="/terms.html" class="js-legal-terms" target="_blank" rel="noopener"></a>
-    </div>
+      <div class="set-group">
+        <div class="glabel" id="accountLabel"></div>
+        <div class="account-btns">
+          <button id="cancelSubBtn" class="cancel-sub-btn"></button>
+          <button id="logoutBtn" class="logout-btn"></button>
+        </div>
+      </div>
 
-    <button id="coachBubble" class="bubble">AI</button>
+      <div class="sub-cta"><button id="subscribeBtn" class="subscribe-btn"></button></div>
+      <div class="disclaimer" id="disclaimer"></div>
+      <div class="legal-links">
+        <a href="/privacy.html" class="js-legal-priv" target="_blank" rel="noopener"></a>
+        <span>·</span>
+        <a href="/terms.html" class="js-legal-terms" target="_blank" rel="noopener"></a>
+      </div>
+      <div class="set-foot">Algent · algent.co.uk</div>
+    </section><!-- /s-set -->
+
+    <!-- ===== BARRA DE ABAS ===== -->
+    <nav class="nav">
+      <button class="nav-btn on" data-scr="home">
+        <svg class="ico" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg>
+        <span id="navHome"></span>
+      </button>
+      <button class="nav-btn" data-scr="stats">
+        <svg class="ico" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+        <span id="navStats"></span>
+      </button>
+      <button class="nav-btn" id="navCoachBtn">
+        <svg class="ico" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2z"/></svg>
+        <span id="navCoach"></span>
+      </button>
+      <button class="nav-btn" data-scr="set">
+        <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span id="navSet"></span>
+      </button>
+    </nav>
+
+    <button id="coachBubble" class="bubble" style="display:none">AI</button>
 
     <div id="coachSheet" class="sheet">
       <div class="sheet-backdrop" id="sheetBackdrop"></div>
@@ -431,6 +505,10 @@
   const STR = {
     pt: {
       eyebrow: "", title: "Algent",
+      navHome: "Início", navStats: "Análise", navCoach: "Coach", navSet: "Ajustes",
+      planLabel: "Sua assinatura", planMonth: "mês", planTrial: "30 dias de teste grátis · acesso completo",
+      prefLabel: "Preferências", langRowLabel: "Idioma", curRowLabel: "Moeda", accountLabel: "Conta",
+      compareTitle: "Comparação mensal", statsEmpty: "Anote alguns gastos e seus gráficos aparecem aqui.",
       sub: 'Escreve do seu jeito, tipo "gastei 15 no uber". O app anota e organiza.',
       inputPh: "o que você gastou?", add: "Anotar", parsingTxt: "IA lendo...",
       totalLabel: "TOTAL GASTO", fixedTitle: "FIXOS POR MÊS", fixedPh: "ex: academia 30 dia 15", addFixed: "+ Fixo",
@@ -488,6 +566,10 @@
     },
     en: {
       eyebrow: "", title: "Algent",
+      navHome: "Home", navStats: "Analysis", navCoach: "Coach", navSet: "Settings",
+      planLabel: "Your subscription", planMonth: "month", planTrial: "30-day free trial · full access",
+      prefLabel: "Preferences", langRowLabel: "Language", curRowLabel: "Currency", accountLabel: "Account",
+      compareTitle: "Monthly comparison", statsEmpty: "Log a few expenses and your charts show up here.",
       sub: 'Just type it, like "spent 15 on uber". The app logs and sorts it.',
       inputPh: "what did you spend on?", add: "Add", parsingTxt: "AI reading...",
       totalLabel: "TOTAL SPENT", fixedTitle: "MONTHLY FIXED", fixedPh: "e.g. gym 30 day 15", addFixed: "+ Fixed",
@@ -831,6 +913,11 @@
     document.getElementById("coachSend").textContent = t("send");
     document.getElementById("shareBtn").textContent = t("share");
     document.getElementById("pdfBtn").textContent = t("pdf");
+    const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    setTxt("navHome", t("navHome")); setTxt("navStats", t("navStats")); setTxt("navCoach", t("navCoach")); setTxt("navSet", t("navSet"));
+    setTxt("planLabel", t("planLabel")); setTxt("planMonth", t("planMonth")); setTxt("planTrial", t("planTrial"));
+    setTxt("prefLabel", t("prefLabel")); setTxt("langRowLabel", t("langRowLabel")); setTxt("curRowLabel", t("curRowLabel")); setTxt("accountLabel", t("accountLabel"));
+    setTxt("compareTitle", t("compareTitle")); setTxt("statsEmpty", t("statsEmpty"));
     document.getElementById("pRisk").innerHTML =
       '<option value="">' + t("riskQ") + '</option>' +
       '<option value="baixo">' + t("riskLow") + '</option>' +
@@ -970,8 +1057,10 @@
   function renderChart() {
     const card = document.getElementById("chartCard");
     if (!card) return;
+    const empty = document.getElementById("statsEmpty");
     const d = chartData();
-    if (d.rows.length === 0) { card.style.display = "none"; return; }
+    if (d.rows.length === 0) { card.style.display = "none"; if (empty) empty.style.display = "block"; return; }
+    if (empty) empty.style.display = "none";
     card.style.display = "block";
     document.getElementById("chartTitle").textContent = t("chartTitle");
     const barBtn = document.getElementById("chartTabBar"), pieBtn = document.getElementById("chartTabPie");
@@ -1225,9 +1314,16 @@
   const _ctBar = document.getElementById("chartTabBar"); if (_ctBar) _ctBar.onclick = () => setChartType("bar");
   const _ctPie = document.getElementById("chartTabPie"); if (_ctPie) _ctPie.onclick = () => setChartType("pie");
 
-  document.querySelectorAll(".mv-up").forEach(b => b.onclick = () => { const el = b.closest("[data-block]"); if (el) moveBlock(el.getAttribute("data-block"), -1); });
-  document.querySelectorAll(".mv-down").forEach(b => b.onclick = () => { const el = b.closest("[data-block]"); if (el) moveBlock(el.getAttribute("data-block"), 1); });
-  applyBlockOrder();
+  // ---- Navegação por abas ----
+  function go(scr) {
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+    const target = document.getElementById("s-" + scr);
+    if (target) target.classList.add("active");
+    document.querySelectorAll(".nav-btn").forEach(b => b.classList.toggle("on", b.getAttribute("data-scr") === scr));
+    try { window.scrollTo({ top: 0, behavior: "instant" }); } catch (e) { window.scrollTo(0, 0); }
+  }
+  document.querySelectorAll(".nav-btn[data-scr]").forEach(b => b.onclick = () => go(b.getAttribute("data-scr")));
+  const _navCoach = document.getElementById("navCoachBtn"); if (_navCoach) _navCoach.onclick = () => { if (typeof openSheet === "function") openSheet(); };
   const _catBackdrop = document.getElementById("catPickerBackdrop"); if (_catBackdrop) _catBackdrop.onclick = closeCatPicker;
 
   // ---- Coach wiring ----
