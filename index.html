@@ -16,7 +16,7 @@
   :root {
     --bg: #0A0B12; --panel: #171A22; --border: #2A2F3B; --cream: #E9ECF5;
     --muted: #98A0B8; --spent: #4ADE80; --paper: #F3F3F9; --ink: #23232E;
-    --accent: #8B93FF; --accent-2: #C084FC; --accent-3: #38E0C8;
+    --accent: #34C77B; --accent-2: #4ADE80; --accent-3: #38E0C8;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -422,13 +422,15 @@
   const CATEGORIES = {
     "Alimentação": "#FF6B5E", "Transporte": "#34C77B", "Mercado": "#F5B54A",
     "Lazer": "#C084FC", "Contas": "#38BDF8", "Compras": "#F472B6",
-    "Saúde": "#2DD4BF", "Outros": "#94A0B8",
+    "Saúde": "#2DD4BF", "Assinaturas": "#818CF8", "Educação": "#3B82F6",
+    "Viagem": "#22D3EE", "Casa": "#FB923C", "Beleza": "#E879F9",
+    "Pets": "#A3E635", "Outros": "#94A0B8",
   };
 
   // ---- IDIOMAS ----
   const STR = {
     pt: {
-      eyebrow: "SEU DINHEIRO, SEM ENROLAÇÃO", title: "Algent",
+      eyebrow: "", title: "Algent",
       sub: 'Escreve do seu jeito, tipo "gastei 15 no uber". O app anota e organiza.',
       inputPh: "o que você gastou?", add: "Anotar", parsingTxt: "IA lendo...",
       totalLabel: "TOTAL GASTO", fixedTitle: "FIXOS POR MÊS", fixedPh: "ex: academia 30 dia 15", addFixed: "+ Fixo",
@@ -482,10 +484,10 @@
       cancelNothing: "Não encontrei uma assinatura ativa pra cancelar por aqui.",
       cancelErr: "Não consegui cancelar agora. Tenta de novo daqui a pouco?",
       legalPrivacy: "Privacidade", legalTerms: "Termos",
-      cats: { "Alimentação": "Alimentação", "Transporte": "Transporte", "Mercado": "Mercado", "Lazer": "Lazer", "Contas": "Contas", "Compras": "Compras", "Saúde": "Saúde", "Outros": "Outros" },
+      cats: { "Alimentação": "🍔 Alimentação", "Transporte": "🚗 Transporte", "Mercado": "🛒 Mercado", "Lazer": "🎉 Lazer", "Contas": "🧾 Contas", "Compras": "🛍️ Compras", "Saúde": "🩺 Saúde", "Assinaturas": "📺 Assinaturas", "Educação": "📚 Educação", "Viagem": "✈️ Viagem", "Casa": "🏠 Casa", "Beleza": "💅 Beleza", "Pets": "🐾 Pets", "Outros": "📦 Outros" },
     },
     en: {
-      eyebrow: "YOUR MONEY, NO NONSENSE", title: "Algent",
+      eyebrow: "", title: "Algent",
       sub: 'Just type it, like "spent 15 on uber". The app logs and sorts it.',
       inputPh: "what did you spend on?", add: "Add", parsingTxt: "AI reading...",
       totalLabel: "TOTAL SPENT", fixedTitle: "MONTHLY FIXED", fixedPh: "e.g. gym 30 day 15", addFixed: "+ Fixed",
@@ -539,7 +541,7 @@
       cancelNothing: "I couldn't find an active subscription to cancel here.",
       cancelErr: "I couldn't cancel right now. Try again in a moment?",
       legalPrivacy: "Privacy", legalTerms: "Terms",
-      cats: { "Alimentação": "Food", "Transporte": "Transport", "Mercado": "Groceries", "Lazer": "Leisure", "Contas": "Bills", "Compras": "Shopping", "Saúde": "Health", "Outros": "Other" },
+      cats: { "Alimentação": "🍔 Food", "Transporte": "🚗 Transport", "Mercado": "🛒 Groceries", "Lazer": "🎉 Leisure", "Contas": "🧾 Bills", "Compras": "🛍️ Shopping", "Saúde": "🩺 Health", "Assinaturas": "📺 Subscriptions", "Educação": "📚 Education", "Viagem": "✈️ Travel", "Casa": "🏠 Home", "Beleza": "💅 Beauty", "Pets": "🐾 Pets", "Outros": "📦 Other" },
     },
   };
 
