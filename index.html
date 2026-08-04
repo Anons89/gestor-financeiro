@@ -89,6 +89,19 @@
   .dot { width: 8px; height: 8px; border-radius: 999px; flex-shrink: 0; }
   .item .desc { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .item .cat { font-size: 11px; color: #8A8A9A; }
+  .item .cat-edit { font-size: 11px; color: #8A8A9A; background: none; border: none; padding: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-family: inherit; }
+  .item .cat-edit .pen { opacity: 0.55; font-size: 10px; }
+  .item .cat-edit:active { color: var(--ink); }
+  /* Modal pra trocar a categoria */
+  .cat-picker { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .cat-picker.hidden { display: none; }
+  .cat-picker-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.6); }
+  .cat-picker-panel { position: relative; width: 100%; max-width: 320px; background: var(--panel); border: 1px solid var(--border); border-radius: 18px; padding: 18px; }
+  .cat-picker-title { font-size: 13px; color: var(--muted); font-weight: 700; margin-bottom: 12px; text-align: center; }
+  .cat-picker-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .cat-opt { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px; background: var(--bg); border: 1px solid var(--border); color: var(--cream); font-size: 13px; font-weight: 600; cursor: pointer; text-align: left; font-family: inherit; }
+  .cat-opt:active { background: var(--border); }
+  .cat-opt .dot { width: 10px; height: 10px; border-radius: 4px; flex-shrink: 0; }
   .item .right { display: flex; align-items: center; gap: 12px; }
   .item .amount { font-weight: 700; color: var(--ink); }
   .del { background: none; border: none; color: #B4B4C2; cursor: pointer; font-size: 13px; }
@@ -172,6 +185,13 @@
   .auth-divider { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 12px; margin: 4px 0; }
   .auth-divider::before, .auth-divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
   .forgot-link { background: none; border: none; color: var(--muted); font-size: 12px; cursor: pointer; text-decoration: underline; padding: 4px; }
+  .auth-title { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; text-align: left; margin: 8px 0 2px; }
+  .auth-switch { text-align: left; font-size: 14px; color: var(--muted); margin-bottom: 8px; }
+  .auth-switch-link { background: none; border: none; color: var(--accent); font-size: 14px; font-weight: 700; cursor: pointer; padding: 0; text-decoration: none; }
+  .auth-email-btn { width: 100%; padding: 14px 18px; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; color: #fff; border: none; background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+  .auth-fields { display: none; flex-direction: column; gap: 12px; }
+  .auth-legal { font-size: 12px; color: var(--muted); line-height: 1.5; margin-top: 4px; text-align: left; }
+  .auth-legal a { color: var(--muted); text-decoration: underline; }
 
   .logout-wrap { text-align: center; margin-top: 20px; }
   .logout-btn { background: none; border: none; color: var(--muted); font-size: 12px; cursor: pointer; text-decoration: underline; padding: 6px; }
@@ -193,8 +213,10 @@
   .chart-toggle { display: inline-flex; background: var(--bg); border: 1px solid var(--border); border-radius: 999px; padding: 3px; gap: 2px; }
   .chart-tab { border: none; background: none; color: var(--muted); font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 999px; cursor: pointer; transition: background .15s, color .15s; }
   .chart-tab.active { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; }
-  .chart-body { display: flex; justify-content: center; align-items: center; min-height: 180px; }
+  .chart-body { display: flex; justify-content: center; align-items: center; min-height: 150px; }
   .chart-body svg { max-width: 100%; height: auto; overflow: visible; }
+  .chart-body.is-pie svg { max-width: 188px; }
+  .chart-body.is-bar svg { max-width: 320px; }
   .bar-track { fill: var(--bg); }
   .chart-legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 16px; }
   .legend-item { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--cream); }
@@ -204,6 +226,14 @@
   .pie-center-label { fill: var(--muted); }
   .bar-label { fill: var(--cream); font-size: 12px; }
   .bar-value { fill: var(--muted); font-size: 11px; }
+
+  /* ---- Blocos móveis (subir/descer) ---- */
+  .block-head { display: flex; align-items: center; gap: 8px; }
+  .head-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .mover { display: inline-flex; gap: 3px; flex-shrink: 0; }
+  .mv-btn { background: var(--bg); border: 1px solid var(--border); color: var(--muted); width: 22px; height: 22px; border-radius: 6px; font-size: 9px; line-height: 1; cursor: pointer; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
+  .mv-btn:active { background: var(--border); }
+  .mv-btn:disabled { opacity: 0.28; cursor: default; }
 </style>
 </head>
 <body>
@@ -211,7 +241,8 @@
     <div class="auth-card">
       <svg class="auth-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#000000"/><rect x="22" y="23" width="56" height="50" rx="7" fill="none" stroke="#FFFFFF" stroke-width="5"/><circle cx="45" cy="48" r="12" fill="none" stroke="#FFFFFF" stroke-width="5"/><circle cx="45" cy="48" r="2.6" fill="#FFFFFF"/><line x1="45" y1="48" x2="45" y2="39" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/><line x1="66" y1="41" x2="66" y2="55" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/><line x1="30" y1="73" x2="30" y2="79" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/><line x1="70" y1="73" x2="70" y2="79" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/></svg>
       <div class="auth-brand brand-grad">Algent</div>
-      <div class="auth-tag" id="authTag"></div>
+      <h2 class="auth-title" id="authTitle"></h2>
+      <div class="auth-switch" id="authSwitch"><span id="authSwitchText"></span> <button class="auth-switch-link" id="authToggle"></button></div>
 
       <button class="oauth-btn oauth-google" id="googleBtn">
         <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.28-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
@@ -220,16 +251,22 @@
 
       <div class="auth-divider"><span id="authOr"></span></div>
 
-      <input id="authEmail" type="email" autocomplete="email" />
-      <input id="authPass" type="password" autocomplete="current-password" />
-      <button class="primary auth-btn" id="authLoginBtn"></button>
-      <button class="auth-btn2" id="authSignupBtn"></button>
-      <button class="forgot-link" id="forgotBtn">Esqueci minha senha</button>
+      <button class="auth-email-btn" id="emailToggleBtn"></button>
+
+      <div class="auth-fields" id="emailFields">
+        <input id="authEmail" type="email" autocomplete="email" />
+        <input id="authPass" type="password" autocomplete="current-password" />
+        <button class="primary auth-btn" id="authLoginBtn"></button>
+        <button class="forgot-link" id="forgotBtn"></button>
+      </div>
+
       <div class="auth-msg" id="authMsg"></div>
-      <div class="legal-links" style="margin-top:16px">
-        <a href="/privacy.html" class="js-legal-priv" target="_blank" rel="noopener"></a>
-        <span>·</span>
+
+      <div class="auth-legal" id="authLegal">
+        <span id="authLegalPre"></span>
         <a href="/terms.html" class="js-legal-terms" target="_blank" rel="noopener"></a>
+        <span id="authLegalAnd"></span>
+        <a href="/privacy.html" class="js-legal-priv" target="_blank" rel="noopener"></a>.
       </div>
     </div>
   </div>
@@ -272,17 +309,25 @@
 
     <div class="chips" id="chips"></div>
 
-    <div class="summary">
-      <div class="label mono" id="totalLabel"></div>
+    <div id="movableZone">
+
+    <div class="summary" data-block="total">
+      <div class="block-head">
+        <span class="mover"><button class="mv-btn mv-up" aria-label="up">▲</button><button class="mv-btn mv-down" aria-label="down">▼</button></span>
+        <div class="label mono" id="totalLabel"></div>
+      </div>
       <div class="total mono" id="total">£0.00</div>
       <div class="note" id="note"></div>
       <div class="compare" id="compare"></div>
       <div class="othercur" id="othercur"></div>
     </div>
 
-    <div class="chart-card" id="chartCard" style="display:none">
+    <div class="chart-card" id="chartCard" data-block="chart" style="display:none">
       <div class="chart-head">
-        <div class="chart-title" id="chartTitle"></div>
+        <div class="head-left">
+          <span class="mover"><button class="mv-btn mv-up" aria-label="up">▲</button><button class="mv-btn mv-down" aria-label="down">▼</button></span>
+          <div class="chart-title" id="chartTitle"></div>
+        </div>
         <div class="chart-toggle">
           <button class="chart-tab" id="chartTabBar" data-type="bar"></button>
           <button class="chart-tab" id="chartTabPie" data-type="pie"></button>
@@ -292,9 +337,12 @@
       <div class="chart-legend" id="chartLegend"></div>
     </div>
 
-    <div class="fixed">
+    <div class="fixed" data-block="fixed">
       <div class="fixed-top">
-        <span class="fixed-title mono" id="fixedTitleEl"></span>
+        <div class="head-left">
+          <span class="mover"><button class="mv-btn mv-up" aria-label="up">▲</button><button class="mv-btn mv-down" aria-label="down">▼</button></span>
+          <span class="fixed-title mono" id="fixedTitleEl"></span>
+        </div>
         <span class="fixed-total mono" id="fixedTotal">£0.00</span>
       </div>
       <div class="fixed-sub" id="fixedSub"></div>
@@ -304,6 +352,8 @@
       </div>
       <div id="fixedList" class="fixed-list"></div>
     </div>
+
+    </div><!-- /movableZone -->
 
     <div class="receipt">
       <div class="head mono" id="receiptHead"></div>
@@ -358,6 +408,14 @@
     </div>
   </div>
 
+  <div id="catPicker" class="cat-picker hidden">
+    <div class="cat-picker-backdrop" id="catPickerBackdrop"></div>
+    <div class="cat-picker-panel">
+      <div class="cat-picker-title" id="catPickerTitle"></div>
+      <div class="cat-picker-list" id="catPickerList"></div>
+    </div>
+  </div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   // ---- Cores das categorias (a CHAVE em português é o "id" interno; o texto exibido é traduzido) ----
@@ -381,6 +439,7 @@
       perMonth: "/mês", remaining: "Falta sair esse mês:", allPaid: "Tudo pago esse mês ✅",
       biggest: "Maior peso:", heavy: "Tá pesando bastante, hein.", ok: "Sob controle por enquanto.",
       chartTitle: "Para onde vai seu dinheiro", chartBar: "Barras", chartPie: "Pizza",
+      pickCat: "Escolha a categoria",
       dueDay: "cai dia", today: "Hoje", yesterday: "Ontem",
       weekdays: ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"],
       editChips: "editar", addChipPh: "novo atalho", okBtn: "ok",
@@ -396,6 +455,11 @@
       detectCur: "moeda daqui", otherCur: "Outras moedas:", localCur: "Moeda local",
       authTag: "Entra ou cria sua conta pra começar.", emailPh: "seu email", passPh: "sua senha",
       google: "Continuar com Google", apple: "Continuar com Apple", authOr: "ou",
+      authTitleUp: "Criar conta", authTitleIn: "Entrar",
+      haveAccount: "Já tem conta?", noAccount: "Não tem conta?", linkIn: "Entrar", linkUp: "Criar conta",
+      googleUp: "Criar conta com Google", googleIn: "Entrar com Google",
+      emailUp: "Criar conta com email", emailIn: "Entrar com email",
+      legalPre: "Ao continuar, você aceita os", legalAnd: "e a",
       forgot: "Esqueci minha senha", typeEmailFirst: "Escreve seu email no campo acima primeiro, aí toca aqui.",
       resetSent: "Pronto! Mandei um link pro seu email pra você criar uma senha nova.",
       setNewPw: "Escolhe uma senha nova e salva.", saveNewPw: "Salvar nova senha",
@@ -432,6 +496,7 @@
       perMonth: "/mth", remaining: "Left to pay this month:", allPaid: "All paid this month ✅",
       biggest: "Biggest chunk:", heavy: "That's weighing a lot.", ok: "Under control for now.",
       chartTitle: "Where your money goes", chartBar: "Bars", chartPie: "Pie",
+      pickCat: "Pick the category",
       dueDay: "due day", today: "Today", yesterday: "Yesterday",
       weekdays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
       editChips: "edit", addChipPh: "new shortcut", okBtn: "done",
@@ -447,6 +512,11 @@
       detectCur: "currency here", otherCur: "Other currencies:", localCur: "Local currency",
       authTag: "Sign in or create your account to start.", emailPh: "your email", passPh: "your password",
       google: "Continue with Google", apple: "Continue with Apple", authOr: "or",
+      authTitleUp: "Sign up", authTitleIn: "Sign in",
+      haveAccount: "Already have an account?", noAccount: "Don't have an account?", linkIn: "Sign in", linkUp: "Sign up",
+      googleUp: "Sign up with Google", googleIn: "Sign in with Google",
+      emailUp: "Sign up with email", emailIn: "Sign in with email",
+      legalPre: "By continuing, you accept the", legalAnd: "and the",
       forgot: "Forgotten your password?", typeEmailFirst: "Pop your email in the box above first, then tap here.",
       resetSent: "Done — I've sent a link to your email so you can set a new password.",
       setNewPw: "Choose a new password and save.", saveNewPw: "Save new password",
@@ -546,6 +616,22 @@
   let coachMessages = loadCoachMsgs();
   let coachThinking = false;
 
+  // ---- Categorias que a pessoa ensinou (a IA aprende e reusa) ----
+  function loadLearned() { try { return JSON.parse(localStorage.getItem("learned_cats") || "{}"); } catch (e) { return {}; } }
+  function saveLearned() { try { localStorage.setItem("learned_cats", JSON.stringify(learnedCats)); } catch (e) {} queueSettingsSave(); }
+  let learnedCats = loadLearned();
+  // "normaliza" um texto pra virar chave (minúsculo, sem pontuação/moeda)
+  function catKey(s) { return (s || "").toLowerCase().trim().replace(/[£$€.,!?]/g, "").replace(/\s+/g, " ").trim(); }
+  // Se a pessoa já ensinou a categoria dessa palavra/descrição, devolve ela
+  function learnedCategoryFor(text, desc) {
+    if (!learnedCats) return null;
+    const dk = catKey(desc);
+    if (dk && learnedCats[dk] && CATEGORIES[learnedCats[dk]]) return learnedCats[dk];
+    const words = catKey(text).split(" ").filter(w => w.length >= 3);
+    for (const w of words) { if (learnedCats[w] && CATEGORIES[learnedCats[w]]) return learnedCats[w]; }
+    return null;
+  }
+
   // ---- Ações: gastos do dia ----
   async function addExpense(msg) {
     const text = (msg !== undefined ? msg : input.value).trim();
@@ -553,6 +639,9 @@
     const btn = document.getElementById("addBtn");
     btn.disabled = true; btn.textContent = t("parsingTxt");
     const parsed = await parse(text);
+    // Se a pessoa já ensinou a categoria dessa palavra, a IA respeita a escolha dela
+    const learned = learnedCategoryFor(text, parsed.description);
+    if (learned) parsed.category = learned;
     const obj = { date: new Date().toISOString(), cur: curCurrency, ...parsed };
     if (sbClient) {
       // salva na nuvem, na conta da pessoa, e usa a linha que o banco devolve (com o id de verdade)
@@ -574,6 +663,45 @@
   async function removeExpense(id) {
     if (sbClient) { await cloudDeleteExpense(id); }
     expenses = expenses.filter(e => e.id !== id); save(); render();
+  }
+  // Atualiza a categoria de um gasto na nuvem
+  async function cloudUpdateExpenseCategory(id, cat) {
+    if (!sbClient) return;
+    try { await sbClient.from("expenses").update({ category: cat }).eq("id", id); } catch (e) {}
+  }
+  // A pessoa escolheu outra categoria: troca no gasto E ensina a IA pra próxima vez
+  async function changeCategory(id, cat) {
+    const e = expenses.find(x => x.id === id);
+    if (!e || !CATEGORIES[cat]) return;
+    e.category = cat;
+    const k = catKey(e.description);
+    if (k) learnedCats[k] = cat;                 // ensina pela descrição inteira
+    const w = k.split(" ").filter(x => x.length >= 3)[0];
+    if (w) learnedCats[w] = cat;                 // e pela palavra principal
+    saveLearned();
+    save();
+    if (sbClient) { await cloudUpdateExpenseCategory(id, cat); }
+    closeCatPicker();
+    render();
+  }
+  // Abre o modal com as 8 categorias pra pessoa escolher
+  let catPickerTarget = null;
+  function openCatPicker(id) {
+    catPickerTarget = id;
+    const list = document.getElementById("catPickerList");
+    if (list) {
+      list.innerHTML = Object.keys(CATEGORIES).map(c =>
+        '<button class="cat-opt" onclick="changeCategory(' + id + ',\'' + c + '\')">' +
+          '<span class="dot" style="background:' + CATEGORIES[c] + '"></span>' + catLabel(c) +
+        '</button>'
+      ).join("");
+    }
+    const ti = document.getElementById("catPickerTitle"); if (ti) ti.textContent = t("pickCat");
+    const p = document.getElementById("catPicker"); if (p) p.classList.remove("hidden");
+  }
+  function closeCatPicker() {
+    catPickerTarget = null;
+    const p = document.getElementById("catPicker"); if (p) p.classList.add("hidden");
   }
 
   // ---- Ações: atalhos ----
@@ -749,7 +877,7 @@
           '<span class="dot" style="background:' + CATEGORIES[e.category] + '"></span>' +
           '<div style="min-width:0">' +
             '<div class="desc">' + esc(e.description) + '</div>' +
-            '<div class="cat">' + catLabel(e.category) + '</div>' +
+            '<button class="cat-edit" onclick="openCatPicker(' + e.id + ')">' + catLabel(e.category) + '<span class="pen">✎</span></button>' +
           '</div>' +
         '</div>' +
         '<div class="right">' +
@@ -787,7 +915,7 @@
 
   // Desenha o gráfico de BARRAS (cada barra proporcional à maior)
   function barSVG(rows, total) {
-    const W = 300, rowH = 44, padTop = 2;
+    const W = 300, rowH = 36, padTop = 2;
     const maxVal = rows[0].val || 1;
     const H = padTop + rows.length * rowH;
     let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" role="img">';
@@ -847,7 +975,9 @@
     const barBtn = document.getElementById("chartTabBar"), pieBtn = document.getElementById("chartTabPie");
     if (barBtn) { barBtn.textContent = t("chartBar"); barBtn.classList.toggle("active", chartType === "bar"); }
     if (pieBtn) { pieBtn.textContent = t("chartPie"); pieBtn.classList.toggle("active", chartType === "pie"); }
-    document.getElementById("chartBody").innerHTML = chartType === "pie" ? pieSVG(d.rows, d.total) : barSVG(d.rows, d.total);
+    const bodyEl = document.getElementById("chartBody");
+    bodyEl.className = "chart-body " + (chartType === "pie" ? "is-pie" : "is-bar");
+    bodyEl.innerHTML = chartType === "pie" ? pieSVG(d.rows, d.total) : barSVG(d.rows, d.total);
     document.getElementById("chartLegend").innerHTML = chartLegendHTML(d.rows, d.total);
   }
 
@@ -855,6 +985,46 @@
     chartType = tp;
     try { localStorage.setItem("chart_type", tp); } catch (e) {}
     renderChart();
+  }
+
+  // ---- BLOCOS MÓVEIS: subir/descer TOTAL, GRÁFICO e FIXOS ----
+  const BLOCK_ORDER_KEY = "blocks_order_v1";
+  const DEFAULT_BLOCK_ORDER = ["total", "chart", "fixed"];
+  function getBlockOrder() {
+    try {
+      const raw = localStorage.getItem(BLOCK_ORDER_KEY);
+      if (raw) { const a = JSON.parse(raw); if (Array.isArray(a) && a.length === 3 && a.every(x => DEFAULT_BLOCK_ORDER.indexOf(x) !== -1)) return a; }
+    } catch (e) {}
+    return DEFAULT_BLOCK_ORDER.slice();
+  }
+  function updateMoverButtons() {
+    const zone = document.getElementById("movableZone");
+    if (!zone) return;
+    const blocks = Array.from(zone.querySelectorAll("[data-block]"));
+    blocks.forEach((el, i) => {
+      const up = el.querySelector(".mv-up"), dn = el.querySelector(".mv-down");
+      if (up) up.disabled = (i === 0);
+      if (dn) dn.disabled = (i === blocks.length - 1);
+    });
+  }
+  function applyBlockOrder() {
+    const zone = document.getElementById("movableZone");
+    if (!zone) return;
+    getBlockOrder().forEach(id => {
+      const el = zone.querySelector('[data-block="' + id + '"]');
+      if (el) zone.appendChild(el); // move pro fim, na ordem salva
+    });
+    updateMoverButtons();
+  }
+  function moveBlock(id, dir) {
+    const order = getBlockOrder();
+    const i = order.indexOf(id);
+    if (i === -1) return;
+    const j = i + dir;
+    if (j < 0 || j >= order.length) return;
+    const tmp = order[i]; order[i] = order[j]; order[j] = tmp;
+    try { localStorage.setItem(BLOCK_ORDER_KEY, JSON.stringify(order)); } catch (e) {}
+    applyBlockOrder();
   }
 
   // ---- Desenha os fixos ----
@@ -1053,6 +1223,11 @@
   const _ctBar = document.getElementById("chartTabBar"); if (_ctBar) _ctBar.onclick = () => setChartType("bar");
   const _ctPie = document.getElementById("chartTabPie"); if (_ctPie) _ctPie.onclick = () => setChartType("pie");
 
+  document.querySelectorAll(".mv-up").forEach(b => b.onclick = () => { const el = b.closest("[data-block]"); if (el) moveBlock(el.getAttribute("data-block"), -1); });
+  document.querySelectorAll(".mv-down").forEach(b => b.onclick = () => { const el = b.closest("[data-block]"); if (el) moveBlock(el.getAttribute("data-block"), 1); });
+  applyBlockOrder();
+  const _catBackdrop = document.getElementById("catPickerBackdrop"); if (_catBackdrop) _catBackdrop.onclick = closeCatPicker;
+
   // ---- Coach wiring ----
   document.getElementById("coachSend").onclick = () => askCoach();
   document.getElementById("coachInput").addEventListener("keydown", e => { if (e.key === "Enter") askCoach(); });
@@ -1151,7 +1326,10 @@
 
   const authScreen = document.getElementById("authScreen");
   function showApp() { authScreen.classList.add("hidden"); syncCloud(); gate(); }
-  function showLogin() { authScreen.classList.remove("hidden"); }
+  function showLogin() {
+    authScreen.classList.remove("hidden");
+    if (!recoveryMode) { authMode = "signup"; emailOpen = false; setAuthMsg("", ""); renderAuth(); }
+  }
 
   // ---- TRAVA DE ASSINANTE (paywall) ----
   // "Tem acesso" = está no teste grátis (trialing) ou pagando (active). Qualquer outra coisa = trava.
@@ -1253,7 +1431,8 @@
       quickchips: quickChips,
       coach_profile: coachProfile,
       home_currency: homeCurrency,
-      cur_currency: curCurrency
+      cur_currency: curCurrency,
+      learned_cats: learnedCats
     };
   }
   async function cloudSaveSettings() {
@@ -1302,6 +1481,11 @@
     if (r.coach_profile && typeof r.coach_profile === "object" && Object.keys(r.coach_profile).length) { coachProfile = r.coach_profile; saveProfile(); }
     if (r.home_currency && CURRENCIES[r.home_currency]) homeCurrency = r.home_currency;
     if (r.cur_currency && CURRENCIES[r.cur_currency]) { curCurrency = r.cur_currency; try { localStorage.setItem("cur_currency", curCurrency); } catch (e) {} }
+    // CATEGORIAS ENSINADAS: junta nuvem + aparelho (o que está no aparelho tem preferência)
+    if (r.learned_cats && typeof r.learned_cats === "object") {
+      learnedCats = Object.assign({}, r.learned_cats, learnedCats);
+      try { localStorage.setItem("learned_cats", JSON.stringify(learnedCats)); } catch (e) {}
+    }
     applyingRemote = false;
     // devolve a versão JUNTA pra nuvem, pra ela ficar sempre com o conjunto completo
     await cloudSaveSettings();
@@ -1312,13 +1496,31 @@
     m.textContent = text || "";
     m.className = "auth-msg" + (kind ? " " + kind : "");
   }
+  // ---- TELA DE LOGIN: modo (criar conta / entrar) e formulário que abre ao clicar ----
+  let authMode = "signup"; // pessoas novas veem "Criar conta" primeiro
+  let emailOpen = false;
+  function renderAuth() {
+    if (recoveryMode) return; // na recuperação de senha, a tela é controlada à parte
+    const up = authMode === "signup";
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    set("authTitle", up ? t("authTitleUp") : t("authTitleIn"));
+    set("authSwitchText", up ? t("haveAccount") : t("noAccount"));
+    set("authToggle", up ? t("linkIn") : t("linkUp"));
+    set("googleTxt", up ? t("googleUp") : t("googleIn"));
+    set("emailToggleBtn", up ? t("emailUp") : t("emailIn"));
+    set("authLoginBtn", up ? t("signup") : t("login"));
+    set("authLegalPre", t("legalPre"));
+    set("authLegalAnd", t("legalAnd"));
+    const fields = document.getElementById("emailFields"); if (fields) fields.style.display = emailOpen ? "flex" : "none";
+    const eb = document.getElementById("emailToggleBtn"); if (eb) eb.style.display = emailOpen ? "none" : "block";
+    const fg = document.getElementById("forgotBtn"); if (fg) fg.style.display = (!up && emailOpen) ? "block" : "none";
+  }
+  function openEmailForm() { emailOpen = true; renderAuth(); setTimeout(() => { const e = document.getElementById("authEmail"); if (e) e.focus(); }, 40); }
+  function toggleAuthMode() { authMode = (authMode === "signup") ? "signin" : "signup"; setAuthMsg("", ""); renderAuth(); }
+
   function applyAuthTexts() {
-    document.getElementById("authTag").textContent = t("authTag");
     document.getElementById("authEmail").placeholder = t("emailPh");
     document.getElementById("authPass").placeholder = t("passPh");
-    document.getElementById("authLoginBtn").textContent = t("login");
-    document.getElementById("authSignupBtn").textContent = t("signup");
-    const gt = document.getElementById("googleTxt"); if (gt) gt.textContent = t("google");
     const ao = document.getElementById("authOr"); if (ao) ao.textContent = t("authOr");
     const fg = document.getElementById("forgotBtn"); if (fg) fg.textContent = t("forgot");
     const lo = document.getElementById("logoutBtn"); if (lo) lo.textContent = t("logout");
@@ -1328,6 +1530,7 @@
     const cs = document.getElementById("cancelSubBtn"); if (cs && !cs.disabled) cs.textContent = t("cancelSub");
     document.querySelectorAll(".js-legal-priv").forEach(a => { a.textContent = t("legalPrivacy"); });
     document.querySelectorAll(".js-legal-terms").forEach(a => { a.textContent = t("legalTerms"); });
+    renderAuth();
   }
   async function doLogin() {
     const email = document.getElementById("authEmail").value.trim();
@@ -1471,13 +1674,15 @@
   function enterRecoveryMode() {
     recoveryMode = true;
     showLogin();
-    ["googleBtn", "authEmail", "authSignupBtn", "forgotBtn"].forEach(id => {
+    emailOpen = true;
+    ["googleBtn", "emailToggleBtn", "authSwitch", "authEmail", "forgotBtn", "authLegal"].forEach(id => {
       const el = document.getElementById(id); if (el) el.style.display = "none";
     });
     const div = document.querySelector(".auth-divider"); if (div) div.style.display = "none";
-    document.getElementById("authTag").textContent = t("setNewPw");
+    const ff = document.getElementById("emailFields"); if (ff) ff.style.display = "flex";
+    const title = document.getElementById("authTitle"); if (title) title.textContent = t("setNewPw");
     document.getElementById("authPass").value = "";
-    document.getElementById("authLoginBtn").textContent = t("saveNewPw");
+    const lb = document.getElementById("authLoginBtn"); if (lb) { lb.textContent = t("saveNewPw"); lb.style.display = "block"; }
     setAuthMsg("", "");
   }
   async function saveNewPassword() {
@@ -1494,7 +1699,10 @@
       showApp();
     } catch (e) { setAuthMsg(t("genericErr"), "err"); }
   }
-  function doLoginOrRecover() { return recoveryMode ? saveNewPassword() : doLogin(); }
+  function doLoginOrRecover() {
+    if (recoveryMode) return saveNewPassword();
+    return (authMode === "signup") ? doSignup() : doLogin();
+  }
   if (sbClient) {
     try {
       sbClient.auth.onAuthStateChange((evt) => { if (evt === "PASSWORD_RECOVERY") enterRecoveryMode(); });
@@ -1502,12 +1710,13 @@
   }
 
   document.getElementById("authLoginBtn").onclick = doLoginOrRecover;
-  document.getElementById("authSignupBtn").onclick = doSignup;
+  const _emailToggle = document.getElementById("emailToggleBtn"); if (_emailToggle) _emailToggle.onclick = openEmailForm;
+  const _authToggle = document.getElementById("authToggle"); if (_authToggle) _authToggle.onclick = toggleAuthMode;
   const _forgotBtn = document.getElementById("forgotBtn"); if (_forgotBtn) _forgotBtn.onclick = doForgot;
   const _gBtn = document.getElementById("googleBtn"); if (_gBtn) _gBtn.onclick = () => oauth("google");
   const _payBtn = document.getElementById("payBtn"); if (_payBtn) _payBtn.onclick = startCheckout;
   const _payLogout = document.getElementById("payLogout"); if (_payLogout) _payLogout.onclick = doLogout;
-  document.getElementById("authPass").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+  document.getElementById("authPass").addEventListener("keydown", e => { if (e.key === "Enter") doLoginOrRecover(); });
   document.getElementById("authEmail").addEventListener("keydown", e => { if (e.key === "Enter") document.getElementById("authPass").focus(); });
   const _logoutBtn = document.getElementById("logoutBtn");
   if (_logoutBtn) _logoutBtn.onclick = doLogout;
