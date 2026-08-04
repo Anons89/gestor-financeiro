@@ -3,7 +3,7 @@
 // Ele é o único que conhece a chave (que vem do cofre: process.env.NVIDIA_API_KEY).
 // O celular manda o texto pra cá, o porteiro fala com a NVIDIA e devolve só a resposta.
 
-const CATS = ["Alimentação", "Transporte", "Mercado", "Lazer", "Contas", "Compras", "Saúde", "Outros"];
+const CATS = ["Alimentação", "Transporte", "Mercado", "Lazer", "Contas", "Compras", "Saúde", "Assinaturas", "Educação", "Viagem", "Casa", "Beleza", "Pets", "Outros"];
 
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") {
@@ -22,10 +22,16 @@ exports.handler = async (event) => {
       'Mercado (groceries/supermarket): Tesco, Sainsbury\'s, Asda, Aldi, Lidl, Morrisons, Waitrose, Iceland, Co-op, Ocado, M&S Food, Gopuff. ' +
       'Transporte (transport): Uber, Bolt, TfL, Oyster, train, Trainline, bus, tube, petrol, fuel, Lime. ' +
       'Alimentação (eating/food out): Pret, Greggs, McDonald\'s, KFC, Nando\'s, Burger King, Subway, Costa, Starbucks, Caffe Nero, Deliveroo, Just Eat, Domino\'s, Wagamama, restaurant, coffee, lunch, takeaway. ' +
-      'Lazer (leisure/fun): Netflix, Spotify, Cineworld, Vue, Odeon, cinema, pub, bar, club, concert, gig, games, Steam, PlayStation, Xbox. ' +
+      'Lazer (leisure/fun): Cineworld, Vue, Odeon, cinema, pub, bar, club, concert, gig, games, Steam, PlayStation, Xbox, bowling. ' +
       'Contas (bills): council tax, rent, electricity, water, internet, phone, Vodafone, EE, O2, Three, British Gas, Octopus, Sky, BT, Virgin Media. ' +
       'Compras (shopping): Amazon, Primark, ASOS, Zara, H&M, Next, Argos, Shein, eBay, John Lewis, clothes, shoes, trainers. ' +
       'Saúde (health): Boots, Superdrug, pharmacy, gym, PureGym, The Gym, dentist, doctor, medicine. ' +
+      'Assinaturas (subscriptions): Netflix, Spotify, Disney+, Amazon Prime, YouTube Premium, Apple, iCloud, Google One, ChatGPT, Canva, subscription. ' +
+      'Educação (education): Udemy, Coursera, Duolingo, course, tuition, university, school, textbook, study. ' +
+      'Viagem (travel): flight, Ryanair, easyJet, British Airways, hotel, Airbnb, Booking, Expedia, holiday, trip. ' +
+      'Casa (home): IKEA, furniture, B&Q, Homebase, Dunelm, decor, household, cleaning supplies. ' +
+      'Beleza (beauty/care): barber, haircut, salon, Sephora, makeup, cosmetics, skincare, nails, spa. ' +
+      'Pets: vet, Pets at Home, pet food, dog, cat, pet. ' +
       'Only use Outros if it truly fits nothing above. ' +
       'The "description" is a short label (e.g. "Tesco", "Uber", "Netflix"). ' +
       'Message: "' + text + '"';
