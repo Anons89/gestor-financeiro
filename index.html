@@ -6,6 +6,9 @@
 <title>Algent</title>
 
 <meta name="theme-color" content="#0A0B12" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="Algent" />
@@ -34,8 +37,9 @@
   .app { width: 100%; max-width: 440px; padding-bottom: calc(78px + env(safe-area-inset-bottom)); }
 
   /* ===== topbar ===== */
-  .topbar { display: flex; align-items: baseline; gap: 10px; padding-bottom: 2px; }
+  .topbar { display: flex; align-items: baseline; gap: 10px; padding: 2px 0 0; margin-bottom: 16px; }
   .topbar .eyebrow { font-size: 11px; }
+  .topbar h1 { font-family: "Space Grotesk", -apple-system, sans-serif; font-size: 31px; font-weight: 700; letter-spacing: -0.035em; margin-top: 0; }
 
   /* ===== telas (abas) ===== */
   .screen { display: none; animation: fadeScreen .22s ease; }
@@ -59,13 +63,16 @@
   .plan-3 { font-size: 12.5px; opacity: 0.85; font-weight: 600; }
   .set-group { margin-bottom: 16px; }
   .glabel { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; padding: 0 4px 8px; }
-  .set-list { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+  .set-list { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; overflow: visible; }
   .set-item { display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-bottom: 1px solid var(--border); }
   .set-item:last-child { border-bottom: none; }
+  button.set-item { width: 100%; background: none; border-left: none; border-right: none; border-top: none; font-family: inherit; font-size: inherit; cursor: pointer; text-align: left; color: var(--cream); }
+  .set-item .chev { color: var(--muted); font-size: 19px; line-height: 1; }
+  .set-item.danger .lbl { color: #F87171; }
+  .set-item:disabled { opacity: 0.55; }
   .set-item .ic { width: 32px; height: 32px; border-radius: 9px; background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
   .set-item .lbl { flex: 1; font-weight: 600; font-size: 15px; color: var(--cream); }
   .set-item .curbar { margin: 0; }
-  .account-btns { display: flex; flex-direction: column; gap: 10px; }
   .set-foot { text-align: center; font-size: 12px; color: var(--muted); padding: 12px 0 4px; }
   .analysis-card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 16px; margin-top: 14px; }
   .analysis-title { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 10px; }
@@ -102,7 +109,7 @@
   /* ============ TEMA CLARO ============ */
   [data-theme="light"] {
     --bg: #EEF3F0; --panel: #FFFFFF; --border: #E3EBE6; --cream: #0D1A13;
-    --muted: #5D6F66; --spent: #0B8153; --accent: #0F9D63; --accent-2: #22C17D; --accent-3: #0FA88F;
+    --muted: #5D6F66; --spent: #34C77B; --accent: #34C77B; --accent-2: #4ADE80; --accent-3: #38E0C8;
   }
   [data-theme="light"] body { background: var(--bg); }
   [data-theme="light"] .msg.user { color: #FFFFFF; }
@@ -152,7 +159,7 @@
   .fixed-item.paid .fx-name, .fixed-item.paid .fx-amount { text-decoration: line-through; opacity: 0.5; }
 
   .summary { margin-top: 22px; border-radius: 16px; padding: 20px; background: linear-gradient(155deg, rgba(74,222,128,0.12), rgba(56,224,200,0.06) 55%, var(--panel) 100%); border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.12); }
-  .summary.hero { margin-top: 4px; background: linear-gradient(160deg, var(--accent), #0B8153); border: none; color: #FFFFFF; position: relative; overflow: hidden; box-shadow: 0 12px 34px rgba(15,157,99,0.35); }
+  .summary.hero { margin-top: 0; background: linear-gradient(160deg, var(--accent), #0B8153); border: none; color: #FFFFFF; position: relative; overflow: hidden; box-shadow: 0 12px 34px rgba(15,157,99,0.35); }
   .summary.hero::after { content: ""; position: absolute; right: -40px; top: -40px; width: 170px; height: 170px; border-radius: 50%; background: rgba(255,255,255,0.12); }
   .summary.hero .label { color: rgba(255,255,255,0.9); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
   .summary.hero .total { color: #FFFFFF; font-size: 42px; }
@@ -232,7 +239,7 @@
   .curbar { position: relative; display: inline-block; }
   .cur-toggle { padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 700; background: var(--panel); color: var(--cream); border: 1px solid var(--border); cursor: pointer; }
   .caret { color: var(--muted); font-size: 12px; }
-  .cur-menu { position: absolute; top: calc(100% + 6px); right: 0; left: auto; z-index: 40; min-width: 170px; max-height: 60vh; overflow-y: auto; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 6px; box-shadow: 0 12px 30px rgba(0,0,0,0.55); display: none; }
+  .cur-menu { position: absolute; top: calc(100% + 6px); right: 0; left: auto; z-index: 300; min-width: 170px; max-height: 60vh; overflow-y: auto; background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 6px; box-shadow: 0 12px 30px rgba(0,0,0,0.55); display: none; }
   .cur-menu.open { display: block; }
   .cur-opt { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 10px 12px; border-radius: 10px; font-size: 14px; background: none; border: none; color: var(--cream); cursor: pointer; }
   .cur-opt.active { color: var(--spent); font-weight: 700; }
@@ -449,7 +456,12 @@
     <!-- ===== ABA: COACH ===== -->
     <section class="screen" id="s-coach">
       <div class="coach-head">
-        <div class="av">🤖</div>
+        <div class="av">
+          <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#FFFFFF" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round">
+            <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z" fill="rgba(255,255,255,0.18)"/>
+            <path d="M19 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/>
+          </svg>
+        </div>
         <h2 id="coachTitleEl"></h2>
         <p id="coachSubEl"></p>
       </div>
@@ -505,9 +517,13 @@
 
       <div class="set-group">
         <div class="glabel" id="accountLabel"></div>
-        <div class="account-btns">
-          <button id="cancelSubBtn" class="cancel-sub-btn"></button>
-          <button id="logoutBtn" class="logout-btn"></button>
+        <div class="set-list">
+          <button class="set-item danger" id="cancelSubBtn">
+            <span class="ic">🚫</span><span class="lbl" id="cancelSubLbl"></span><span class="chev">›</span>
+          </button>
+          <button class="set-item" id="logoutBtn">
+            <span class="ic">↩️</span><span class="lbl" id="logoutLbl"></span><span class="chev">›</span>
+          </button>
         </div>
       </div>
 
@@ -532,7 +548,7 @@
         <span id="navStats"></span>
       </button>
       <button class="nav-btn" data-scr="coach">
-        <svg class="ico" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2z"/></svg>
+        <svg class="ico" viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg>
         <span id="navCoach"></span>
       </button>
       <button class="nav-btn" data-scr="set">
@@ -565,14 +581,15 @@
   const STR = {
     pt: {
       eyebrow: "", title: "Algent",
-      navHome: "Início", navStats: "Análise", navCoach: "Coach", navSet: "Ajustes",
+      navHome: "Início", navStats: "Análise", navCoach: "AI", navSet: "Ajustes",
       planLabel: "Sua assinatura", planMonth: "mês", planTrial: "30 dias de teste grátis · acesso completo",
+      planDaysTrial: "Teste grátis · faltam {n} dias", planDaysActive: "Ativa · renova em {n} dias",
       prefLabel: "Preferências", langRowLabel: "Idioma", curRowLabel: "Moeda", accountLabel: "Conta",
       compareTitle: "Comparação mensal", statsEmpty: "Anote alguns gastos e seus gráficos aparecem aqui.",
       sub: 'Escreve do seu jeito, tipo "gastei 15 no uber". O app anota e organiza.',
       inputPh: "o que você gastou?", add: "Anotar", parsingTxt: "IA lendo...",
       totalLabel: "GASTO NO MÊS", fixedTitle: "FIXOS POR MÊS", fixedPh: "ex: academia 30 dia 15", addFixed: "+ Fixo",
-      chipsTitle: "Atalhos rápidos", coachTitle: "Coach financeiro", coachSub: "Tire dúvidas e aprenda a organizar melhor seu dinheiro.",
+      chipsTitle: "Atalhos rápidos", coachTitle: "AI", coachSub: "Tire dúvidas e aprenda a organizar melhor seu dinheiro.",
       insightsTitle: "Insights",
       insightTop: "Seu maior gasto é {cat}: {pc}% do mês.",
       insightLess: "Você gastou {v} a menos que no mês passado. 📉",
@@ -633,14 +650,15 @@
     },
     en: {
       eyebrow: "", title: "Algent",
-      navHome: "Home", navStats: "Analysis", navCoach: "Coach", navSet: "Settings",
+      navHome: "Home", navStats: "Analysis", navCoach: "AI", navSet: "Settings",
       planLabel: "Your subscription", planMonth: "month", planTrial: "30-day free trial · full access",
+      planDaysTrial: "Free trial · {n} days left", planDaysActive: "Active · renews in {n} days",
       prefLabel: "Preferences", langRowLabel: "Language", curRowLabel: "Currency", accountLabel: "Account",
       compareTitle: "Monthly comparison", statsEmpty: "Log a few expenses and your charts show up here.",
       sub: 'Just type it, like "spent 15 on uber". The app logs and sorts it.',
       inputPh: "what did you spend on?", add: "Add", parsingTxt: "AI reading...",
       totalLabel: "SPENT THIS MONTH", fixedTitle: "MONTHLY FIXED", fixedPh: "e.g. gym 30 day 15", addFixed: "+ Fixed",
-      chipsTitle: "Quick shortcuts", coachTitle: "Financial coach", coachSub: "Ask questions and learn to organise your money better.",
+      chipsTitle: "Quick shortcuts", coachTitle: "AI", coachSub: "Ask questions and learn to organise your money better.",
       insightsTitle: "Insights",
       insightTop: "Your biggest expense is {cat}: {pc}% of the month.",
       insightLess: "You spent {v} less than last month. 📉",
@@ -1504,9 +1522,9 @@
   async function fetchSubStatus() {
     if (!sbClient) return null;
     try {
-      const { data, error } = await sbClient.from("subscriptions").select("status").maybeSingle();
+      const { data, error } = await sbClient.from("subscriptions").select("status,current_period_end").maybeSingle();
       if (error || !data) return null;
-      return data.status || null;
+      return { status: data.status || null, end: data.current_period_end || null };
     } catch (e) { return null; }
   }
   function showPaywall(status) {
@@ -1521,13 +1539,32 @@
   function updateCancelVisibility(status) {
     const btn = document.getElementById("cancelSubBtn");
     if (!btn) return;
-    btn.style.display = hasAccess(status) ? "inline-block" : "none";
+    btn.style.display = hasAccess(status) ? "flex" : "none";
   }
   async function gate() {
     if (!sbClient) { hidePaywall(); updateCancelVisibility(null); return; } // se a nuvem falhar, não tranca ninguém (libera)
-    const status = await fetchSubStatus();
+    const sub = await fetchSubStatus();
+    const status = sub ? sub.status : null;
     if (hasAccess(status)) hidePaywall(); else showPaywall(status);
     updateCancelVisibility(status);
+    renderPlanInfo(status, sub ? sub.end : null);
+  }
+  // Mostra no card da assinatura quantos dias faltam (teste ou renovação)
+  function renderPlanInfo(status, end) {
+    const el = document.getElementById("planTrial");
+    if (!el) return;
+    let endMs = null;
+    if (end) {
+      if (typeof end === "number") endMs = end > 1e12 ? end : end * 1000;
+      else { const p = Date.parse(end); if (!isNaN(p)) endMs = p; }
+    }
+    if (endMs && endMs > Date.now()) {
+      const days = Math.max(1, Math.ceil((endMs - Date.now()) / 86400000));
+      const key = status === "trialing" ? "planDaysTrial" : "planDaysActive";
+      el.textContent = t(key).replace("{n}", days);
+      return;
+    }
+    el.textContent = t("planTrial"); // sem dado: mantém o texto padrão
   }
 
   // ---- NUVEM: gastos no Supabase, amarrados à conta logada ----
@@ -1690,11 +1727,12 @@
     document.getElementById("authPass").placeholder = t("passPh");
     const ao = document.getElementById("authOr"); if (ao) ao.textContent = t("authOr");
     const fg = document.getElementById("forgotBtn"); if (fg) fg.textContent = t("forgot");
-    const lo = document.getElementById("logoutBtn"); if (lo) lo.textContent = t("logout");
+    const lo = document.getElementById("logoutLbl"); if (lo) lo.textContent = t("logout");
     const sb = document.getElementById("subscribeBtn"); if (sb) sb.textContent = t("subscribe");
     const pb = document.getElementById("payBtn"); if (pb) pb.textContent = t("payBtnTxt");
     const pl = document.getElementById("payLogout"); if (pl) pl.textContent = t("logout");
-    const cs = document.getElementById("cancelSubBtn"); if (cs && !cs.disabled) cs.textContent = t("cancelSub");
+    const cs = document.getElementById("cancelSubLbl"); const csb = document.getElementById("cancelSubBtn");
+    if (cs && csb && !csb.disabled) cs.textContent = t("cancelSub");
     document.querySelectorAll(".js-legal-priv").forEach(a => { a.textContent = t("legalPrivacy"); });
     document.querySelectorAll(".js-legal-terms").forEach(a => { a.textContent = t("legalTerms"); });
     renderAuth();
@@ -1770,7 +1808,9 @@
     if (!sbClient) { alert(t("cancelErr")); return; }
     if (!confirm(t("cancelConfirm"))) return;
     const btn = document.getElementById("cancelSubBtn");
-    if (btn) { btn.disabled = true; btn.textContent = t("cancelBusy"); }
+    const lbl = document.getElementById("cancelSubLbl");
+    if (btn) btn.disabled = true;
+    if (lbl) lbl.textContent = t("cancelBusy");
     try {
       // pega o token da sessão pra provar, no servidor, quem é a pessoa
       let token = "";
@@ -1797,7 +1837,8 @@
     } catch (e) {
       alert(t("cancelErr"));
     } finally {
-      if (btn) { btn.disabled = false; btn.textContent = t("cancelSub"); }
+      if (btn) btn.disabled = false;
+      if (lbl) lbl.textContent = t("cancelSub");
     }
   }
   // Quando a pessoa volta do pagamento, agradece e limpa o ?paid=1 da barra de endereço
