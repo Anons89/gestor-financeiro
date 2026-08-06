@@ -511,5 +511,22 @@
   <p class="foot-copy">© 2026 Algent. Built in London. Algent organises and educates — it is not financial advice.</p>
 </footer>
 
+<!-- Se a pessoa JÁ está logada, pula a landing e vai direto pro app -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  (function () {
+    try {
+      var SUPA_URL = "https://efytffndatdkvbzeoxgm.supabase.co";
+      var SUPA_KEY = "sb_publishable_C9sNWRMrJFzyQQLEi9592Q_dgAYpaBM";
+      var sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+      sb.auth.getSession().then(function (res) {
+        if (res && res.data && res.data.session) {
+          // já tem conta e sessão ativa → manda pro app
+          window.location.replace("https://algent.co.uk/app.html");
+        }
+      }).catch(function () {});
+    } catch (e) {}
+  })();
+</script>
 </body>
 </html>
