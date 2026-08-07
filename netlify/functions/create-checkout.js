@@ -1,6 +1,11 @@
 // ---- PORTEIRO DO STRIPE: cria a tela de pagamento (Checkout) da assinatura ----
 // A chave secreta do Stripe vive SÓ no cofre do Netlify (STRIPE_SECRET_KEY).
 // Nunca no navegador, nunca no GitHub, nunca no chat.
+// Quem a pessoa É vem do token dela (conferido no Supabase) — nunca do que o
+// navegador diz. E a URL de volta é fixa aqui, pra ninguém criar um checkout
+// nosso que redireciona pra um site falso.
+
+const { verifyUser } = require("./lib/verify-user");
 
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") {
@@ -19,12 +24,17 @@ exports.handler = async (event) => {
 
   let body = {};
   try { body = JSON.parse(event.body || "{}"); } catch (e) {}
-  const userId = body.userId;
-  const email = body.email;
-  const origin = body.origin || "";
-  if (!userId) {
-    return { statusCode: 400, body: JSON.stringify({ error: "Missing user" }) };
+
+  // CONFERE quem é a pessoa pelo token (aqui não precisa ser assinante ainda —
+  // ela está justamente vindo assinar). Só precisa estar logada.
+  const auth = await verifyUser(body.accessToken);
+  if (!auth.ok) {
+    return { statusCode: auth.code, body: JSON.stringify({ error: auth.error }) };
   }
+  const userId = auth.userId;
+  const email = auth.email;
+  // URL de volta: a do próprio site (Netlify preenche URL), nunca a que o navegador mandar
+  const origin = process.env.URL || "https://algent.co.uk";
 
   // Monta os campos no formato que o Stripe espera (formulário).
   const params = new URLSearchParams();
@@ -47,6 +57,8 @@ exports.handler = async (event) => {
       headers: {
         "Authorization": "Bearer " + key,
         "Content-Type": "application/x-www-form-urlencoded",
+        // Trava a versão da API: o Stripe atualizar a conta não quebra o app
+        "Stripe-Version": "2024-06-20",
       },
       body: params.toString(),
     });

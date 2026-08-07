@@ -60,7 +60,7 @@ exports.handler = async (event) => {
     // 3) Lista as assinaturas desse cliente no Stripe
     const listRes = await fetch(
       "https://api.stripe.com/v1/subscriptions?customer=" + encodeURIComponent(customerId) + "&status=all&limit=10",
-      { headers: { "Authorization": "Bearer " + stripeKey } }
+      { headers: { "Authorization": "Bearer " + stripeKey, "Stripe-Version": "2024-06-20" } }
     );
     const list = await listRes.json();
     const subs = (list && list.data) ? list.data : [];
@@ -79,6 +79,7 @@ exports.handler = async (event) => {
           headers: {
             "Authorization": "Bearer " + stripeKey,
             "Content-Type": "application/x-www-form-urlencoded",
+            "Stripe-Version": "2024-06-20",
           },
           body: params.toString(),
         });

@@ -1,0 +1,21 @@
+# ---- Configuração do Netlify ----
+# Headers de segurança pra todas as páginas do site.
+
+[build]
+  functions = "netlify/functions"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Ninguém pode colocar o site dentro de um iframe (evita clickjacking)
+    X-Frame-Options = "DENY"
+    # O navegador não tenta "adivinhar" tipo de arquivo (evita truques com uploads)
+    X-Content-Type-Options = "nosniff"
+    # Ao sair do site, só manda o domínio de origem (não a URL inteira)
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    # Só o próprio site pode pedir localização (usada pra detectar a moeda);
+    # câmera, microfone e pagamento ficam desligados
+    Permissions-Policy = "geolocation=(self), camera=(), microphone=(), payment=()"
+    # De onde a página pode carregar cada coisa. Qualquer script de um
+    # domínio fora desta lista é BLOQUEADO pelo navegador.
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://efytffndatdkvbzeoxgm.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"

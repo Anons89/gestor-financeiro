@@ -2,6 +2,10 @@
 // O PORTEIRO DO COACH: roda no servidor, guarda a chave (do cofre) e conversa com a NVIDIA.
 // Recebe a conversa + o perfil + o resumo de gastos, monta as REGRAS aqui (seguro, o celular não mexe nelas)
 // e devolve só a resposta do coach.
+// ANTES de responder, confere se quem pediu é assinante — senão o coach viraria
+// um "chat grátis" aberto pra internet inteira usar a chave da NVIDIA.
+
+const { verifyUser } = require("./lib/verify-user");
 
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") {
@@ -9,9 +13,17 @@ exports.handler = async (event) => {
   }
   try {
     const body = JSON.parse(event.body || "{}");
-    const messages = Array.isArray(body.messages) ? body.messages : [];
-    const profile = body.profile || {};
-    const spending = body.spending || "(sem dados)";
+
+    // Só assinante (teste grátis ou ativo) pode conversar com o coach
+    const auth = await verifyUser(body.accessToken);
+    if (!auth.ok) return { statusCode: auth.code, body: JSON.stringify({ reply: "", error: auth.error }) };
+    if (!auth.subscribed) return { statusCode: 403, body: JSON.stringify({ reply: "", error: "subscription required" }) };
+
+    // Limita tamanhos pra manter o custo sob controle (ninguém manda um livro)
+    const messages = (Array.isArray(body.messages) ? body.messages : []).slice(-12);
+    const profile = (body.profile && typeof body.profile === "object") ? body.profile : {};
+    ["income", "goal", "risk"].forEach(k => { if (profile[k]) profile[k] = String(profile[k]).slice(0, 120); });
+    const spending = String(body.spending || "(sem dados)").slice(0, 1500);
     const langName = body.lang === "en" ? "British English (UK spelling and tone — organise, favourite, £, everyday British phrasing, not American)" : "português";
 
     const prof =
@@ -34,7 +46,7 @@ exports.handler = async (event) => {
     const chat = [{ role: "system", content: system }].concat(
       messages.map(m => ({
         role: m.role === "assistant" ? "assistant" : "user",
-        content: String(m.content || ""),
+        content: String(m.content || "").slice(0, 2000),
       }))
     );
 
