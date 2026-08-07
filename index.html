@@ -8,6 +8,7 @@
 <meta property="og:title" content="Algent — Know where your money goes" />
 <meta property="og:description" content="Type what you spent. AI does the rest. Free for 30 days, then £2.99/month." />
 <meta property="og:url" content="https://algent.co.uk" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23000000'/%3E%3Crect x='22' y='23' width='56' height='50' rx='7' fill='none' stroke='%23FFFFFF' stroke-width='5'/%3E%3Ccircle cx='45' cy='48' r='12' fill='none' stroke='%23FFFFFF' stroke-width='5'/%3E%3Ccircle cx='45' cy='48' r='2.6' fill='%23FFFFFF'/%3E%3Cline x1='45' y1='48' x2='45' y2='39' stroke='%23FFFFFF' stroke-width='4' stroke-linecap='round'/%3E%3Cline x1='66' y1='41' x2='66' y2='55' stroke='%23FFFFFF' stroke-width='5' stroke-linecap='round'/%3E%3Cline x1='30' y1='73' x2='30' y2='79' stroke='%23FFFFFF' stroke-width='5' stroke-linecap='round'/%3E%3Cline x1='70' y1='73' x2='70' y2='79' stroke='%23FFFFFF' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
@@ -327,7 +328,7 @@
 <!-- NAV -->
 <nav>
   <span class="nav-logo">Algent</span>
-  <a href="https://algent.co.uk/app.html" class="nav-cta">Get started free</a>
+  <a href="/app.html" class="nav-cta">Get started free</a>
 </nav>
 
 <!-- HERO -->
@@ -347,7 +348,7 @@
   </p>
 
   <div class="hero-actions">
-    <a href="https://algent.co.uk/app.html" class="btn-primary">Start free — 30 days on us</a>
+    <a href="/app.html" class="btn-primary">Start free — 30 days on us</a>
     <a href="#how" class="btn-ghost">See how it works</a>
   </div>
   <p class="trial-note">No commitment. £2.99/month after your free trial.</p>
@@ -487,7 +488,7 @@
         <li>Works on any phone — no app download needed</li>
         <li>Your data backed up to the cloud</li>
       </ul>
-      <a href="https://algent.co.uk/app.html" class="btn-primary" style="width:100%;display:block;text-align:center;">Start free trial</a>
+      <a href="/app.html" class="btn-primary" style="width:100%;display:block;text-align:center;">Start free trial</a>
       <p class="price-trial">Card required to start trial. You won't be charged for 30 days.</p>
     </div>
   </div>
@@ -497,34 +498,31 @@
 <div class="final-cta">
   <h2 class="final-title">Stop guessing.<br>Start knowing.</h2>
   <p class="final-sub">30 days free. No spreadsheets. Takes 30 seconds to set up.</p>
-  <a href="https://algent.co.uk/app.html" class="btn-primary">Get Algent free</a>
+  <a href="/app.html" class="btn-primary">Get Algent free</a>
 </div>
 
 <!-- FOOTER -->
 <footer>
   <span class="foot-logo">Algent</span>
   <div class="foot-links">
-    <a href="https://algent.co.uk/privacy.html">Privacy</a>
-    <a href="https://algent.co.uk/terms.html">Terms</a>
-    <a href="https://algent.co.uk/app.html">App</a>
+    <a href="/privacy.html">Privacy</a>
+    <a href="/terms.html">Terms</a>
+    <a href="/app.html">App</a>
   </div>
   <p class="foot-copy">© 2026 Algent. Built in London. Algent organises and educates — it is not financial advice.</p>
 </footer>
 
-<!-- Se a pessoa JÁ está logada, pula a landing e vai direto pro app -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Se a pessoa JÁ está logada, pula a landing e vai direto pro app.
+     Só espia a chave que o Supabase guarda no navegador — sem baixar a
+     biblioteca inteira (~120KB) só pra isso. Se a sessão estiver velha,
+     o app resolve sozinho (mostra o login). -->
 <script>
   (function () {
     try {
-      var SUPA_URL = "https://efytffndatdkvbzeoxgm.supabase.co";
-      var SUPA_KEY = "sb_publishable_C9sNWRMrJFzyQQLEi9592Q_dgAYpaBM";
-      var sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
-      sb.auth.getSession().then(function (res) {
-        if (res && res.data && res.data.session) {
-          // já tem conta e sessão ativa → manda pro app
-          window.location.replace("https://algent.co.uk/app.html");
-        }
-      }).catch(function () {});
+      var raw = localStorage.getItem("sb-efytffndatdkvbzeoxgm-auth-token");
+      if (!raw) return;
+      var s = JSON.parse(raw);
+      if (s && s.access_token) window.location.replace("/app.html");
     } catch (e) {}
   })();
 </script>
