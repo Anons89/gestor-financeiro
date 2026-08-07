@@ -217,24 +217,6 @@
   .suggestions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
   .coach-input-row { display: flex; gap: 8px; margin-top: 12px; }
 
-  .bubble { position: fixed; z-index: 50; right: 20px; bottom: calc(24px + env(safe-area-inset-bottom)); width: 56px; height: 56px; border-radius: 999px; background: linear-gradient(140deg, #5AE88F 0%, #22C55E 100%); color: #04220E; font-weight: 800; font-size: 15px; letter-spacing: 0.5px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; touch-action: none; user-select: none; box-shadow: 0 8px 22px rgba(0,0,0,0.5); animation: bubblePing 2.6s ease-out infinite; }
-  @keyframes bubblePing {
-    0% { box-shadow: 0 8px 22px rgba(0,0,0,0.5), 0 0 0 0 rgba(74,222,128,0.5); }
-    70% { box-shadow: 0 8px 22px rgba(0,0,0,0.5), 0 0 0 15px rgba(74,222,128,0); }
-    100% { box-shadow: 0 8px 22px rgba(0,0,0,0.5), 0 0 0 0 rgba(74,222,128,0); }
-  }
-  .sheet { position: fixed; inset: 0; z-index: 60; display: none; }
-  .sheet.open { display: block; }
-  .sheet-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.35); }
-  .sheet-panel { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%) translateY(100%); width: 100%; max-width: 440px; height: 82vh; background: var(--bg); border: 1px solid var(--border); border-bottom: none; border-top-left-radius: 20px; border-top-right-radius: 20px; transition: transform 0.28s cubic-bezier(.2,.8,.2,1); display: flex; flex-direction: column; overflow: hidden; padding: 0 16px calc(12px + env(safe-area-inset-bottom)); }
-  .sheet.open .sheet-panel { transform: translateX(-50%) translateY(0); }
-  .sheet-grip { padding: 14px 0 10px; display: flex; justify-content: center; cursor: grab; touch-action: none; flex-shrink: 0; }
-  .sheet-close { position: absolute; top: 10px; right: 12px; width: 40px; height: 40px; border-radius: 999px; border: 1px solid var(--border); background: var(--panel); color: var(--cream); font-size: 17px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 3; }
-  .grip-bar { width: 40px; height: 5px; border-radius: 999px; background: var(--border); }
-  .sheet-body { display: flex; flex-direction: column; flex: 1; min-height: 0; }
-  .sheet-body .profile { margin-top: 6px; }
-  .sheet-body .chat { flex: 1; overflow-y: auto; min-height: 0; margin-top: 12px; }
-
   .compare { font-size: 13px; color: var(--muted); margin-top: 8px; }
   .curbar { position: relative; display: inline-block; }
   .cur-toggle { padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 700; background: var(--panel); color: var(--cream); border: 1px solid var(--border); cursor: pointer; }
@@ -249,7 +231,7 @@
   .act { flex: 1; padding: 11px; border-radius: 12px; font-size: 13px; font-weight: 600; background: var(--panel); color: var(--cream); border: 1px solid var(--border); cursor: pointer; }
   @media print {
     body { background: #fff !important; color: #000 !important; padding: 12px !important; }
-    .tabs, .row, .chips, .lang, .actions, .curbar, .bubble, .sheet, .disclaimer, .del, .fx-del, .check, .sub, .logout-wrap, .sub-cta { display: none !important; }
+    .tabs, .row, .chips, .lang, .actions, .curbar, .disclaimer, .del, .fx-del, .check, .sub, .logout-wrap, .sub-cta { display: none !important; }
     .summary, .fixed { background: #fff !important; color: #000 !important; border: 1px solid #ddd !important; }
     .summary .total, .eyebrow, h1, .fixed-title, .label, .fixed-total, .fx-name, .fx-amount, .fx-due, .compare, .note, .fixed-sub { color: #000 !important; }
   }
@@ -319,13 +301,14 @@
   .bar-label { fill: var(--cream); font-size: 12px; }
   .bar-value { fill: var(--muted); font-size: 11px; }
 
-  /* ---- Blocos móveis (subir/descer) ---- */
-  .block-head { display: flex; align-items: center; gap: 8px; }
-  .head-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
-  .mover { display: inline-flex; gap: 3px; flex-shrink: 0; }
-  .mv-btn { background: var(--bg); border: 1px solid var(--border); color: var(--muted); width: 22px; height: 22px; border-radius: 6px; font-size: 9px; line-height: 1; cursor: pointer; padding: 0; display: inline-flex; align-items: center; justify-content: center; }
-  .mv-btn:active { background: var(--border); }
-  .mv-btn:disabled { opacity: 0.28; cursor: default; }
+  /* ---- Acessibilidade: foco visível pra quem navega por teclado ---- */
+  input:focus-visible { border-color: var(--spent); box-shadow: 0 0 0 2px rgba(52,199,123,0.35); }
+  button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid var(--spent); outline-offset: 2px; }
+
+  /* ---- Acessibilidade: respeita quem pediu menos animação no aparelho ---- */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0s !important; transition-duration: 0s !important; }
+  }
 </style>
 </head>
 <body>
@@ -405,7 +388,7 @@
       <div class="chips" id="chips"></div>
     </div>
 
-    <div class="fixed" data-block="fixed">
+    <div class="fixed">
       <div class="fixed-top">
         <span class="fixed-title mono" id="fixedTitleEl"></span>
         <span class="fixed-total mono" id="fixedTotal">£0.00</span>
@@ -560,13 +543,14 @@
 
   <div id="catPicker" class="cat-picker hidden">
     <div class="cat-picker-backdrop" id="catPickerBackdrop"></div>
-    <div class="cat-picker-panel">
+    <div class="cat-picker-panel" role="dialog" aria-modal="true" aria-labelledby="catPickerTitle">
       <div class="cat-picker-title" id="catPickerTitle"></div>
       <div class="cat-picker-list" id="catPickerList"></div>
     </div>
   </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Versão TRAVADA + integrity: se o CDN for adulterado, o navegador recusa o arquivo -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.2/dist/umd/supabase.min.js" integrity="sha384-B2duOBIryCXbX4eDE4BdJwtNkQMRQde3o6IsjfPW28E6aH1CYE96hHeZRG3zY56O" crossorigin="anonymous"></script>
 <script>
   // ---- Cores das categorias (a CHAVE em português é o "id" interno; o texto exibido é traduzido) ----
   const CATEGORIES = {
@@ -646,6 +630,7 @@
       cancelNothing: "Não encontrei uma assinatura ativa pra cancelar por aqui.",
       cancelErr: "Não consegui cancelar agora. Tenta de novo daqui a pouco?",
       legalPrivacy: "Privacidade", legalTerms: "Termos",
+      aDel: "Apagar", aPaid: "Pago este mês", aCur: "Trocar moeda",
       cats: { "Alimentação": "🍔 Alimentação", "Transporte": "🚗 Transporte", "Mercado": "🛒 Mercado", "Lazer": "🎉 Lazer", "Contas": "🧾 Contas", "Compras": "🛍️ Compras", "Saúde": "🩺 Saúde", "Assinaturas": "📺 Assinaturas", "Educação": "📚 Educação", "Viagem": "✈️ Viagem", "Casa": "🏠 Casa", "Beleza": "💅 Beleza", "Pets": "🐾 Pets", "Outros": "📦 Outros" },
     },
     en: {
@@ -715,6 +700,7 @@
       cancelNothing: "I couldn't find an active subscription to cancel here.",
       cancelErr: "I couldn't cancel right now. Try again in a moment?",
       legalPrivacy: "Privacy", legalTerms: "Terms",
+      aDel: "Delete", aPaid: "Paid this month", aCur: "Change currency",
       cats: { "Alimentação": "🍔 Food", "Transporte": "🚗 Transport", "Mercado": "🛒 Groceries", "Lazer": "🎉 Leisure", "Contas": "🧾 Bills", "Compras": "🛍️ Shopping", "Saúde": "🩺 Health", "Assinaturas": "📺 Subscriptions", "Educação": "📚 Education", "Viagem": "✈️ Travel", "Casa": "🏠 Home", "Beleza": "💅 Beauty", "Pets": "🐾 Pets", "Outros": "📦 Other" },
     },
   };
@@ -726,6 +712,9 @@
   let lang = detectLang();
   const t = k => STR[lang][k];
   const catLabel = c => STR[lang].cats[c] || c;
+  // Avisa o navegador/leitor de tela qual idioma a página está falando
+  function applyHtmlLang() { document.documentElement.lang = lang === "pt" ? "pt-BR" : "en-GB"; }
+  applyHtmlLang();
 
   // ---- PLANO B do cérebro: palavra-chave (usado só se o porteiro/IA falhar) ----
   function parseLocal(text) {
@@ -750,12 +739,22 @@
     return { amount, category, description: desc };
   }
 
+  // Pega o token da sessão (a "prova de quem sou eu") pra mandar junto nas chamadas de IA.
+  // O servidor confere esse token antes de gastar a chave da NVIDIA.
+  async function getToken() {
+    if (!sbClient) return "";
+    try {
+      const { data } = await sbClient.auth.getSession();
+      return (data && data.session && data.session.access_token) || "";
+    } catch (e) { return ""; }
+  }
+
   // ---- O CÉREBRO DE VERDADE: chama o porteiro (Netlify Function -> NVIDIA). Se falhar, usa o plano B. ----
   async function parse(text) {
     try {
       const res = await fetch("/.netlify/functions/categorize", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: text }),
+        body: JSON.stringify({ text: text, accessToken: await getToken() }),
       });
       const data = await res.json();
       if (data && data.ok && typeof data.amount !== "undefined") {
@@ -809,7 +808,7 @@
   }
 
   // ---- Ações: gastos do dia ----
-  async function addExpense(msg) {
+  async function addExpense(msg, curOverride) {
     const text = (msg !== undefined ? msg : input.value).trim();
     if (!text) return;
     const btn = document.getElementById("addBtn");
@@ -818,7 +817,7 @@
     // Se a pessoa já ensinou a categoria dessa palavra, a IA respeita a escolha dela
     const learned = learnedCategoryFor(text, parsed.description);
     if (learned) parsed.category = learned;
-    const obj = { date: new Date().toISOString(), cur: curCurrency, ...parsed };
+    const obj = { date: new Date().toISOString(), cur: curOverride || curCurrency, ...parsed };
     if (sbClient) {
       // salva na nuvem, na conta da pessoa, e usa a linha que o banco devolve (com o id de verdade)
       const saved = await cloudInsertExpense(obj);
@@ -838,7 +837,8 @@
   }
   async function removeExpense(id) {
     if (sbClient) { await cloudDeleteExpense(id); }
-    expenses = expenses.filter(e => e.id !== id); save(); render();
+    // compara como texto: funciona tanto com id numérico quanto com id tipo UUID
+    expenses = expenses.filter(e => String(e.id) !== String(id)); save(); render();
   }
   // Atualiza a categoria de um gasto na nuvem
   async function cloudUpdateExpenseCategory(id, cat) {
@@ -847,7 +847,7 @@
   }
   // A pessoa escolheu outra categoria: troca no gasto E ensina a IA pra próxima vez
   async function changeCategory(id, cat) {
-    const e = expenses.find(x => x.id === id);
+    const e = expenses.find(x => String(x.id) === String(id));
     if (!e || !CATEGORIES[cat]) return;
     e.category = cat;
     const k = catKey(e.description);
@@ -867,13 +867,15 @@
     const list = document.getElementById("catPickerList");
     if (list) {
       list.innerHTML = Object.keys(CATEGORIES).map(c =>
-        '<button class="cat-opt" onclick="changeCategory(' + id + ',\'' + c + '\')">' +
+        '<button class="cat-opt" onclick="changeCategory(\'' + esc(String(id)) + '\',\'' + c + '\')">' +
           '<span class="dot" style="background:' + CATEGORIES[c] + '"></span>' + catLabel(c) +
         '</button>'
       ).join("");
     }
     const ti = document.getElementById("catPickerTitle"); if (ti) ti.textContent = t("pickCat");
     const p = document.getElementById("catPicker"); if (p) p.classList.remove("hidden");
+    // move o foco pra dentro do modal (quem usa teclado/leitor de tela não se perde)
+    if (list) { const first = list.querySelector("button"); if (first) first.focus(); }
   }
   function closeCatPicker() {
     catPickerTarget = null;
@@ -881,7 +883,22 @@
   }
 
   // ---- Ações: atalhos ----
-  function quickAdd(i) { addExpense(quickChips[i]); }
+  // Descobre a moeda escrita no texto do atalho (ex: "Café £3.20" -> GBP).
+  // A ordem importa: "R$"/"A$"/"C$" antes de "$", "CN¥" antes de "¥".
+  function curFromText(s) {
+    if (/R\$/.test(s)) return "BRL";
+    if (/A\$/.test(s)) return "AUD";
+    if (/C\$/.test(s)) return "CAD";
+    if (/CN¥/.test(s)) return "CNY";
+    if (/£/.test(s)) return "GBP";
+    if (/€/.test(s)) return "EUR";
+    if (/CHF/i.test(s)) return "CHF";
+    if (/¥/.test(s)) return "JPY";
+    if (/\$/.test(s)) return "USD";
+    return null;
+  }
+  // O atalho registra na moeda que está ESCRITA nele (não na que você está vendo agora)
+  function quickAdd(i) { const c = quickChips[i]; addExpense(c, curFromText(c) || undefined); }
   function removeChip(i) { quickChips.splice(i, 1); saveChips(); renderChips(); }
   function addChipFromInput() {
     if (quickChips.length >= MAX_CHIPS) return;
@@ -902,7 +919,8 @@
       .replace(/\s+/g, " ").trim();
     if (!name) name = "Item";
     name = name.split(" ").map(w => w ? w.charAt(0).toUpperCase() + w.slice(1) : w).join(" ");
-    const sym = CURRENCIES[homeCurrency] || "£";
+    // usa a moeda que a pessoa está vendo AGORA — é nessa que o atalho vai registrar
+    const sym = CURRENCIES[curCurrency] || "£";
     const amtStr = (amount % 1 === 0) ? String(amount) : amount.toFixed(2);
     return name + " " + sym + amtStr;
   }
@@ -925,11 +943,11 @@
     recurring.unshift({ id: Date.now(), ...parseFixed(text) });
     saveFixed(); fixedInput.value = ""; renderFixed();
   }
-  function removeFixed(id) { recurring = recurring.filter(x => x.id !== id); saveFixed(); renderFixed(); }
+  function removeFixed(id) { recurring = recurring.filter(x => String(x.id) !== String(id)); saveFixed(); renderFixed(); }
   function monthKey() { const d = new Date(); return d.getFullYear() + "-" + (d.getMonth() + 1); }
   function isPaid(f) { return f.paidMonth === monthKey(); }
   function togglePaid(id) {
-    const f = recurring.find(x => x.id === id); if (!f) return;
+    const f = recurring.find(x => String(x.id) === String(id)); if (!f) return;
     f.paidMonth = isPaid(f) ? null : monthKey();
     saveFixed(); renderFixed();
   }
@@ -976,7 +994,7 @@
     } else {
       const canAdd = quickChips.length < MAX_CHIPS;
       box.innerHTML =
-        quickChips.map((c, i) => '<span class="chip chip-editing">' + esc(c) + '<button class="chip-x" onclick="removeChip(' + i + ')">✕</button></span>').join("") +
+        quickChips.map((c, i) => '<span class="chip chip-editing">' + esc(c) + '<button class="chip-x" aria-label="' + t("aDel") + ': ' + esc(c) + '" onclick="removeChip(' + i + ')">✕</button></span>').join("") +
         (canAdd
           ? '<input id="chipInput" class="chip-input" placeholder="' + t("addChipPh") + '" onkeydown="if(event.key===\'Enter\')addChipFromInput()" />' +
             '<button class="chip" style="background:var(--spent);color:#05230F;border:none" onclick="addChipFromInput()">' + t("okBtn") + '</button>'
@@ -989,6 +1007,14 @@
     document.getElementById("eyebrow").textContent = t("eyebrow");
     document.getElementById("title").textContent = t("title");
     input.setAttribute("placeholder", t("inputPh"));
+    // aria-label: o placeholder some quando a pessoa digita; o rótulo de acessibilidade não
+    input.setAttribute("aria-label", t("inputPh"));
+    fixedInput.setAttribute("aria-label", t("fixedPh"));
+    document.getElementById("coachInput").setAttribute("aria-label", t("coachPh"));
+    document.getElementById("pIncome").setAttribute("aria-label", t("incomePh"));
+    document.getElementById("pGoal").setAttribute("aria-label", t("goalPh"));
+    document.getElementById("pRisk").setAttribute("aria-label", t("riskQ"));
+    document.getElementById("langBtn").setAttribute("aria-label", t("langRowLabel"));
     document.getElementById("addBtn").textContent = t("add");
     document.getElementById("totalLabel").textContent = t("totalLabel");
     document.getElementById("fixedTitleEl").textContent = t("fixedTitle");
@@ -1046,7 +1072,7 @@
     const biggest = Object.entries(byCat).sort((a, b) => b[1] - a[1])[0];
     if (biggest) {
       const heavy = biggest[1] > total * 0.4 ? t("heavy") : t("ok");
-      noteEl.innerHTML = t("biggest") + " <b>" + catLabel(biggest[0]) + "</b> (" + money(biggest[1]) + "). " + heavy;
+      noteEl.innerHTML = t("biggest") + " <b>" + esc(catLabel(biggest[0])) + "</b> (" + money(biggest[1]) + "). " + heavy;
     } else { noteEl.textContent = ""; }
     renderCurrencyBar();
     renderCompare();
@@ -1065,13 +1091,13 @@
 
     const itemHtml = e =>
       '<div class="item">' +
-        '<div class="emo">' + catEmoji(e.category) + '</div>' +
+        '<div class="emo" aria-hidden="true">' + catEmoji(e.category) + '</div>' +
         '<div class="meta">' +
           '<div class="desc">' + esc(e.description) + '</div>' +
-          '<button class="cat-edit" onclick="openCatPicker(' + e.id + ')">' + esc(catName(e.category)) + ' <span class="pen">✎</span></button>' +
+          '<button class="cat-edit" onclick="openCatPicker(\'' + esc(String(e.id)) + '\')">' + esc(catName(e.category)) + ' <span class="pen" aria-hidden="true">✎</span></button>' +
         '</div>' +
         '<span class="amount">' + money(e.amount) + '</span>' +
-        '<button class="del" onclick="removeExpense(' + e.id + ')">×</button>' +
+        '<button class="del" aria-label="' + t("aDel") + ': ' + esc(e.description) + '" onclick="removeExpense(\'' + esc(String(e.id)) + '\')">×</button>' +
       '</div>';
 
     listEl.innerHTML = groups.map(g =>
@@ -1106,7 +1132,7 @@
     const W = 300, rowH = 36, padTop = 2;
     const maxVal = rows[0].val || 1;
     const H = padTop + rows.length * rowH;
-    let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" role="img">';
+    let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + esc(t("chartTitle")) + ': ' + esc(money(total)) + '">';
     rows.forEach((r, i) => {
       const y = padTop + i * rowH;
       const barY = y + 20, barH = 12;
@@ -1127,7 +1153,7 @@
     const radius = (size / 2) - thickness / 2 - 2;
     const C = 2 * Math.PI * radius;
     let offset = 0;
-    let s = '<svg viewBox="0 0 ' + size + ' ' + size + '" xmlns="http://www.w3.org/2000/svg" role="img">';
+    let s = '<svg viewBox="0 0 ' + size + ' ' + size + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' + esc(t("chartTitle")) + ': ' + esc(money(total)) + '">';
     s += '<g transform="rotate(-90 ' + cx + ' ' + cy + ')">';
     s += '<circle cx="' + cx + '" cy="' + cy + '" r="' + radius + '" fill="none" stroke="var(--bg)" stroke-width="' + thickness + '"/>';
     rows.forEach(r => {
@@ -1213,46 +1239,6 @@
     renderChart();
   }
 
-  // ---- BLOCOS MÓVEIS: subir/descer TOTAL, GRÁFICO e FIXOS ----
-  const BLOCK_ORDER_KEY = "blocks_order_v1";
-  const DEFAULT_BLOCK_ORDER = ["total", "chart", "fixed"];
-  function getBlockOrder() {
-    try {
-      const raw = localStorage.getItem(BLOCK_ORDER_KEY);
-      if (raw) { const a = JSON.parse(raw); if (Array.isArray(a) && a.length === 3 && a.every(x => DEFAULT_BLOCK_ORDER.indexOf(x) !== -1)) return a; }
-    } catch (e) {}
-    return DEFAULT_BLOCK_ORDER.slice();
-  }
-  function updateMoverButtons() {
-    const zone = document.getElementById("movableZone");
-    if (!zone) return;
-    const blocks = Array.from(zone.querySelectorAll("[data-block]"));
-    blocks.forEach((el, i) => {
-      const up = el.querySelector(".mv-up"), dn = el.querySelector(".mv-down");
-      if (up) up.disabled = (i === 0);
-      if (dn) dn.disabled = (i === blocks.length - 1);
-    });
-  }
-  function applyBlockOrder() {
-    const zone = document.getElementById("movableZone");
-    if (!zone) return;
-    getBlockOrder().forEach(id => {
-      const el = zone.querySelector('[data-block="' + id + '"]');
-      if (el) zone.appendChild(el); // move pro fim, na ordem salva
-    });
-    updateMoverButtons();
-  }
-  function moveBlock(id, dir) {
-    const order = getBlockOrder();
-    const i = order.indexOf(id);
-    if (i === -1) return;
-    const j = i + dir;
-    if (j < 0 || j >= order.length) return;
-    const tmp = order[i]; order[i] = order[j]; order[j] = tmp;
-    try { localStorage.setItem(BLOCK_ORDER_KEY, JSON.stringify(order)); } catch (e) {}
-    applyBlockOrder();
-  }
-
   // ---- Desenha os fixos ----
   function renderFixed() {
     const total = recurring.reduce((s, f) => s + (Number(f.amount) || 0), 0);
@@ -1273,7 +1259,7 @@
       const paid = isPaid(f);
       return '<div class="fixed-item' + (paid ? ' paid' : '') + '">' +
         '<span class="fx-left">' +
-          '<button class="check' + (paid ? ' on' : '') + '" onclick="togglePaid(' + f.id + ')">' + (paid ? '✓' : '') + '</button>' +
+          '<button class="check' + (paid ? ' on' : '') + '" aria-pressed="' + paid + '" aria-label="' + t("aPaid") + ': ' + esc(f.name) + '" onclick="togglePaid(\'' + esc(String(f.id)) + '\')">' + (paid ? '✓' : '') + '</button>' +
           '<span class="fx-info">' +
             '<span class="fx-name">' + esc(f.name) + '</span>' +
             (f.dueDay ? '<span class="fx-due">' + t("dueDay") + ' ' + f.dueDay + '</span>' : '') +
@@ -1281,7 +1267,7 @@
         '</span>' +
         '<span class="fx-right">' +
           '<span class="fx-amount">' + money(f.amount, homeCurrency) + '</span>' +
-          '<button class="fx-del" onclick="removeFixed(' + f.id + ')">✕</button>' +
+          '<button class="fx-del" aria-label="' + t("aDel") + ': ' + esc(f.name) + '" onclick="removeFixed(\'' + esc(String(f.id)) + '\')">✕</button>' +
         '</span>' +
       '</div>';
     }).join("");
@@ -1323,6 +1309,7 @@
       profile: coachProfile,
       spending: spending,
       messages: coachMessages.slice(1).map(m => ({ role: m.role === "bot" ? "assistant" : "user", content: m.content })).slice(-12),
+      accessToken: await getToken(), // prova de assinante — o servidor confere antes de responder
     };
     try {
       const res = await fetch("/.netlify/functions/coach", {
@@ -1390,7 +1377,7 @@
   function toggleCurMenu(e) { if (e) e.stopPropagation(); curMenuOpen = !curMenuOpen; renderCurrencyBar(); }
   function renderCurrencyBar() {
     document.getElementById("curbar").innerHTML =
-      '<button class="cur-toggle" onclick="toggleCurMenu(event)">' + FLAGS[curCurrency] + ' ' + CURRENCIES[curCurrency] + ' <span class="caret">▾</span></button>' +
+      '<button class="cur-toggle" aria-haspopup="true" aria-expanded="' + curMenuOpen + '" aria-label="' + t("aCur") + '" onclick="toggleCurMenu(event)">' + FLAGS[curCurrency] + ' ' + CURRENCIES[curCurrency] + ' <span class="caret" aria-hidden="true">▾</span></button>' +
       '<div class="cur-menu' + (curMenuOpen ? ' open' : '') + '">' +
         CUR_ORDER.map(code => '<button class="cur-opt' + (code === curCurrency ? ' active' : '') + '" onclick="setCurCurrency(\'' + code + '\')">' + FLAGS[code] + ' ' + CURRENCIES[code] + '  ' + code + '</button>').join("") +
         '<button class="cur-opt local" onclick="detectCurrency()">📍 ' + t("localCur") + '</button>' +
@@ -1443,6 +1430,7 @@
   document.getElementById("langBtn").onclick = () => {
     lang = lang === "pt" ? "en" : "pt";
     try { localStorage.setItem("lang", lang); } catch (e) {}
+    applyHtmlLang();
     applyStaticTexts(); render(); renderFixed(); applyAuthTexts();
   };
 
@@ -1454,7 +1442,11 @@
     document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
     const target = document.getElementById("s-" + scr);
     if (target) target.classList.add("active");
-    document.querySelectorAll(".nav-btn").forEach(b => b.classList.toggle("on", b.getAttribute("data-scr") === scr));
+    document.querySelectorAll(".nav-btn").forEach(b => {
+      const on = b.getAttribute("data-scr") === scr;
+      b.classList.toggle("on", on);
+      if (on) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
+    });
     try { window.scrollTo({ top: 0, behavior: "instant" }); } catch (e) { window.scrollTo(0, 0); }
   }
   document.querySelectorAll(".nav-btn[data-scr]").forEach(b => b.onclick = () => go(b.getAttribute("data-scr")));
@@ -1493,6 +1485,12 @@
   applyTheme();
 
   document.addEventListener("click", () => { if (curMenuOpen) { curMenuOpen = false; renderCurrencyBar(); } });
+  // Esc fecha o que estiver aberto (modal de categoria ou menu de moeda)
+  document.addEventListener("keydown", e => {
+    if (e.key !== "Escape") return;
+    closeCatPicker();
+    if (curMenuOpen) { curMenuOpen = false; renderCurrencyBar(); }
+  });
 
   applyStaticTexts();
   render();
@@ -1522,9 +1520,13 @@
   async function fetchSubStatus() {
     if (!sbClient) return null;
     try {
-      const { data, error } = await sbClient.from("subscriptions").select("status,current_period_end").maybeSingle();
-      if (error || !data) return null;
-      return { status: data.status || null, end: data.current_period_end || null };
+      // pega a linha MAIS RECENTE (se por algum motivo existir mais de uma, não quebra)
+      const { data, error } = await sbClient.from("subscriptions")
+        .select("status,current_period_end")
+        .order("updated_at", { ascending: false })
+        .limit(1);
+      if (error || !data || !data.length) return null;
+      return { status: data[0].status || null, end: data[0].current_period_end || null };
     } catch (e) { return null; }
   }
   function showPaywall(status) {
@@ -1725,6 +1727,8 @@
   function applyAuthTexts() {
     document.getElementById("authEmail").placeholder = t("emailPh");
     document.getElementById("authPass").placeholder = t("passPh");
+    document.getElementById("authEmail").setAttribute("aria-label", t("emailPh"));
+    document.getElementById("authPass").setAttribute("aria-label", t("passPh"));
     const ao = document.getElementById("authOr"); if (ao) ao.textContent = t("authOr");
     const fg = document.getElementById("forgotBtn"); if (fg) fg.textContent = t("forgot");
     const lo = document.getElementById("logoutLbl"); if (lo) lo.textContent = t("logout");
@@ -1765,9 +1769,13 @@
   async function doLogout() {
     if (sbClient) { try { await sbClient.auth.signOut(); } catch (e) {} }
     cloudSynced = false; currentUserId = null;
-    expenses = []; save();
-    // limpa dados pessoais da memória; a próxima conta recarrega os seus da nuvem
-    recurring = []; quickChips = DEFAULT_CHIPS.slice(); coachProfile = {};
+    // limpa TUDO que é pessoal do aparelho — memória E localStorage.
+    // Senão a próxima conta que logar aqui herda conversa do coach, fixos etc.
+    ["expenses", "recurring", "quickchips_v3", "coach_profile", "coach_msgs", "learned_cats", "migrated_expenses_v1"]
+      .forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+    expenses = []; recurring = []; quickChips = DEFAULT_CHIPS.slice();
+    coachProfile = {}; learnedCats = {};
+    coachMessages = [{ role: "bot", content: STR[lang].coachGreeting }];
     applyStaticTexts(); renderFixed(); renderCurrencyBar(); render();
     hidePaywall();
     showLogin();
@@ -1785,15 +1793,12 @@
     const btn = document.getElementById("payBtn") || document.getElementById("subscribeBtn");
     if (btn) { btn.disabled = true; btn.dataset.label = btn.textContent; btn.textContent = t("subLoading"); }
     try {
-      let uid = currentUserId, email = "";
-      try {
-        const { data } = await sbClient.auth.getUser();
-        if (data && data.user) { uid = data.user.id; email = data.user.email || ""; }
-      } catch (e) {}
-      if (!uid) { throw new Error("Sem usuário logado"); }
+      // manda só o token — o servidor descobre sozinho quem é a pessoa e o email dela
+      const token = await getToken();
+      if (!token) { throw new Error("Sem usuário logado"); }
       const res = await fetch("/.netlify/functions/create-checkout", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: uid, email: email, origin: window.location.origin })
+        body: JSON.stringify({ accessToken: token })
       });
       const data = await res.json();
       if (data && data.url) { window.location.href = data.url; return; }
