@@ -2,6 +2,10 @@
 // O "PORTEIRO": roda no servidor do Netlify, NÃO no celular.
 // Ele é o único que conhece a chave (que vem do cofre: process.env.NVIDIA_API_KEY).
 // O celular manda o texto pra cá, o porteiro fala com a NVIDIA e devolve só a resposta.
+// ANTES de falar com a NVIDIA, confere se quem pediu é assinante (senão qualquer
+// pessoa na internet poderia usar a chave de graça).
+
+const { verifyUser } = require("./lib/verify-user");
 
 const CATS = ["Alimentação", "Transporte", "Mercado", "Lazer", "Contas", "Compras", "Saúde", "Assinaturas", "Educação", "Viagem", "Casa", "Beleza", "Pets", "Outros"];
 
@@ -10,7 +14,14 @@ exports.handler = async (event) => {
     return { statusCode: 405, body: JSON.stringify({ ok: false, error: "method" }) };
   }
   try {
-    const { text } = JSON.parse(event.body || "{}");
+    const body = JSON.parse(event.body || "{}");
+    // Só assinante (teste grátis ou ativo) pode usar a IA
+    const auth = await verifyUser(body.accessToken);
+    if (!auth.ok) return { statusCode: auth.code, body: JSON.stringify({ ok: false, error: auth.error }) };
+    if (!auth.subscribed) return { statusCode: 403, body: JSON.stringify({ ok: false, error: "subscription required" }) };
+
+    // Limita o tamanho pra ninguém mandar um livro inteiro (custo controlado)
+    const text = String(body.text || "").slice(0, 300);
     if (!text) return { statusCode: 200, body: JSON.stringify({ ok: false }) };
 
     const prompt =

@@ -24,6 +24,10 @@ function verifyStripe(rawBody, sigHeader, secret) {
     if (k === "v1") v1 = v;
   });
   if (!t || !v1) return false;
+  // O aviso tem que ser RECENTE (até 5 min): impede alguém de reenviar um aviso
+  // antigo capturado (replay). O Stripe recomenda exatamente essa tolerância.
+  const ageSec = Math.abs(Date.now() / 1000 - Number(t));
+  if (!isFinite(ageSec) || ageSec > 300) return false;
   const signedPayload = t + "." + rawBody;
   const expected = crypto.createHmac("sha256", secret).update(signedPayload, "utf8").digest("hex");
   try {
