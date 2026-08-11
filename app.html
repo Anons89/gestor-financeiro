@@ -50,10 +50,23 @@
   button:not(:disabled):active { transform: scale(0.97); }
   .app { width: 100%; max-width: 440px; padding-bottom: calc(78px + env(safe-area-inset-bottom)); }
 
-  /* ===== topbar ===== */
-  .topbar { display: flex; align-items: baseline; gap: 10px; padding: 2px 0 0; margin-bottom: 16px; }
-  .topbar .eyebrow { font-size: 11px; }
-  .topbar h1 { font-family: "Space Grotesk", -apple-system, sans-serif; font-size: 31px; font-weight: 700; letter-spacing: -0.035em; margin-top: 0; }
+  /* ===== marca (topbar) =====
+     Lockup marca + nome. Antes era só o nome em texto com gradiente — o
+     gradiente em letra é o acabamento que mais entrega "template": a ênfase
+     de uma marca vem do peso e do desenho, não de um degradê. */
+  .topbar { display: flex; align-items: center; gap: 10px; padding: 2px 0 0; margin-bottom: 18px; }
+  .brand { display: inline-flex; align-items: center; gap: 10px; }
+  .brand-mark { width: 30px; height: 30px; flex-shrink: 0; display: block; }
+  .brand-name {
+    font-family: var(--font-display);
+    font-size: 27px; font-weight: 700;
+    /* tracking apertado: o que faz um nome parecer desenhado e não digitado */
+    letter-spacing: -0.045em;
+    color: var(--cream);
+    line-height: 1;
+  }
+  /* o ponto final é a assinatura da marca — o único lugar onde o verde aparece */
+  .brand-dot { color: var(--accent-2); }
 
   /* ===== telas (abas) ===== */
   .screen { display: none; animation: fadeScreen .3s var(--ease-out); }
@@ -115,8 +128,10 @@
   .leg:last-child { border-bottom: none; }
   .leg .dot { width: 11px; height: 11px; border-radius: 4px; flex-shrink: 0; }
   .leg .nm { flex: 1; font-weight: 600; color: var(--cream); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .leg .pc { font-size: 12px; color: var(--muted); font-weight: 700; width: 42px; text-align: right; flex-shrink: 0; }
-  .leg .vl { font-weight: 700; color: var(--cream); width: 78px; text-align: right; flex-shrink: 0; }
+  /* Colunas de largura FIXA: é o que faz % e valor alinharem verticalmente.
+     A do valor cabe até £9999.99 sem empurrar as outras. */
+  .leg .pc { font-size: 12px; color: var(--muted); font-weight: 700; width: 44px; text-align: right; flex-shrink: 0; }
+  .leg .vl { font-weight: 700; color: var(--cream); width: 92px; text-align: right; flex-shrink: 0; }
 
   /* ===== insights ===== */
   .insight { display: flex; gap: 12px; align-items: flex-start; background: var(--bg); border: 1px solid var(--border); border-radius: var(--r-ctl); padding: 13px 14px; margin-bottom: 10px; }
@@ -138,12 +153,10 @@
   /* voz numérica da marca: Space Grotesk com dígitos tabulares (colunas alinham) */
   .mono { font-family: var(--font-display); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
   .item .amount, .fx-amount, .fixed-total, .leg .vl, .leg .pc, .day-total, .plan-2, .pie-center-total, .bar-value, .trust-num { font-family: var(--font-display); font-variant-numeric: tabular-nums; }
-  .brand-grad { background: linear-gradient(105deg, var(--accent) 0%, var(--accent-2) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
 
   .head-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
   .lang { background: var(--panel); border: 1px solid var(--border); color: var(--cream); border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; flex-shrink: 0; }
   .head-controls { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-  .eyebrow { color: var(--spent); letter-spacing: 0.18em; font-size: 11px; font-weight: 700; }
   h1 { font-size: 26px; margin-top: 4px; letter-spacing: -0.01em; }
   .sub { font-size: 14px; color: var(--muted); margin-top: 6px; }
 
@@ -193,7 +206,6 @@
   .summary.hero .total { color: #FFFFFF; font-size: 42px; }
   .summary.hero .note { color: rgba(255,255,255,0.92); }
   .summary.hero .note b { color: #FFFFFF !important; }
-  .summary.hero .othercur { color: rgba(255,255,255,0.8); }
   .card-title { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .chips-card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 14px 16px; margin-top: 14px; }
   .chips-card .chips { margin-top: 0; }
@@ -245,7 +257,18 @@
   .profile-title { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; font-weight: 700; margin-bottom: 8px; }
   .profile-row { display: flex; gap: 8px; margin-bottom: 8px; }
   .profile input, .profile select { flex: 1; min-width: 0; padding: 9px 12px; border-radius: 10px; font-size: 12px; background: var(--bg); color: var(--cream); border: 1px solid var(--border); outline: none; }
-  .chat { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+  /* A conversa rola DENTRO da própria caixa. Antes ela empurrava a página pra
+     baixo sem limite, e pra escrever de novo era preciso descer o chat inteiro.
+     Agora o campo de escrever fica sempre à mão. */
+  /* sem scroll-behavior:smooth de propósito — a cada resposta a caixa salta
+     pro fim, e animar esse salto deixa a conversa tremendo */
+  .chat { margin-top: 14px; display: flex; flex-direction: column; gap: 8px; max-height: 46vh; overflow-y: auto; overscroll-behavior: contain; padding-right: 2px; }
+  .chat:empty { display: none; }
+  /* barra de limpar a conversa: só aparece quando já existe conversa */
+  .chat-bar { display: flex; justify-content: flex-end; margin-top: 10px; }
+  .chat-clear { background: none; border: 1px solid var(--border); color: var(--muted); font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 999px; cursor: pointer; font-family: inherit; display: inline-flex; align-items: center; gap: 6px; }
+  .chat-clear svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  @media (hover: hover) { .chat-clear:hover { color: #F87171; border-color: #F87171; } }
   .msg { max-width: 85%; padding: 10px 13px; border-radius: 16px; font-size: 14px; line-height: 1.45; white-space: pre-wrap; }
   .msg.user { align-self: flex-end; background: var(--btn-bg); color: var(--btn-ink); }
   .msg.bot { align-self: flex-start; background: var(--panel); color: var(--cream); border: 1px solid var(--border); }
@@ -262,14 +285,13 @@
   .cur-opt { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; padding: 10px 12px; border-radius: 10px; font-size: 14px; background: none; border: none; color: var(--cream); cursor: pointer; }
   .cur-opt.active { color: var(--spent); font-weight: 700; }
   .cur-opt.local { border-top: 1px solid var(--border); margin-top: 4px; color: var(--muted); }
-  .othercur { font-size: 12px; color: var(--muted); margin-top: 6px; }
   .actions { display: flex; gap: 8px; margin-top: 16px; }
   .act { flex: 1; padding: 11px; border-radius: 12px; font-size: 13px; font-weight: 600; background: var(--panel); color: var(--cream); border: 1px solid var(--border); cursor: pointer; }
   @media print {
     body { background: #fff !important; color: #000 !important; padding: 12px !important; }
     .tabs, .row, .chips, .lang, .actions, .curbar, .disclaimer, .del, .fx-del, .check, .sub, .logout-wrap, .sub-cta { display: none !important; }
     .summary, .fixed { background: #fff !important; color: #000 !important; border: 1px solid #ddd !important; }
-    .summary .total, .eyebrow, h1, .fixed-title, .label, .fixed-total, .fx-name, .fx-amount, .fx-due, .compare, .note, .fixed-sub { color: #000 !important; }
+    .summary .total, h1, .fixed-title, .label, .fixed-total, .fx-name, .fx-amount, .fx-due, .compare, .note, .fixed-sub { color: #000 !important; }
   }
 
   .disclaimer { font-size: 11px; text-align: center; margin-top: 16px; color: var(--dim); }
@@ -283,7 +305,8 @@
   .auth-screen.hidden { display: none; }
   .auth-card { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 12px; text-align: center; }
   .auth-logo { width: 68px; height: 68px; margin: 0 auto 2px; display: block; }
-  .auth-brand { font-size: 30px; font-weight: 700; letter-spacing: -0.01em; }
+  .auth-brand { margin-top: 2px; }
+  .auth-name { font-size: 32px; }
   .auth-tag { font-size: 14px; color: var(--muted); margin-bottom: 10px; line-height: 1.4; }
   .auth-card input { width: 100%; text-align: left; }
   .auth-btn { width: 100%; }
@@ -332,10 +355,10 @@
   .chart-body.is-pie svg { max-width: 188px; }
   .chart-body.is-bar svg { max-width: 320px; }
   .bar-track { fill: var(--bg); }
-  .chart-legend { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 16px; }
-  .legend-item { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--cream); }
-  .legend-swatch { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
-  .legend-val { color: var(--muted); }
+  /* Coluna de linhas de largura CHEIA. Antes isto era flex-wrap, então cada
+     linha encolhia até o tamanho do próprio texto — daí os traços separadores
+     de comprimentos diferentes e os valores desalinhados. */
+  .chart-legend { margin-top: 16px; }
   .pie-center-total { fill: var(--cream); font-weight: 700; }
   .pie-center-label { fill: var(--muted); }
   .bar-label { fill: var(--cream); font-size: 12px; }
@@ -355,7 +378,7 @@
   <div id="authScreen" class="auth-screen">
     <div class="auth-card">
       <svg class="auth-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#000000"/><rect x="22" y="23" width="56" height="50" rx="7" fill="none" stroke="#FFFFFF" stroke-width="5"/><circle cx="45" cy="48" r="12" fill="none" stroke="#FFFFFF" stroke-width="5"/><circle cx="45" cy="48" r="2.6" fill="#FFFFFF"/><line x1="45" y1="48" x2="45" y2="39" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/><line x1="66" y1="41" x2="66" y2="55" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/><line x1="30" y1="73" x2="30" y2="79" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/><line x1="70" y1="73" x2="70" y2="79" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/></svg>
-      <div class="auth-brand brand-grad">Algent</div>
+      <div class="auth-brand"><span class="brand-name auth-name">Algent<span class="brand-dot">.</span></span></div>
       <h2 class="auth-title" id="authTitle"></h2>
       <div class="auth-switch" id="authSwitch"><span id="authSwitchText"></span> <button class="auth-switch-link" id="authToggle"></button></div>
 
@@ -389,7 +412,7 @@
   <div id="payScreen" class="auth-screen hidden">
     <div class="auth-card">
       <svg class="auth-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#000000"/><rect x="22" y="23" width="56" height="50" rx="7" fill="none" stroke="#FFFFFF" stroke-width="5"/><circle cx="45" cy="48" r="12" fill="none" stroke="#FFFFFF" stroke-width="5"/><circle cx="45" cy="48" r="2.6" fill="#FFFFFF"/><line x1="45" y1="48" x2="45" y2="39" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/><line x1="66" y1="41" x2="66" y2="55" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/><line x1="30" y1="73" x2="30" y2="79" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/><line x1="70" y1="73" x2="70" y2="79" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/></svg>
-      <div class="auth-brand brand-grad">Algent</div>
+      <div class="auth-brand"><span class="brand-name auth-name">Algent<span class="brand-dot">.</span></span></div>
       <div class="pay-title" id="payTitle"></div>
       <div class="auth-tag" id="paySub"></div>
       <button class="primary auth-btn" id="payBtn"></button>
@@ -405,8 +428,18 @@
 
   <div class="app">
     <div class="topbar">
-      <span class="eyebrow mono" id="eyebrow"></span>
-      <h1 id="title" class="brand-grad"></h1>
+      <h1 class="brand">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+          <rect width="32" height="32" rx="9" fill="var(--accent)"/>
+          <g fill="none" stroke="var(--btn-ink)" stroke-width="2.1" stroke-linecap="round">
+            <rect x="7.5" y="9" width="17" height="14" rx="3.5"/>
+            <circle cx="14" cy="16" r="3.4"/>
+            <path d="M14 16v-2.2"/>
+            <path d="M20 13.6v4.8"/>
+          </g>
+        </svg>
+        <span class="brand-name">Algent<span class="brand-dot">.</span></span>
+      </h1>
     </div>
 
     <!-- ===== ABA: INÍCIO ===== -->
@@ -415,7 +448,6 @@
       <div class="label" id="totalLabel"></div>
       <div class="total mono" id="total">£0.00</div>
       <div class="note" id="note"></div>
-      <div class="othercur" id="othercur"></div>
     </div>
 
     <div class="row">
@@ -497,6 +529,12 @@
         <input id="pGoal" autocomplete="off" style="width:100%" />
       </div>
       <div class="chat" id="chat"></div>
+      <div class="chat-bar" id="chatBar" style="display:none">
+        <button class="chat-clear" id="chatClearBtn" data-act="chat-clear">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>
+          <span id="chatClearLbl"></span>
+        </button>
+      </div>
       <div class="suggestions" id="suggestions"></div>
       <div class="coach-input-row">
         <input id="coachInput" autocomplete="off" />

@@ -19,10 +19,12 @@ const ICONS = {
 // ---- IDIOMAS ----
 const STR = {
   pt: {
-    eyebrow: "", title: "Algent",
     navHome: "Início", navStats: "Análise", navCoach: "AI", navSet: "Ajustes",
     planLabel: "Sua assinatura", planMonth: "mês", planTrial: "30 dias de teste grátis · acesso completo",
-    planDaysTrial: "Teste grátis · faltam {n} dias", planDaysActive: "Ativa · renova em {n} dias",
+    planTrialEnds: "Teste grátis · termina em {d}", planRenews: "Assinatura ativa · renova em {d}",
+    planCanceledUntil: "Cancelada · seu acesso vai até {date}", planCanceled: "Cancelada · você não será cobrado de novo",
+    planEnded: "Assinatura encerrada", planPastDue: "Pagamento pendente · atualize seu cartão",
+    day1: "1 dia", dayN: "{n} dias",
     prefLabel: "Preferências", langRowLabel: "Idioma", curRowLabel: "Moeda", accountLabel: "Conta",
     compareTitle: "Comparação mensal", statsEmpty: "Anote alguns gastos e seus gráficos aparecem aqui.",
     sub: 'Escreve do seu jeito, tipo "gastei 15 no uber". O app anota e organiza.',
@@ -54,9 +56,10 @@ const STR = {
     suggestions: ["Onde eu mais gasto?", "Como posso economizar?", "O que é reserva de emergência?", "O que fazer com o que sobra?"],
     coachPh: "pergunta pro seu coach...", send: "Enviar", thinkingTxt: "coach pensando...", coachErr: "Tive um problema pra pensar agora. Tenta de novo?",
     coachLimit: "Você fez muitas perguntas seguidas. Respira um pouquinho e me chama de novo em instantes. 🙂",
+    chatClear: "Limpar conversa", chatClearConfirm: "Apagar toda a conversa com a AI? Isso não dá pra desfazer.",
     cmpThisMonth: "Esse mês:", cmpMore: "a mais que o mês passado", cmpLess: "a menos que o mês passado", cmpSame: "Igual ao mês passado.",
     share: "↗ Compartilhar", pdf: "PDF", shareTitle: "meus gastos", copied: "Copiado!",
-    detectCur: "moeda daqui", otherCur: "Outras moedas:", localCur: "Moeda local",
+    detectCur: "moeda daqui", localCur: "Moeda local",
     authTag: "Entra ou cria sua conta pra começar.", emailPh: "seu email", passPh: "sua senha",
     google: "Continuar com Google", apple: "Continuar com Apple", authOr: "ou",
     authTitleUp: "Criar conta", authTitleIn: "Entrar",
@@ -90,10 +93,12 @@ const STR = {
     cats: { "Alimentação": "🍔 Alimentação", "Transporte": "🚗 Transporte", "Mercado": "🛒 Mercado", "Lazer": "🎉 Lazer", "Contas": "🧾 Contas", "Compras": "🛍️ Compras", "Saúde": "🩺 Saúde", "Assinaturas": "📺 Assinaturas", "Educação": "📚 Educação", "Viagem": "✈️ Viagem", "Casa": "🏠 Casa", "Beleza": "💅 Beleza", "Pets": "🐾 Pets", "Outros": "📦 Outros" },
   },
   en: {
-    eyebrow: "", title: "Algent",
     navHome: "Home", navStats: "Analysis", navCoach: "AI", navSet: "Settings",
     planLabel: "Your subscription", planMonth: "month", planTrial: "30-day free trial · full access",
-    planDaysTrial: "Free trial · {n} days left", planDaysActive: "Active · renews in {n} days",
+    planTrialEnds: "Free trial · ends in {d}", planRenews: "Subscription active · renews in {d}",
+    planCanceledUntil: "Cancelled · your access runs until {date}", planCanceled: "Cancelled · you won't be charged again",
+    planEnded: "Subscription ended", planPastDue: "Payment pending · please update your card",
+    day1: "1 day", dayN: "{n} days",
     prefLabel: "Preferences", langRowLabel: "Language", curRowLabel: "Currency", accountLabel: "Account",
     compareTitle: "Monthly comparison", statsEmpty: "Log a few expenses and your charts show up here.",
     sub: 'Just type it, like "spent 15 on uber". The app logs and sorts it.',
@@ -125,9 +130,10 @@ const STR = {
     suggestions: ["Where do I spend most?", "How can I save?", "What is an emergency fund?", "What to do with leftover money?"],
     coachPh: "ask your coach...", send: "Send", thinkingTxt: "coach thinking...", coachErr: "I had a problem thinking. Try again?",
     coachLimit: "That's a lot of questions in a row. Give it a moment and ask me again. 🙂",
+    chatClear: "Clear chat", chatClearConfirm: "Delete the whole conversation with the AI? This can't be undone.",
     cmpThisMonth: "This month:", cmpMore: "more than last month", cmpLess: "less than last month", cmpSame: "Same as last month.",
     share: "↗ Share", pdf: "PDF", shareTitle: "my spending", copied: "Copied!",
-    detectCur: "currency here", otherCur: "Other currencies:", localCur: "Local currency",
+    detectCur: "currency here", localCur: "Local currency",
     authTag: "Sign in or create your account to start.", emailPh: "your email", passPh: "your password",
     google: "Continue with Google", apple: "Continue with Apple", authOr: "or",
     authTitleUp: "Sign up", authTitleIn: "Sign in",
@@ -174,6 +180,59 @@ function applyHtmlLang() { document.documentElement.lang = lang === "pt" ? "pt-B
 applyHtmlLang();
 
 // ---- PLANO B do cérebro: palavra-chave (usado só se o porteiro/IA falhar) ----
+// ---- Entende "quando" foi o gasto ----
+// A pessoa esqueceu de anotar e escreve "Tesco 20 dia 2" ou "uber 8 ontem".
+// Aqui tiramos a parte da data do texto (pra ela não virar o VALOR por engano)
+// e devolvemos a data certa. O resto do texto segue normal pra IA/categorização.
+//
+// Regra do mês: se o dia escrito ainda não chegou neste mês (hoje é 2 e a pessoa
+// escreveu "dia 28"), o gasto é do mês PASSADO — ninguém anota algo do futuro.
+function extractDate(text) {
+  const original = String(text || "");
+  let s = original;
+  const limpar = (x) => x.replace(/\s{2,}/g, " ").trim();
+  // Meio-dia: encosta longe da virada do dia, então fuso/horário de verão não empurra pro dia errado
+  const meioDia = (d) => { d.setHours(12, 0, 0, 0); return d; };
+
+  // "ontem" / "yesterday"
+  if (/\b(ontem|yesterday)\b/i.test(s)) {
+    s = s.replace(/\b(ontem|yesterday)\b/gi, " ");
+    const d = new Date(); d.setDate(d.getDate() - 1);
+    return { date: meioDia(d), cleaned: limpar(s) || original };
+  }
+  // "anteontem"
+  if (/\b(anteontem|antes de ontem)\b/i.test(s)) {
+    s = s.replace(/\b(anteontem|antes de ontem)\b/gi, " ");
+    const d = new Date(); d.setDate(d.getDate() - 2);
+    return { date: meioDia(d), cleaned: limpar(s) || original };
+  }
+
+  let dia = null, mes = null;
+  // "dia 2/8" ou "day 2/8" (dia/mês)
+  let m = s.match(/\b(?:dia|day)\s*(\d{1,2})\s*[\/\-]\s*(\d{1,2})\b/i);
+  if (m) { dia = +m[1]; mes = +m[2]; s = s.replace(m[0], " "); }
+  else {
+    // "dia 2" ou "day 2"
+    m = s.match(/\b(?:dia|day)\s*(\d{1,2})\b/i);
+    if (m) { dia = +m[1]; s = s.replace(m[0], " "); }
+  }
+  if (!dia || dia < 1 || dia > 31) return { date: null, cleaned: original };
+
+  const agora = new Date();
+  let ano = agora.getFullYear();
+  let mesIdx = (mes ? mes - 1 : agora.getMonth());
+  if (mes && (mes < 1 || mes > 12)) return { date: null, cleaned: original };
+
+  if (!mes && dia > agora.getDate()) mesIdx -= 1;      // dia que ainda não chegou = mês passado
+  if (mesIdx < 0) { mesIdx = 11; ano -= 1; }
+  const d = new Date(ano, mesIdx, dia);
+  // Dia que não existe no mês (ex: 31 de fevereiro) — o JS viraria pro mês seguinte
+  if (d.getMonth() !== mesIdx || d.getDate() !== dia) return { date: null, cleaned: original };
+  if (mes && d.getTime() > agora.getTime()) d.setFullYear(ano - 1); // mês/dia no futuro = ano passado
+
+  return { date: meioDia(d), cleaned: limpar(s) || original };
+}
+
 function parseLocal(text) {
   const match = text.match(/(\d+(?:[.,]\d{1,2})?)/);
   const amount = match ? parseFloat(match[1].replace(",", ".")) : 0;
@@ -270,11 +329,18 @@ async function addExpense(msg, curOverride) {
   if (!text) return;
   const btn = document.getElementById("addBtn");
   btn.disabled = true; btn.textContent = t("parsingTxt");
-  const parsed = await parse(text);
+  // Tira a data do texto ANTES de ler o valor — senão "Tesco 20 dia 2" corre o
+  // risco de virar um gasto de 2, e a IA ainda gastaria token lendo "dia 2".
+  const quando = extractDate(text);
+  const parsed = await parse(quando.cleaned);
   // Se a pessoa já ensinou a categoria dessa palavra, a IA respeita a escolha dela
-  const learned = learnedCategoryFor(text, parsed.description);
+  const learned = learnedCategoryFor(quando.cleaned, parsed.description);
   if (learned) parsed.category = learned;
-  const obj = { date: new Date().toISOString(), cur: curOverride || curCurrency, ...parsed };
+  const obj = {
+    date: (quando.date || new Date()).toISOString(),
+    cur: curOverride || curCurrency,
+    ...parsed,
+  };
   if (sbClient) {
     // salva na nuvem, na conta da pessoa, e usa a linha que o banco devolve (com o id de verdade)
     const saved = await cloudInsertExpense(obj);
@@ -464,8 +530,6 @@ function renderChips() {
 }
 
 function applyStaticTexts() {
-  document.getElementById("eyebrow").textContent = t("eyebrow");
-  document.getElementById("title").textContent = t("title");
   input.setAttribute("placeholder", t("inputPh"));
   // aria-label: o placeholder some quando a pessoa digita; o rótulo de acessibilidade não
   input.setAttribute("aria-label", t("inputPh"));
@@ -497,6 +561,8 @@ function applyStaticTexts() {
   setTxt("compareTitle", t("compareTitle")); setTxt("statsEmpty", t("statsEmpty"));
   setTxt("chipsTitle", t("chipsTitle"));
   setTxt("coachTitleEl", t("coachTitle")); setTxt("coachSubEl", t("coachSub")); setTxt("coachDisclaim", t("disclaimer"));
+  setTxt("chatClearLbl", t("chatClear"));
+  const _cc = document.getElementById("chatClearBtn"); if (_cc) _cc.setAttribute("aria-label", t("chatClear"));
   setTxt("insightsTitle", t("insightsTitle"));
   setTxt("themeRowLabel", t("themeRowLabel")); setTxt("thAuto", t("thAuto")); setTxt("thLight", t("thLight")); setTxt("thDark", t("thDark"));
   document.getElementById("pRisk").innerHTML =
@@ -538,7 +604,6 @@ function render() {
   } else { noteEl.textContent = ""; }
   renderCurrencyBar();
   renderCompare();
-  renderOtherCur();
   renderChart();
 
   if (exp.length === 0) { listEl.innerHTML = '<div class="empty">' + t("emptyExpenses") + '</div>'; return; }
@@ -742,6 +807,18 @@ function renderChat() {
     coachMessages.map(m => '<div class="msg ' + (m.role === "user" ? "user" : "bot") + '">' + esc(m.content) + '</div>').join("") +
     (coachThinking ? '<div class="thinking">' + t("thinkingTxt") + '</div>' : "");
   c.scrollTop = c.scrollHeight;
+  // O botão de limpar só faz sentido quando já existe conversa de verdade
+  // (a saudação sozinha não conta — não há o que apagar).
+  const bar = document.getElementById("chatBar");
+  if (bar) bar.style.display = coachMessages.length > 1 ? "flex" : "none";
+}
+// Apaga a conversa e volta pra saudação. Some do aparelho e da nuvem.
+function clearChat() {
+  if (coachMessages.length <= 1) return;
+  if (!confirm(t("chatClearConfirm"))) return;
+  coachMessages = [{ role: "bot", content: STR[lang].coachGreeting }];
+  saveCoachMsgs();
+  renderChat();
 }
 function renderSuggestions() {
   document.getElementById("suggestions").innerHTML =
@@ -852,15 +929,6 @@ function renderCurrencyBar() {
       CUR_ORDER.map(code => '<button class="cur-opt' + (code === curCurrency ? ' active' : '') + '" data-act="cur-set" data-cur="' + esc(code) + '">' + FLAGS[code] + ' ' + CURRENCIES[code] + '  ' + code + '</button>').join("") +
       '<button class="cur-opt local" data-act="cur-detect">📍 ' + t("localCur") + '</button>' +
     '</div>';
-}
-function renderOtherCur() {
-  const parts = [];
-  CUR_ORDER.forEach(code => {
-    if (code === curCurrency) return;
-    const tot = expenses.filter(e => expCur(e) === code).reduce((s, e) => s + (Number(e.amount) || 0), 0);
-    if (tot > 0) parts.push(money(tot, code));
-  });
-  document.getElementById("othercur").innerHTML = parts.length ? (t("otherCur") + " " + parts.join(" · ")) : "";
 }
 // Detecta a moeda do lugar (aproximado): 1º tenta GPS, 2º cai pro fuso horário. Nunca mexe nos fixos.
 function currencyFromCoords(lat, lon) {
@@ -974,6 +1042,7 @@ const ACTIONS = {
   "cur-toggle":  () => toggleCurMenu(),
   "cur-set":     (el) => setCurCurrency(el.dataset.cur),
   "cur-detect":  () => detectCurrency(),
+  "chat-clear":  () => clearChat(),
 };
 // Registrado ANTES do "clique fora fecha o menu" logo abaixo — a ordem importa:
 // o botão de moeda precisa poder impedir que o próprio clique feche o menu que
@@ -1027,13 +1096,19 @@ function hasAccess(status) { return status === "trialing" || status === "active"
 async function fetchSubStatus() {
   if (!sbClient) return null;
   try {
-    // pega a linha MAIS RECENTE (se por algum motivo existir mais de uma, não quebra)
+    // select("*") de propósito: se a coluna cancel_at_period_end ainda não existir
+    // no banco, pedir ela pelo nome faria a consulta INTEIRA falhar — e aí a pessoa
+    // levaria paywall mesmo tendo assinatura. Assim, o que existir vem.
     const { data, error } = await sbClient.from("subscriptions")
-      .select("status,current_period_end")
+      .select("*")
       .order("updated_at", { ascending: false })
       .limit(1);
     if (error || !data || !data.length) return null;
-    return { status: data[0].status || null, end: data[0].current_period_end || null };
+    return {
+      status: data[0].status || null,
+      end: data[0].current_period_end || null,
+      cancelAtEnd: data[0].cancel_at_period_end === true,
+    };
   } catch (e) { return null; }
 }
 function showPaywall(status) {
@@ -1044,22 +1119,37 @@ function showPaywall(status) {
   document.getElementById("payScreen").classList.remove("hidden");
 }
 function hidePaywall() { document.getElementById("payScreen").classList.add("hidden"); }
-// O botão "cancelar assinatura" só aparece pra quem tem assinatura (teste ou ativa)
-function updateCancelVisibility(status) {
+// O botão "cancelar assinatura" some pra quem não tem assinatura E pra quem já
+// cancelou — cancelar duas vezes só confunde.
+function updateCancelVisibility(status, cancelAtEnd) {
   const btn = document.getElementById("cancelSubBtn");
   if (!btn) return;
-  btn.style.display = hasAccess(status) ? "flex" : "none";
+  btn.style.display = (hasAccess(status) && !cancelAtEnd) ? "flex" : "none";
 }
 async function gate() {
-  if (!sbClient) { hidePaywall(); updateCancelVisibility(null); return; } // se a nuvem falhar, não tranca ninguém (libera)
+  if (!sbClient) { hidePaywall(); updateCancelVisibility(null, false); return; } // se a nuvem falhar, não tranca ninguém (libera)
   const sub = await fetchSubStatus();
   const status = sub ? sub.status : null;
+  const cancelAtEnd = sub ? sub.cancelAtEnd : false;
   if (hasAccess(status)) hidePaywall(); else showPaywall(status);
-  updateCancelVisibility(status);
-  renderPlanInfo(status, sub ? sub.end : null);
+  updateCancelVisibility(status, cancelAtEnd);
+  renderPlanInfo(status, sub ? sub.end : null, cancelAtEnd);
 }
-// Mostra no card da assinatura quantos dias faltam (teste ou renovação)
-function renderPlanInfo(status, end) {
+// Escreve a data por extenso no idioma da pessoa ("10 de setembro de 2026")
+function longDate(ms) {
+  try {
+    return new Date(ms).toLocaleDateString(lang === "pt" ? "pt-BR" : "en-GB",
+      { day: "numeric", month: "long", year: "numeric" });
+  } catch (e) { return ""; }
+}
+// "1 dia" / "12 dias" — sem o "1 dias" que entrega app amador
+function daysWord(n) {
+  return n === 1 ? t("day1") : t("dayN").replace("{n}", n);
+}
+// A linha de baixo do card da assinatura. Diz em que pé a coisa está:
+// quantos dias faltam do teste, quando renova, ou até quando vai o acesso
+// depois de cancelada.
+function renderPlanInfo(status, end, cancelAtEnd) {
   const el = document.getElementById("planTrial");
   if (!el) return;
   let endMs = null;
@@ -1067,13 +1157,24 @@ function renderPlanInfo(status, end) {
     if (typeof end === "number") endMs = end > 1e12 ? end : end * 1000;
     else { const p = Date.parse(end); if (!isNaN(p)) endMs = p; }
   }
-  if (endMs && endMs > Date.now()) {
-    const days = Math.max(1, Math.ceil((endMs - Date.now()) / 86400000));
-    const key = status === "trialing" ? "planDaysTrial" : "planDaysActive";
-    el.textContent = t(key).replace("{n}", days);
+
+  // Cancelada: o que importa é ATÉ QUANDO ela ainda tem acesso.
+  if (cancelAtEnd) {
+    el.textContent = endMs
+      ? t("planCanceledUntil").replace("{date}", longDate(endMs))
+      : t("planCanceled");
     return;
   }
-  el.textContent = t("planTrial"); // sem dado: mantém o texto padrão
+  if (status === "canceled") { el.textContent = t("planEnded"); return; }
+  if (status === "past_due" || status === "unpaid") { el.textContent = t("planPastDue"); return; }
+
+  if (endMs && endMs > Date.now()) {
+    const days = Math.max(1, Math.ceil((endMs - Date.now()) / 86400000));
+    const key = status === "trialing" ? "planTrialEnds" : "planRenews";
+    el.textContent = t(key).replace("{d}", daysWord(days));
+    return;
+  }
+  el.textContent = t("planTrial"); // ainda sem data vinda do Stripe: texto padrão
 }
 
 // ---- NUVEM: gastos no Supabase, amarrados à conta logada ----
@@ -1339,13 +1440,19 @@ async function cancelSubscription() {
     if (!res.ok || !data || !data.ok) throw new Error((data && data.error) || "failed");
     if (data.nothing) {
       alert(t("cancelNothing"));
-    } else if (data.periodEnd) {
-      const d = new Date(data.periodEnd * 1000);
-      const ds = d.toLocaleDateString(lang === "pt" ? "pt-BR" : "en-GB", { day: "numeric", month: "long", year: "numeric" });
-      alert(t("cancelDone").replace("{date}", ds));
     } else {
-      alert(t("cancelDoneNoDate"));
+      // MOSTRA O CANCELAMENTO NA HORA. O Stripe mantém o status "active" até o
+      // período acabar, e o aviso dele pro nosso servidor pode demorar alguns
+      // segundos. Sem isto a tela continuaria dizendo "assinatura ativa" logo
+      // depois de cancelar — foi exatamente o que dava a impressão de não ter
+      // funcionado. O gate() no fim confere de novo com o servidor.
+      const endMs = data.periodEnd ? data.periodEnd * 1000 : null;
+      renderPlanInfo(null, endMs, true);
+      updateCancelVisibility(null, true);
+      alert(endMs ? t("cancelDone").replace("{date}", longDate(endMs)) : t("cancelDoneNoDate"));
     }
+    // reconfere com o servidor (se o webhook já tiver chegado, fica igual)
+    setTimeout(() => { gate(); }, 2500);
   } catch (e) {
     alert(t("cancelErr"));
   } finally {

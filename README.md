@@ -79,8 +79,14 @@ create table if not exists subscriptions (
   status text,
   stripe_customer_id text,
   current_period_end timestamptz,
+  -- marcada pra cancelar no fim do período. O Stripe mantém status "active"
+  -- até o período acabar, então sem esta coluna o app diria "assinatura ativa"
+  -- pra quem acabou de cancelar.
+  cancel_at_period_end boolean default false,
   updated_at timestamptz default now()
 );
+-- Se a sua tabela já existia, rode só esta linha:
+alter table subscriptions add column if not exists cancel_at_period_end boolean default false;
 alter table subscriptions enable row level security;
 create policy "read own" on subscriptions for select using (user_id = auth.uid());
 -- (sem policy de insert/update para usuários: só o service_role escreve aqui)

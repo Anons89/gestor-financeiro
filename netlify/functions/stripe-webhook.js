@@ -87,18 +87,34 @@ async function upsertSub(userId, fields, eventAtMs) {
     { user_id: userId, updated_at: new Date(eventAtMs).toISOString() },
     clean
   );
-  const res = await fetch(url + "/rest/v1/subscriptions", {
-    method: "POST",
-    headers: Object.assign(supaHeaders(), {
-      // resolution=merge-duplicates faz o "upsert": cria se não existe, atualiza se já existe
-      "Prefer": "resolution=merge-duplicates,return=minimal",
-    }),
-    body: JSON.stringify(row),
-  });
-  if (!res.ok) {
-    const txt = await res.text();
-    throw new Error("supabase write failed: " + txt);
+  const gravar = async (payload) => {
+    const res = await fetch(url + "/rest/v1/subscriptions", {
+      method: "POST",
+      headers: Object.assign(supaHeaders(), {
+        // resolution=merge-duplicates faz o "upsert": cria se não existe, atualiza se já existe
+        "Prefer": "resolution=merge-duplicates,return=minimal",
+      }),
+      body: JSON.stringify(payload),
+    });
+    return res.ok ? null : await res.text();
+  };
+
+  let erro = await gravar(row);
+  if (!erro) return;
+
+  // A coluna cancel_at_period_end é nova (o SQL está no README). Se o banco de
+  // alguém ainda não tiver, grava sem ela em vez de perder o aviso do Stripe
+  // inteiro — status e data de renovação são mais importantes que ela.
+  if (/cancel_at_period_end/.test(erro) && "cancel_at_period_end" in row) {
+    const semColuna = Object.assign({}, row);
+    delete semColuna.cancel_at_period_end;
+    erro = await gravar(semColuna);
+    if (!erro) {
+      console.warn("coluna cancel_at_period_end ausente — rode o SQL do README");
+      return;
+    }
   }
+  throw new Error("supabase write failed: " + erro);
 }
 
 exports.handler = async (event) => {
@@ -145,11 +161,15 @@ exports.handler = async (event) => {
         status: obj.status || "active",
         stripe_customer_id: obj.customer || null,
         current_period_end: obj.current_period_end ? new Date(obj.current_period_end * 1000).toISOString() : null,
+        // MARCADA PRA CANCELAR: o Stripe mantém status "active"/"trialing" até o
+        // período acabar, então sem guardar isto o app não teria como saber que
+        // a pessoa cancelou — e ela veria "assinatura ativa" depois de cancelar.
+        cancel_at_period_end: obj.cancel_at_period_end === true,
       };
     } else if (type === "customer.subscription.deleted") {
-      // Assinatura cancelada/terminada
+      // Assinatura cancelada/terminada de vez (o período acabou)
       userId = obj.metadata && obj.metadata.user_id;
-      fields = { status: "canceled" };
+      fields = { status: "canceled", cancel_at_period_end: false };
     }
     // Outros tipos de evento a gente simplesmente ignora, respondendo OK.
 

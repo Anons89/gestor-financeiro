@@ -68,13 +68,15 @@
     -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid rgba(52,199,123,0.08);
   }
+  /* Mesma marca do app: lockup em cor sólida, sem gradiente em letra. */
+  .nav-brand { display: inline-flex; align-items: center; gap: 9px; }
+  .nav-mark { width: 26px; height: 26px; display: block; flex-shrink: 0; }
   .nav-logo {
     font-family: var(--display);
-    font-size: 22px; font-weight: 700; letter-spacing: -0.03em;
-    background: linear-gradient(105deg, var(--green) 0%, var(--green-2) 100%);
-    -webkit-background-clip: text; background-clip: text;
-    -webkit-text-fill-color: transparent; color: transparent;
+    font-size: 21px; font-weight: 700; letter-spacing: -0.045em;
+    color: var(--text); line-height: 1;
   }
+  .brand-dot { color: var(--green-2); }
   .nav-cta {
     background: var(--btn); color: var(--btn-ink);
     font-size: 14px; font-weight: 700;
@@ -128,9 +130,9 @@
     font-weight: 700;
     letter-spacing: -0.03em;
     line-height: 1.04;
-    background: linear-gradient(105deg, var(--green) 0%, var(--green-2) 100%);
-    -webkit-background-clip: text; background-clip: text;
-    -webkit-text-fill-color: transparent; color: transparent;
+    /* verde sólido, igual à marca. Degradê em letra some no celular e
+       é o acabamento que mais entrega template. */
+    color: var(--green-2);
     margin-bottom: 28px;
   }
 
@@ -323,7 +325,7 @@
     flex-wrap:wrap; gap:12px;
     max-width:960px; margin:0 auto;
   }
-  .foot-logo { font-family: var(--display); font-size:18px; font-weight:700; letter-spacing:-.02em; color:var(--green); }
+  .foot-logo { font-family: var(--display); font-size:18px; font-weight:700; letter-spacing:-.045em; color:var(--text); }
   .foot-links { display:flex; gap:20px; }
   .foot-links a { font-size:13px; color:var(--dim); text-decoration:none; transition: color .18s var(--ease); }
   .foot-links a:hover { color:var(--mid); }
@@ -346,7 +348,17 @@
 
 <!-- NAV -->
 <nav>
-  <span class="nav-logo">Algent</span>
+  <span class="nav-brand">
+    <svg class="nav-mark" viewBox="0 0 32 32" aria-hidden="true">
+      <rect width="32" height="32" rx="9" fill="var(--green)"/>
+      <g fill="none" stroke="var(--btn-ink)" stroke-width="2.1" stroke-linecap="round">
+        <rect x="7.5" y="9" width="17" height="14" rx="3.5"/>
+        <circle cx="14" cy="16" r="3.4"/>
+        <path d="M14 16v-2.2"/><path d="M20 13.6v4.8"/>
+      </g>
+    </svg>
+    <span class="nav-logo">Algent<span class="brand-dot">.</span></span>
+  </span>
   <a href="/app.html" class="nav-cta">Get started free</a>
 </nav>
 
@@ -529,7 +541,7 @@
 
 <!-- FOOTER -->
 <footer>
-  <span class="foot-logo">Algent</span>
+  <span class="foot-logo">Algent<span class="brand-dot">.</span></span>
   <div class="foot-links">
     <a href="/privacy.html">Privacy</a>
     <a href="/terms.html">Terms</a>
