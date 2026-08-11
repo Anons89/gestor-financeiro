@@ -16,10 +16,10 @@ App de controle de gastos com IA: a pessoa escreve "gastei 15 no uber", a IA lê
 ## Estrutura
 
 ```
-index.html     → landing page
-app.html       → o app inteiro (uma página só)
-privacy.html   → política de privacidade
-terms.html     → termos de uso
+index.html     → landing page          index.js → sessão + entrada ao rolar
+app.html       → o app inteiro          app.js  → toda a lógica do app
+privacy.html   → política de privacidade ┐
+terms.html     → termos de uso          ┘ legal.js → troca de idioma (compartilhado)
 netlify.toml   → headers de segurança
 netlify/functions/
   categorize.js          → IA que lê o gasto (só pra assinante)
@@ -149,9 +149,11 @@ delete from ai_usage where day < current_date - interval '30 days';
 - `netlify.toml` define HSTS, CSP e demais headers de segurança.
 - No logout, **tudo** que é pessoal sai do aparelho (gastos, fixos, conversa do coach, categorias aprendidas).
 
+- **CSP sem `'unsafe-inline'` em `script-src`.** Todo o JS mora em arquivos (`app.js`, `index.js`, `legal.js`) e não existe nenhum `onclick="..."` no HTML — os botões criados na hora carregam só um rótulo `data-act`, e um ouvinte único em `app.js` decide o que fazer. Efeito prático: **mesmo que um texto malicioso chegue à tela, o navegador se recusa a executá-lo.**
+
 ### O que ainda está em aberto (consciente)
 
-- **`'unsafe-inline'` em `script-src`.** Todo o JS mora dentro do HTML (projeto sem etapa de build), então a CSP precisa permitir script inline. Tirar isso exige separar o JS em arquivos `.js` e usar nonce ou hash. É a melhoria mais valiosa que sobrou.
+- **`'unsafe-inline'` em `style-src`.** Os estilos ficam no `<style>` de cada página. Risco bem menor: CSS não executa código.
 - **Login e recuperação de senha** rodam direto no Supabase Auth (SDK no navegador), então o rate limiting deles é o do próprio Supabase — o app não tem como pôr freio antes. Confira os limites em *Authentication → Rate Limits* no painel.
 
 ## Testes de segurança

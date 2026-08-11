@@ -542,31 +542,6 @@
      Só espia a chave que o Supabase guarda no navegador — sem baixar a
      biblioteca inteira (~120KB) só pra isso. Se a sessão estiver velha,
      o app resolve sozinho (mostra o login). -->
-<script>
-  (function () {
-    try {
-      var raw = localStorage.getItem("sb-efytffndatdkvbzeoxgm-auth-token");
-      if (!raw) return;
-      var s = JSON.parse(raw);
-      if (s && s.access_token) window.location.replace("/app.html");
-    } catch (e) {}
-  })();
-
-  // Entrada suave ao rolar. A classe "js" garante: sem JavaScript, nada fica escondido.
-  document.documentElement.classList.add("js");
-  (function () {
-    var els = document.querySelectorAll(".reveal");
-    if (!("IntersectionObserver" in window)) {
-      els.forEach ? els.forEach(function (el) { el.classList.add("in"); }) : null;
-      return;
-    }
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); }
-      });
-    }, { threshold: 0.15, rootMargin: "0px 0px -40px 0px" });
-    els.forEach(function (el) { io.observe(el); });
-  })();
-</script>
+<script src="/index.js"></script>
 </body>
 </html>

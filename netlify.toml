@@ -23,10 +23,15 @@
     Cross-Origin-Opener-Policy = "same-origin"
     # De onde a página pode carregar cada coisa. Qualquer script de um
     # domínio fora desta lista é BLOQUEADO pelo navegador.
-    # Nota: 'unsafe-inline' em script-src é necessário porque todo o JS do app
-    # mora dentro do próprio HTML (projeto sem etapa de build). Trocar isso por
-    # nonce/hash exigiria separar o JS em arquivos — está anotado no README.
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://efytffndatdkvbzeoxgm.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
+    #
+    # script-src NÃO tem mais 'unsafe-inline': todo o JS mora em arquivos
+    # (/app.js, /index.js, /legal.js) e não sobrou nenhum onclick="..." no HTML.
+    # Efeito prático: mesmo que um texto malicioso chegue à tela, o navegador
+    # se recusa a executá-lo. É a trava que transforma XSS em texto sem graça.
+    #
+    # style-src ainda permite inline (os estilos ficam no <style> das páginas).
+    # É um risco bem menor: CSS não executa código.
+    Content-Security-Policy = "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://efytffndatdkvbzeoxgm.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
 
 # As funções nunca devem ser guardadas em cache por CDN/navegador:
 # a resposta depende de QUEM está pedindo (token) e do limite de uso.
