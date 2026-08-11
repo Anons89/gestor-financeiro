@@ -7,6 +7,9 @@
 [[headers]]
   for = "/*"
   [headers.values]
+    # O navegador passa a EXIGIR https neste domínio pelos próximos 2 anos,
+    # mesmo que alguém tente forçar http (evita interceptação no Wi-Fi público).
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
     # Ninguém pode colocar o site dentro de um iframe (evita clickjacking)
     X-Frame-Options = "DENY"
     # O navegador não tenta "adivinhar" tipo de arquivo (evita truques com uploads)
@@ -16,6 +19,19 @@
     # Só o próprio site pode pedir localização (usada pra detectar a moeda);
     # câmera, microfone e pagamento ficam desligados
     Permissions-Policy = "geolocation=(self), camera=(), microphone=(), payment=()"
+    # Isola a aba: uma janela aberta por outro site não consegue mexer nesta
+    Cross-Origin-Opener-Policy = "same-origin"
     # De onde a página pode carregar cada coisa. Qualquer script de um
     # domínio fora desta lista é BLOQUEADO pelo navegador.
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://efytffndatdkvbzeoxgm.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'"
+    # Nota: 'unsafe-inline' em script-src é necessário porque todo o JS do app
+    # mora dentro do próprio HTML (projeto sem etapa de build). Trocar isso por
+    # nonce/hash exigiria separar o JS em arquivos — está anotado no README.
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://efytffndatdkvbzeoxgm.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests"
+
+# As funções nunca devem ser guardadas em cache por CDN/navegador:
+# a resposta depende de QUEM está pedindo (token) e do limite de uso.
+[[headers]]
+  for = "/.netlify/functions/*"
+  [headers.values]
+    Cache-Control = "no-store"
+    X-Content-Type-Options = "nosniff"

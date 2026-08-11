@@ -6,10 +6,19 @@
 // nosso que redireciona pra um site falso.
 
 const { verifyUser } = require("./lib/verify-user");
+const { checkLimits } = require("./lib/rate-limit");
+
+const MAX_BODY = 8 * 1024;
+
+const json = (statusCode, obj) => ({
+  statusCode,
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(obj),
+});
 
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") {
-    return { statusCode: 405, body: JSON.stringify({ error: "Method not allowed" }) };
+    return json(405, { error: "Method not allowed" });
   }
 
   // O preço não é segredo (é só o "nome da prateleira"), então fica embutido aqui.
@@ -19,18 +28,39 @@ exports.handler = async (event) => {
 
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) {
-    return { statusCode: 500, body: JSON.stringify({ error: "Stripe key missing" }) };
+    return json(500, { error: "Stripe key missing" });
   }
 
-  let body = {};
-  try { body = JSON.parse(event.body || "{}"); } catch (e) {}
+  const raw = event.body || "{}";
+  if (raw.length > MAX_BODY) return json(413, { error: "body too large" });
+
+  let body;
+  try { body = JSON.parse(raw); } catch (e) { return json(400, { error: "bad json" }); }
+  if (!body || typeof body !== "object") return json(400, { error: "bad json" });
 
   // CONFERE quem é a pessoa pelo token (aqui não precisa ser assinante ainda —
   // ela está justamente vindo assinar). Só precisa estar logada.
   const auth = await verifyUser(body.accessToken);
   if (!auth.ok) {
-    return { statusCode: auth.code, body: JSON.stringify({ error: auth.error }) };
+    return json(auth.code, { error: auth.error });
   }
+
+  // JÁ TEM ASSINATURA VIVA? Então não abre outra tela de pagamento.
+  // Sem isto, a pessoa (ou um script) consegue criar várias assinaturas na mesma
+  // conta e acabar sendo cobrada duas ou três vezes pelo mesmo app.
+  if (auth.subscribed) {
+    return json(409, { error: "already subscribed" });
+  }
+
+  // Freio: impede abrir dezenas de sessões de checkout em sequência.
+  const limited = await checkLimits(auth.userId, {
+    bucket: "checkout",
+    burstCapacity: 3,
+    burstRefillPerSec: 0.05,  // 1 a cada 20s
+    dailyLimit: 20,
+  });
+  if (limited) return limited;
+
   const userId = auth.userId;
   const email = auth.email;
   // URL de volta: a do próprio site (Netlify preenche URL), nunca a que o navegador mandar
@@ -64,10 +94,14 @@ exports.handler = async (event) => {
     });
     const data = await res.json();
     if (!res.ok) {
-      return { statusCode: 500, body: JSON.stringify({ error: (data && data.error && data.error.message) || "Stripe error" }) };
+      // O erro real vai pro log do Netlify; o navegador recebe só o aviso genérico
+      // (mensagem de erro do Stripe pode entregar detalhes da nossa conta).
+      console.error("stripe checkout failed:", data && data.error);
+      return json(502, { error: "Stripe error" });
     }
-    return { statusCode: 200, body: JSON.stringify({ url: data.url }) };
+    return json(200, { url: data.url });
   } catch (e) {
-    return { statusCode: 500, body: JSON.stringify({ error: "Request failed" }) };
+    console.error("stripe checkout request failed:", e);
+    return json(502, { error: "Request failed" });
   }
 };

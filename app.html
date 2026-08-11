@@ -647,6 +647,7 @@
       coachGreeting: "Oi! Sou seu coach financeiro. Ajudo você a entender pra onde vai seu dinheiro e explico conceitos — mas não digo o que comprar. Registra alguns gastos e me pergunta o que quiser. 👇",
       suggestions: ["Onde eu mais gasto?", "Como posso economizar?", "O que é reserva de emergência?", "O que fazer com o que sobra?"],
       coachPh: "pergunta pro seu coach...", send: "Enviar", thinkingTxt: "coach pensando...", coachErr: "Tive um problema pra pensar agora. Tenta de novo?",
+      coachLimit: "Você fez muitas perguntas seguidas. Respira um pouquinho e me chama de novo em instantes. 🙂",
       cmpThisMonth: "Esse mês:", cmpMore: "a mais que o mês passado", cmpLess: "a menos que o mês passado", cmpSame: "Igual ao mês passado.",
       share: "↗ Compartilhar", pdf: "PDF", shareTitle: "meus gastos", copied: "Copiado!",
       detectCur: "moeda daqui", otherCur: "Outras moedas:", localCur: "Moeda local",
@@ -717,6 +718,7 @@
       coachGreeting: "Hello! I'm your money coach. I help you understand where your money goes and explain concepts — but I won't tell you what to buy. Log some spending and ask me anything. 👇",
       suggestions: ["Where do I spend most?", "How can I save?", "What is an emergency fund?", "What to do with leftover money?"],
       coachPh: "ask your coach...", send: "Send", thinkingTxt: "coach thinking...", coachErr: "I had a problem thinking. Try again?",
+      coachLimit: "That's a lot of questions in a row. Give it a moment and ask me again. 🙂",
       cmpThisMonth: "This month:", cmpMore: "more than last month", cmpLess: "less than last month", cmpSame: "Same as last month.",
       share: "↗ Share", pdf: "PDF", shareTitle: "my spending", copied: "Copied!",
       detectCur: "currency here", otherCur: "Other currencies:", localCur: "Local currency",
@@ -1110,9 +1112,11 @@
     const d = new Date(ts(e)), n = new Date();
     return d.getFullYear() === n.getFullYear() && d.getMonth() === n.getMonth();
   }
-  // O emoji e o nome vêm do rótulo da categoria ("🍔 Alimentação")
-  function catEmoji(cat) { const l = catLabel(cat); const i = l.indexOf(" "); return i > 0 ? l.slice(0, i) : "📦"; }
-  function catName(cat) { const l = catLabel(cat); const i = l.indexOf(" "); return i > 0 ? l.slice(i + 1) : l; }
+  // O emoji e o nome vêm do rótulo da categoria ("🍔 Alimentação").
+  // Uma categoria desconhecida (vinda da nuvem, editada à mão) volta como texto
+  // cru — então String() aqui e esc() na hora de desenhar; nunca vai crua pro HTML.
+  function catEmoji(cat) { const l = String(catLabel(cat)); const i = l.indexOf(" "); return i > 0 ? l.slice(0, i) : "📦"; }
+  function catName(cat) { const l = String(catLabel(cat)); const i = l.indexOf(" "); return i > 0 ? l.slice(i + 1) : l; }
   function render() {
     const exp = expenses.filter(e => expCur(e) === curCurrency);
     const monthExp = exp.filter(isThisMonth);
@@ -1124,7 +1128,7 @@
     const biggest = Object.entries(byCat).sort((a, b) => b[1] - a[1])[0];
     if (biggest) {
       const heavy = biggest[1] > total * 0.4 ? t("heavy") : t("ok");
-      noteEl.innerHTML = t("biggest") + " <b>" + esc(catLabel(biggest[0])) + "</b> (" + money(biggest[1]) + "). " + heavy;
+      noteEl.innerHTML = t("biggest") + " <b>" + esc(catLabel(biggest[0])) + "</b> (" + esc(money(biggest[1])) + "). " + heavy;
     } else { noteEl.textContent = ""; }
     renderCurrencyBar();
     renderCompare();
@@ -1143,7 +1147,7 @@
 
     const itemHtml = e =>
       '<div class="item">' +
-        '<div class="emo" aria-hidden="true">' + catEmoji(e.category) + '</div>' +
+        '<div class="emo" aria-hidden="true">' + esc(catEmoji(e.category)) + '</div>' +
         '<div class="meta">' +
           '<div class="desc">' + esc(e.description) + '</div>' +
           '<button class="cat-edit" onclick="openCatPicker(\'' + esc(String(e.id)) + '\')">' + esc(catName(e.category)) + ' <span class="pen" aria-hidden="true">' + ICONS.pen + '</span></button>' +
@@ -1314,7 +1318,7 @@
           '<button class="check' + (paid ? ' on' : '') + '" aria-pressed="' + paid + '" aria-label="' + t("aPaid") + ': ' + esc(f.name) + '" onclick="togglePaid(\'' + esc(String(f.id)) + '\')">' + (paid ? '✓' : '') + '</button>' +
           '<span class="fx-info">' +
             '<span class="fx-name">' + esc(f.name) + '</span>' +
-            (f.dueDay ? '<span class="fx-due">' + t("dueDay") + ' ' + f.dueDay + '</span>' : '') +
+            (f.dueDay ? '<span class="fx-due">' + t("dueDay") + ' ' + (Number(f.dueDay) || "") + '</span>' : '') +
           '</span>' +
         '</span>' +
         '<span class="fx-right">' +
@@ -1367,8 +1371,14 @@
       const res = await fetch("/.netlify/functions/coach", {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
       });
-      const data = await res.json();
-      coachMessages.push({ role: "bot", content: (data && data.reply) ? data.reply : t("coachErr") });
+      // 429 = a pessoa bateu no limite de uso. Merece um aviso claro, não um
+      // "deu erro" genérico que parece defeito do app.
+      if (res.status === 429) {
+        coachMessages.push({ role: "bot", content: t("coachLimit") });
+      } else {
+        const data = await res.json();
+        coachMessages.push({ role: "bot", content: (data && data.reply) ? data.reply : t("coachErr") });
+      }
     } catch (e) {
       coachMessages.push({ role: "bot", content: t("coachErr") });
     }

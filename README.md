@@ -89,14 +89,81 @@ create policy "read own" on subscriptions for select using (user_id = auth.uid()
 > ✅ **Confira no seu Supabase** que as tabelas/policies estão assim — em especial o
 > `primary key` em `subscriptions.user_id` e o `default auth.uid()` em `expenses.user_id`.
 
+### Cota diária de IA (recomendado — rode este SQL)
+
+Sem isto o app já tem um freio de rajada (na memória do servidor), que segura o
+abuso óbvio. Este SQL liga o **teto diário**, que segura o abuso lento e distribuído.
+Enquanto não for rodado, a cota diária simplesmente não trava ninguém — o app
+continua funcionando normalmente.
+
+```sql
+-- Contador de uso da IA por pessoa/por dia. Só o servidor mexe aqui.
+create table if not exists ai_usage (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  bucket  text not null,                    -- "categorize", "coach", "checkout"...
+  day     date not null default current_date,
+  count   int  not null default 0,
+  primary key (user_id, bucket, day)
+);
+alter table ai_usage enable row level security;
+-- (sem policy nenhuma: ninguém logado lê nem escreve; só o service_role passa)
+
+-- Soma +1 e devolve TRUE se ainda cabe no teto. Tudo numa tacada só, pra duas
+-- chamadas ao mesmo tempo não furarem a cota.
+create or replace function bump_ai_usage(p_user uuid, p_bucket text, p_limit int)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare novo int;
+begin
+  insert into ai_usage (user_id, bucket, day, count)
+  values (p_user, p_bucket, current_date, 1)
+  on conflict (user_id, bucket, day)
+    do update set count = ai_usage.count + 1
+  returning count into novo;
+  return novo <= p_limit;
+end;
+$$;
+
+revoke all on function bump_ai_usage(uuid, text, int) from public, anon, authenticated;
+```
+
+Limpeza opcional (a tabela cresce 1 linha por pessoa/tipo/dia):
+
+```sql
+delete from ai_usage where day < current_date - interval '30 days';
+```
+
 ## Segurança — decisões tomadas
 
 - As funções de IA (`categorize`, `coach`) **exigem token de assinante** — sem isso qualquer pessoa poderia usar a chave da NVIDIA de graça.
-- `create-checkout` descobre quem é a pessoa **pelo token**, nunca pelo que o navegador diz; a URL de retorno é fixa no servidor.
-- O webhook do Stripe confere a assinatura HMAC **e** rejeita avisos com mais de 5 minutos (anti-replay).
+- **Freio de uso** em toda função que custa dinheiro (`lib/rate-limit.js`): rajada na memória do servidor + cota diária no Supabase. Impede que uma conta de £2,99 queime a fatura da NVIDIA num laço.
+- O texto da pessoa vai pra IA como **mensagem separada** (`role: user`), nunca colado nas instruções — um "ignore as regras acima" digitado por ela é lido como dado.
+- **Nada do que a IA devolve entra sem conferência**: valor tem que ser número finito, categoria tem que estar na lista, descrição é cortada.
+- `create-checkout` descobre quem é a pessoa **pelo token**, nunca pelo que o navegador diz; a URL de retorno é fixa no servidor; e **recusa quem já tem assinatura viva** (evita cobrança dupla).
+- O webhook do Stripe confere a assinatura HMAC, rejeita avisos com mais de 5 minutos (anti-replay) **e descarta avisos atrasados** que chegariam fora de ordem (o Stripe não garante a ordem — sem isso um "ativo" antigo poderia ressuscitar uma assinatura cancelada).
+- **Erro interno nunca vai pro navegador** — vai pro log do Netlify.
 - O `supabase-js` é carregado com **versão travada + integrity (SRI)** — se o CDN for adulterado, o navegador recusa.
-- `netlify.toml` define CSP e demais headers de segurança.
+- `netlify.toml` define HSTS, CSP e demais headers de segurança.
 - No logout, **tudo** que é pessoal sai do aparelho (gastos, fixos, conversa do coach, categorias aprendidas).
+
+### O que ainda está em aberto (consciente)
+
+- **`'unsafe-inline'` em `script-src`.** Todo o JS mora dentro do HTML (projeto sem etapa de build), então a CSP precisa permitir script inline. Tirar isso exige separar o JS em arquivos `.js` e usar nonce ou hash. É a melhoria mais valiosa que sobrou.
+- **Login e recuperação de senha** rodam direto no Supabase Auth (SDK no navegador), então o rate limiting deles é o do próprio Supabase — o app não tem como pôr freio antes. Confira os limites em *Authentication → Rate Limits* no painel.
+
+## Testes de segurança
+
+```bash
+node --test tests/
+```
+
+Não precisa instalar nada (usa o runner que já vem no Node 18+). Cobrem: assinatura
+do webhook do Stripe (adulteração, impostor, replay, rodízio de segredo), o freio de
+uso, e as funções de IA recusando quem não está logado ou não é assinante — além da
+conferência do que a IA devolve.
 
 ## Rodando local
 

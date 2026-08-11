@@ -2,7 +2,8 @@
 // Quando a pessoa clica "cancelar assinatura" dentro do app, o navegador chama aqui.
 // Passos deste porteiro:
 //   1) CONFERE quem é a pessoa, de verdade, pelo token do Supabase (pra ninguém cancelar a de outro)
-//   2) descobre o "cliente Stripe" dela na tabela subscriptions
+//   2) descobre o "cliente Stripe" DELA na tabela subscriptions — a busca é sempre
+//      pelo id vindo do token, nunca por um id que o navegador tenha mandado
 //   3) pede pro Stripe cancelar AO FIM DO PERÍODO (ela mantém acesso até o fim do que já pagou / do teste)
 //
 // Segredos (só no cofre do Netlify, nunca no navegador/GitHub/chat):
@@ -10,41 +11,54 @@
 //   SUPABASE_URL           -> endereço do projeto Supabase
 //   SUPABASE_SERVICE_ROLE  -> chave-mestra do Supabase (só o servidor tem)
 
+const { verifyUser } = require("./lib/verify-user");
+const { checkLimits } = require("./lib/rate-limit");
+
+const MAX_BODY = 8 * 1024;
+
+const json = (statusCode, obj) => ({
+  statusCode,
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(obj),
+});
+
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") {
-    return { statusCode: 405, body: JSON.stringify({ error: "Method not allowed" }) };
+    return json(405, { error: "Method not allowed" });
   }
 
   const stripeKey = process.env.STRIPE_SECRET_KEY;
   const supaUrl = process.env.SUPABASE_URL;
   const supaKey = process.env.SUPABASE_SERVICE_ROLE;
   if (!stripeKey || !supaUrl || !supaKey) {
-    return { statusCode: 500, body: JSON.stringify({ error: "Server not configured" }) };
+    return json(500, { error: "Server not configured" });
   }
 
-  // Pega o token que o navegador mandou (prova de quem está logado)
-  let body = {};
-  try { body = JSON.parse(event.body || "{}"); } catch (e) {}
-  const accessToken = body.accessToken;
-  if (!accessToken) {
-    return { statusCode: 401, body: JSON.stringify({ error: "Not signed in" }) };
+  const raw = event.body || "{}";
+  if (raw.length > MAX_BODY) return json(413, { error: "body too large" });
+
+  let body;
+  try { body = JSON.parse(raw); } catch (e) { return json(400, { error: "bad json" }); }
+  if (!body || typeof body !== "object") return json(400, { error: "bad json" });
+
+  // 1) CONFERE a identidade pelo token (mesmo conferente das outras funções)
+  const auth = await verifyUser(body.accessToken);
+  if (!auth.ok) {
+    return json(auth.code, { error: auth.error });
   }
+  const userId = auth.userId;
+
+  // Freio: cancelar é uma ação de conta; ninguém precisa fazer isso 50x por minuto.
+  const limited = await checkLimits(userId, {
+    bucket: "cancel",
+    burstCapacity: 3,
+    burstRefillPerSec: 0.05,
+    dailyLimit: 20,
+  });
+  if (limited) return limited;
 
   try {
-    // 1) CONFERE a identidade: pergunta ao Supabase "de quem é este token?"
-    const who = await fetch(supaUrl + "/auth/v1/user", {
-      headers: { "apikey": supaKey, "Authorization": "Bearer " + accessToken },
-    });
-    if (!who.ok) {
-      return { statusCode: 401, body: JSON.stringify({ error: "Invalid session" }) };
-    }
-    const user = await who.json();
-    const userId = user && user.id;
-    if (!userId) {
-      return { statusCode: 401, body: JSON.stringify({ error: "Invalid session" }) };
-    }
-
-    // 2) Acha o cliente Stripe dessa pessoa na tabela subscriptions
+    // 2) Acha o cliente Stripe DESSA pessoa (id vindo do token conferido acima)
     const rowRes = await fetch(
       supaUrl + "/rest/v1/subscriptions?user_id=eq." + encodeURIComponent(userId) + "&select=stripe_customer_id",
       { headers: { "apikey": supaKey, "Authorization": "Bearer " + supaKey } }
@@ -54,7 +68,7 @@ exports.handler = async (event) => {
 
     // Sem cliente Stripe = acesso de cortesia ou nunca assinou. Nada pra cancelar no Stripe.
     if (!customerId) {
-      return { statusCode: 200, body: JSON.stringify({ ok: true, nothing: true }) };
+      return json(200, { ok: true, nothing: true });
     }
 
     // 3) Lista as assinaturas desse cliente no Stripe
@@ -74,7 +88,7 @@ exports.handler = async (event) => {
       if (alive && !s.cancel_at_period_end) {
         const params = new URLSearchParams();
         params.append("cancel_at_period_end", "true");
-        const upd = await fetch("https://api.stripe.com/v1/subscriptions/" + s.id, {
+        const upd = await fetch("https://api.stripe.com/v1/subscriptions/" + encodeURIComponent(s.id), {
           method: "POST",
           headers: {
             "Authorization": "Bearer " + stripeKey,
@@ -96,11 +110,12 @@ exports.handler = async (event) => {
 
     if (!canceledAny) {
       // Nenhuma assinatura viva encontrada (talvez já cancelada)
-      return { statusCode: 200, body: JSON.stringify({ ok: true, nothing: true }) };
+      return json(200, { ok: true, nothing: true });
     }
 
-    return { statusCode: 200, body: JSON.stringify({ ok: true, periodEnd: periodEnd }) };
+    return json(200, { ok: true, periodEnd: periodEnd });
   } catch (e) {
-    return { statusCode: 500, body: JSON.stringify({ error: "Request failed" }) };
+    console.error("cancel-subscription failed:", e);
+    return json(502, { error: "Request failed" });
   }
 };

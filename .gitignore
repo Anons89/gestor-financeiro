@@ -1,0 +1,28 @@
+# ---- Nada daqui pode ir parar no GitHub ----
+
+# Segredos: chaves do Stripe, do Supabase, da NVIDIA.
+# Estes valores moram SÓ no cofre do Netlify (Site settings > Environment variables).
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets.json
+
+# Netlify (cache local, build e variáveis baixadas com `netlify env:pull`)
+.netlify/
+.netlify-cache/
+
+# Dependências e build (o projeto não usa hoje, mas se um dia usar)
+node_modules/
+dist/
+build/
+*.log
+npm-debug.log*
+
+# Sistema operacional / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
