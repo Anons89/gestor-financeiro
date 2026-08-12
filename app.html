@@ -589,6 +589,11 @@
           <button class="set-item danger" id="cancelSubBtn">
             <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.7 5.7l12.6 12.6"/></svg></span><span class="lbl" id="cancelSubLbl"></span><span class="chev">›</span>
           </button>
+          <!-- Aparece no lugar do "Cancelar" depois que a pessoa cancela:
+               dá pra voltar atrás enquanto o período pago não acabou. -->
+          <button class="set-item" id="reactivateBtn" style="display:none" data-act="sub-reactivate">
+            <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v4.5h-4.5"/></svg></span><span class="lbl" id="reactivateLbl"></span><span class="chev">›</span>
+          </button>
           <button class="set-item" id="logoutBtn">
             <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 8l-4 4 4 4M6 12h10"/></svg></span><span class="lbl" id="logoutLbl"></span><span class="chev">›</span>
           </button>

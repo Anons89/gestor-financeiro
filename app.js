@@ -87,6 +87,10 @@ const STR = {
     cancelDone: "Assinatura cancelada. Você continua com acesso até {date} e não será cobrado de novo.",
     cancelDoneNoDate: "Pronto, sua assinatura foi cancelada. Você não será cobrado de novo.",
     cancelNothing: "Não encontrei uma assinatura ativa pra cancelar por aqui.",
+    reactivate: "Reativar plano", reactivateBusy: "Reativando...",
+    reactivateDone: "Pronto! Sua assinatura volta a valer normalmente. Nada mudou no seu acesso.",
+    reactivateNothing: "Não encontrei uma assinatura cancelada pra reativar por aqui.",
+    reactivateErr: "Não consegui reativar agora. Tenta de novo daqui a pouco?",
     cancelErr: "Não consegui cancelar agora. Tenta de novo daqui a pouco?",
     legalPrivacy: "Privacidade", legalTerms: "Termos",
     aDel: "Apagar", aPaid: "Pago este mês", aCur: "Trocar moeda",
@@ -161,6 +165,10 @@ const STR = {
     cancelDone: "Subscription cancelled. You keep access until {date}, and you won't be charged again.",
     cancelDoneNoDate: "Done — your subscription has been cancelled. You won't be charged again.",
     cancelNothing: "I couldn't find an active subscription to cancel here.",
+    reactivate: "Reactivate plan", reactivateBusy: "Reactivating...",
+    reactivateDone: "Done — your subscription is back to normal. Nothing changed about your access.",
+    reactivateNothing: "I couldn't find a cancelled subscription to reactivate here.",
+    reactivateErr: "Couldn't reactivate right now. Try again in a moment?",
     cancelErr: "I couldn't cancel right now. Try again in a moment?",
     legalPrivacy: "Privacy", legalTerms: "Terms",
     aDel: "Delete", aPaid: "Paid this month", aCur: "Change currency",
@@ -529,6 +537,16 @@ function renderChips() {
   }
 }
 
+// ---- Estado da assinatura, LEMBRADO ----
+// Antes o texto do card era escrito uma vez e pronto. Só que applyStaticTexts()
+// reescreve os textos fixos da tela — e ele roda DEPOIS, quando a sincronização
+// com a nuvem termina e quando a pessoa troca de idioma. Resultado: o texto
+// calculado ("Cancelada · acesso até X") era apagado e voltava o padrão
+// "30 dias de teste grátis", como se a pessoa não tivesse cancelado.
+// Guardando o estado aqui, a tela pode ser redesenhada quantas vezes for preciso
+// sem perder a verdade e sem consultar o banco de novo.
+let subState = { status: null, end: null, cancelAtEnd: false };
+
 function applyStaticTexts() {
   input.setAttribute("placeholder", t("inputPh"));
   // aria-label: o placeholder some quando a pessoa digita; o rótulo de acessibilidade não
@@ -556,7 +574,11 @@ function applyStaticTexts() {
   document.getElementById("pdfBtn").textContent = t("pdf");
   const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
   setTxt("navHome", t("navHome")); setTxt("navStats", t("navStats")); setTxt("navCoach", t("navCoach")); setTxt("navSet", t("navSet"));
-  setTxt("planLabel", t("planLabel")); setTxt("planMonth", t("planMonth")); setTxt("planTrial", t("planTrial"));
+  setTxt("planLabel", t("planLabel")); setTxt("planMonth", t("planMonth"));
+  // planTrial NÃO é escrito aqui de propósito: o texto dele depende do estado
+  // da assinatura. Redesenhamos a partir do estado lembrado — senão esta função
+  // apagaria "Cancelada · acesso até X" toda vez que rodasse.
+  renderSubscriptionUI();
   setTxt("prefLabel", t("prefLabel")); setTxt("langRowLabel", t("langRowLabel")); setTxt("curRowLabel", t("curRowLabel")); setTxt("accountLabel", t("accountLabel"));
   setTxt("compareTitle", t("compareTitle")); setTxt("statsEmpty", t("statsEmpty"));
   setTxt("chipsTitle", t("chipsTitle"));
@@ -1043,6 +1065,7 @@ const ACTIONS = {
   "cur-set":     (el) => setCurCurrency(el.dataset.cur),
   "cur-detect":  () => detectCurrency(),
   "chat-clear":  () => clearChat(),
+  "sub-reactivate": () => reactivateSubscription(),
 };
 // Registrado ANTES do "clique fora fecha o menu" logo abaixo — a ordem importa:
 // o botão de moeda precisa poder impedir que o próprio clique feche o menu que
@@ -1122,21 +1145,39 @@ function showPaywall(status) {
   document.getElementById("payScreen").classList.remove("hidden");
 }
 function hidePaywall() { document.getElementById("payScreen").classList.add("hidden"); }
-// O botão "cancelar assinatura" some pra quem não tem assinatura E pra quem já
-// cancelou — cancelar duas vezes só confunde.
-function updateCancelVisibility(status, cancelAtEnd) {
-  const btn = document.getElementById("cancelSubBtn");
-  if (!btn) return;
-  btn.style.display = (hasAccess(status) && !cancelAtEnd) ? "flex" : "none";
+// Os dois botões da conta são um par: nunca aparecem juntos.
+//   assinatura viva e não cancelada  -> "Cancelar assinatura"
+//   cancelada mas ainda com acesso   -> "Reativar plano" (dá pra voltar atrás)
+//   sem acesso nenhum                -> nenhum dos dois
+function updateSubButtons(status, cancelAtEnd) {
+  const cancelar = document.getElementById("cancelSubBtn");
+  const reativar = document.getElementById("reactivateBtn");
+  if (!cancelar) return;
+  const temAcesso = hasAccess(status);
+  cancelar.style.display = (temAcesso && !cancelAtEnd) ? "flex" : "none";
+  if (reativar) {
+    reativar.style.display = (temAcesso && cancelAtEnd) ? "flex" : "none";
+    const lbl = document.getElementById("reactivateLbl");
+    if (lbl) lbl.textContent = t("reactivate");
+  }
 }
+function setSubState(status, end, cancelAtEnd) {
+  subState = { status: status || null, end: end || null, cancelAtEnd: cancelAtEnd === true };
+  renderSubscriptionUI();
+}
+// Redesenha tudo que depende da assinatura, sempre a partir do estado lembrado
+function renderSubscriptionUI() {
+  renderPlanInfo(subState.status, subState.end, subState.cancelAtEnd);
+  updateSubButtons(subState.status, subState.cancelAtEnd);
+}
+
 async function gate() {
-  if (!sbClient) { hidePaywall(); updateCancelVisibility(null, false); return; } // se a nuvem falhar, não tranca ninguém (libera)
+  if (!sbClient) { hidePaywall(); setSubState(null, null, false); return; } // se a nuvem falhar, não tranca ninguém (libera)
   const sub = await fetchSubStatus();
   const status = sub ? sub.status : null;
   const cancelAtEnd = sub ? sub.cancelAtEnd : false;
   if (hasAccess(status)) hidePaywall(); else showPaywall(status);
-  updateCancelVisibility(status, cancelAtEnd);
-  renderPlanInfo(status, sub ? sub.end : null, cancelAtEnd);
+  setSubState(status, sub ? sub.end : null, cancelAtEnd);
 }
 // Escreve a data por extenso no idioma da pessoa ("10 de setembro de 2026")
 function longDate(ms) {
@@ -1449,9 +1490,11 @@ async function cancelSubscription() {
       // segundos. Sem isto a tela continuaria dizendo "assinatura ativa" logo
       // depois de cancelar — foi exatamente o que dava a impressão de não ter
       // funcionado.
+      // Mantém o status REAL (active/trialing) — a pessoa segue com acesso pago.
+      // Passar null aqui faria os dois botões sumirem e ela ficaria sem como
+      // voltar atrás.
       const endMs = data.periodEnd ? data.periodEnd * 1000 : null;
-      renderPlanInfo(null, endMs, true);
-      updateCancelVisibility(null, true);
+      setSubState(subState.status, endMs, true);
       alert(endMs ? t("cancelDone").replace("{date}", longDate(endMs)) : t("cancelDoneNoDate"));
     }
     // NÃO reconferimos com o servidor aqui de propósito.
@@ -1466,6 +1509,40 @@ async function cancelSubscription() {
   } finally {
     if (btn) btn.disabled = false;
     if (lbl) lbl.textContent = t("cancelSub");
+  }
+}
+
+// ---- REATIVAR: desfaz o cancelamento enquanto o período pago não acabou ----
+// Não abre checkout novo de propósito: isso criaria uma SEGUNDA assinatura no
+// Stripe e a pessoa seria cobrada duas vezes. O servidor apenas desmarca o
+// cancelamento da assinatura que ela já tem.
+async function reactivateSubscription() {
+  if (!sbClient) { alert(t("reactivateErr")); return; }
+  const btn = document.getElementById("reactivateBtn");
+  const lbl = document.getElementById("reactivateLbl");
+  if (btn) btn.disabled = true;
+  if (lbl) lbl.textContent = t("reactivateBusy");
+  try {
+    const token = await getToken();
+    if (!token) throw new Error("no session");
+    const res = await fetch("/.netlify/functions/reactivate-subscription", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ accessToken: token }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data || !data.ok) throw new Error((data && data.error) || "failed");
+    if (data.nothing) {
+      alert(t("reactivateNothing"));
+    } else {
+      const endMs = data.periodEnd ? data.periodEnd * 1000 : subState.end;
+      setSubState(subState.status, endMs, false);
+      alert(t("reactivateDone"));
+    }
+  } catch (e) {
+    alert(t("reactivateErr"));
+  } finally {
+    if (btn) btn.disabled = false;
+    if (lbl) lbl.textContent = t("reactivate");
   }
 }
 // Quando a pessoa volta do pagamento, agradece e limpa o ?paid=1 da barra de endereço
