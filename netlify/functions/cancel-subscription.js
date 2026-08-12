@@ -22,6 +22,49 @@ const json = (statusCode, obj) => ({
   body: JSON.stringify(obj),
 });
 
+// Atualiza a linha DESTA pessoa na tabela subscriptions.
+// Nunca derruba o cancelamento se der problema: o Stripe já foi avisado (que é
+// o que impede a cobrança); isto aqui é só pra tela mostrar a verdade na hora.
+async function patchSubscription(userId, campos) {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE;
+  const corpo = {};
+  Object.keys(campos).forEach(k => { if (campos[k] !== undefined) corpo[k] = campos[k]; });
+
+  const enviar = async (payload) => {
+    const res = await fetch(
+      url + "/rest/v1/subscriptions?user_id=eq." + encodeURIComponent(userId),
+      {
+        method: "PATCH",
+        headers: {
+          "apikey": key,
+          "Authorization": "Bearer " + key,
+          "Content-Type": "application/json",
+          "Prefer": "return=minimal",
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+    return res.ok ? null : await res.text();
+  };
+
+  try {
+    let erro = await enviar(corpo);
+    if (!erro) return;
+    // A coluna cancel_at_period_end é nova (SQL no README). Se o banco ainda não
+    // tiver, grava o resto em vez de perder tudo.
+    if (/cancel_at_period_end/.test(erro) && "cancel_at_period_end" in corpo) {
+      const semColuna = Object.assign({}, corpo);
+      delete semColuna.cancel_at_period_end;
+      erro = await enviar(semColuna);
+      if (!erro) { console.warn("coluna cancel_at_period_end ausente — rode o SQL do README"); return; }
+    }
+    console.error("não consegui marcar o cancelamento no banco:", erro);
+  } catch (e) {
+    console.error("não consegui marcar o cancelamento no banco:", e);
+  }
+}
+
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") {
     return json(405, { error: "Method not allowed" });
@@ -112,6 +155,20 @@ exports.handler = async (event) => {
       // Nenhuma assinatura viva encontrada (talvez já cancelada)
       return json(200, { ok: true, nothing: true });
     }
+
+    // GRAVA O CANCELAMENTO NA HORA, sem esperar o webhook do Stripe.
+    // Sem isto o app relia o banco poucos segundos depois, ainda via "não
+    // cancelada" e trazia o botão de cancelar de volta — parecia que o
+    // cancelamento não tinha pegado.
+    //
+    // De propósito NÃO mexemos no `status`: o Stripe mantém "active"/"trialing"
+    // até o período acabar, e é isso que garante o acesso que a pessoa já pagou.
+    // Marcar "canceled" aqui cortaria o acesso na hora — cobrar e não entregar.
+    await patchSubscription(userId, {
+      cancel_at_period_end: true,
+      current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : undefined,
+      updated_at: new Date().toISOString(),
+    });
 
     return json(200, { ok: true, periodEnd: periodEnd });
   } catch (e) {

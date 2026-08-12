@@ -12,9 +12,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="Algent" />
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23000000'/%3E%3Crect x='22' y='23' width='56' height='50' rx='7' fill='none' stroke='%23FFFFFF' stroke-width='5'/%3E%3Ccircle cx='45' cy='48' r='12' fill='none' stroke='%23FFFFFF' stroke-width='5'/%3E%3Ccircle cx='45' cy='48' r='2.6' fill='%23FFFFFF'/%3E%3Cline x1='45' y1='48' x2='45' y2='39' stroke='%23FFFFFF' stroke-width='4' stroke-linecap='round'/%3E%3Cline x1='66' y1='41' x2='66' y2='55' stroke='%23FFFFFF' stroke-width='5' stroke-linecap='round'/%3E%3Cline x1='30' y1='73' x2='30' y2='79' stroke='%23FFFFFF' stroke-width='5' stroke-linecap='round'/%3E%3Cline x1='70' y1='73' x2='70' y2='79' stroke='%23FFFFFF' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E" />
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23000000'/%3E%3Crect x='22' y='23' width='56' height='50' rx='7' fill='none' stroke='%23FFFFFF' stroke-width='5'/%3E%3Ccircle cx='45' cy='48' r='12' fill='none' stroke='%23FFFFFF' stroke-width='5'/%3E%3Ccircle cx='45' cy='48' r='2.6' fill='%23FFFFFF'/%3E%3Cline x1='45' y1='48' x2='45' y2='39' stroke='%23FFFFFF' stroke-width='4' stroke-linecap='round'/%3E%3Cline x1='66' y1='41' x2='66' y2='55' stroke='%23FFFFFF' stroke-width='5' stroke-linecap='round'/%3E%3Cline x1='30' y1='73' x2='30' y2='79' stroke='%23FFFFFF' stroke-width='5' stroke-linecap='round'/%3E%3Cline x1='70' y1='73' x2='70' y2='79' stroke='%23FFFFFF' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E" />
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2032%2032%27%3E%3Crect%20width%3D%2732%27%20height%3D%2732%27%20rx%3D%279%27%20fill%3D%27%2334C77B%27%2F%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%2304220E%27%20stroke-width%3D%272.1%27%20stroke-linecap%3D%27round%27%3E%3Crect%20x%3D%277.5%27%20y%3D%279%27%20width%3D%2717%27%20height%3D%2714%27%20rx%3D%273.5%27%2F%3E%3Ccircle%20cx%3D%2714%27%20cy%3D%2716%27%20r%3D%273.4%27%2F%3E%3Cpath%20d%3D%27M14%2016v-2.2%27%2F%3E%3Cpath%20d%3D%27M20%2013.6v4.8%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2032%2032%27%3E%3Crect%20width%3D%2732%27%20height%3D%2732%27%20rx%3D%279%27%20fill%3D%27%2334C77B%27%2F%3E%3Cg%20fill%3D%27none%27%20stroke%3D%27%2304220E%27%20stroke-width%3D%272.1%27%20stroke-linecap%3D%27round%27%3E%3Crect%20x%3D%277.5%27%20y%3D%279%27%20width%3D%2717%27%20height%3D%2714%27%20rx%3D%273.5%27%2F%3E%3Ccircle%20cx%3D%2714%27%20cy%3D%2716%27%20r%3D%273.4%27%2F%3E%3Cpath%20d%3D%27M14%2016v-2.2%27%2F%3E%3Cpath%20d%3D%27M20%2013.6v4.8%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E" />
 
+<!-- Roda antes de a página desenhar: decide se a tela de login deve nascer
+     escondida, pra quem já está logado não ver ela piscar. -->
+<script src="/boot.js"></script>
 <style>
   :root {
     --bg: #0A0E0C; --panel: #12181A; --panel-2: #161D1F; --border: #232C2E; --cream: #EAF1EC;
@@ -303,6 +306,10 @@
       radial-gradient(800px 600px at -10% 100%, rgba(52,199,123,0.07), transparent 60%),
       var(--bg); }
   .auth-screen.hidden { display: none; }
+  /* Já existe sessão guardada neste aparelho (marcado pelo boot.js antes de
+     desenhar): a tela de login nem chega a aparecer. Se a sessão estiver velha,
+     o showLogin() tira essa marca e a tela volta normalmente. */
+  html.has-session #authScreen { display: none; }
   .auth-card { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 12px; text-align: center; }
   .auth-logo { width: 68px; height: 68px; margin: 0 auto 2px; display: block; }
   .auth-brand { margin-top: 2px; }

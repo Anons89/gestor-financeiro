@@ -1086,6 +1086,9 @@ let applyingRemote = false;   // enquanto aplico o que veio da nuvem, não reenv
 const authScreen = document.getElementById("authScreen");
 function showApp() { authScreen.classList.add("hidden"); syncCloud(); gate(); }
 function showLogin() {
+  // Tira a marca do boot.js: a sessão guardada não valia (expirou, foi
+  // revogada), então a tela de login precisa voltar a aparecer.
+  document.documentElement.classList.remove("has-session");
   authScreen.classList.remove("hidden");
   if (!recoveryMode) { authMode = "signup"; emailOpen = false; setAuthMsg("", ""); renderAuth(); }
 }
@@ -1445,14 +1448,19 @@ async function cancelSubscription() {
       // período acabar, e o aviso dele pro nosso servidor pode demorar alguns
       // segundos. Sem isto a tela continuaria dizendo "assinatura ativa" logo
       // depois de cancelar — foi exatamente o que dava a impressão de não ter
-      // funcionado. O gate() no fim confere de novo com o servidor.
+      // funcionado.
       const endMs = data.periodEnd ? data.periodEnd * 1000 : null;
       renderPlanInfo(null, endMs, true);
       updateCancelVisibility(null, true);
       alert(endMs ? t("cancelDone").replace("{date}", longDate(endMs)) : t("cancelDoneNoDate"));
     }
-    // reconfere com o servidor (se o webhook já tiver chegado, fica igual)
-    setTimeout(() => { gate(); }, 2500);
+    // NÃO reconferimos com o servidor aqui de propósito.
+    // Antes havia um gate() com atraso de 2,5s: ele relia o banco, o aviso do
+    // Stripe às vezes ainda não tinha chegado, e a tela voltava a dizer
+    // "assinatura ativa" com o botão de cancelar de novo — parecia que o
+    // cancelamento tinha falhado.
+    // Agora a própria função de cancelar já grava no banco antes de responder,
+    // então o estado correto aparece sozinho na próxima vez que o app abrir.
   } catch (e) {
     alert(t("cancelErr"));
   } finally {

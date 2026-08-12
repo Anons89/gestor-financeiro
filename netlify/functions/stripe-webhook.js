@@ -47,6 +47,29 @@ function verifyStripe(rawBody, sigHeader, secret) {
   });
 }
 
+// ---- Descobre a data em que o período acaba ----
+// O Stripe MUDOU onde guarda isso. Até a API 2024 o campo ficava na raiz da
+// assinatura; a partir da 2025 ele mudou pra dentro de cada item
+// (items.data[0].current_period_end). E a versão que chega aqui é a configurada
+// no PAINEL do Stripe pro webhook — não a que a gente pede nas outras chamadas.
+// Por isso olhamos nos dois lugares: assim funciona em qualquer versão.
+function periodEndISO(obj) {
+  const item = obj.items && obj.items.data && obj.items.data[0];
+  const doItem = item && item.current_period_end;
+  const daRaiz = obj.current_period_end;
+
+  // Em teste grátis, o que interessa é quando o teste acaba.
+  // (trial_end continua preenchido DEPOIS do teste acabar, com data no passado —
+  //  por isso só usamos ele enquanto o status ainda for "trialing".)
+  let seg = (obj.status === "trialing" && obj.trial_end)
+    ? obj.trial_end
+    : (doItem || daRaiz || obj.trial_end || null);
+
+  seg = Number(seg);
+  if (!seg || !isFinite(seg)) return null;
+  return new Date(seg * 1000).toISOString();
+}
+
 const supaHeaders = () => ({
   "apikey": process.env.SUPABASE_SERVICE_ROLE,
   "Authorization": "Bearer " + process.env.SUPABASE_SERVICE_ROLE,
@@ -160,7 +183,7 @@ exports.handler = async (event) => {
       fields = {
         status: obj.status || "active",
         stripe_customer_id: obj.customer || null,
-        current_period_end: obj.current_period_end ? new Date(obj.current_period_end * 1000).toISOString() : null,
+        current_period_end: periodEndISO(obj),
         // MARCADA PRA CANCELAR: o Stripe mantém status "active"/"trialing" até o
         // período acabar, então sem guardar isto o app não teria como saber que
         // a pessoa cancelou — e ela veria "assinatura ativa" depois de cancelar.
