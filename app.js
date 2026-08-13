@@ -2,11 +2,11 @@
 // Paleta harmonizada: mesma "força" de cor em todas (nada grita mais que o resto),
 // mas cada categoria mantém o matiz que a pessoa já conhece.
 const CATEGORIES = {
-  "Alimentação": "#F0705F", "Transporte": "#4CC38A", "Mercado": "#E4AE4E",
-  "Lazer": "#B389E8", "Contas": "#59B3E8", "Compras": "#E87BAE",
-  "Saúde": "#45C8B0", "Assinaturas": "#8B93E8", "Educação": "#6D87E0",
-  "Viagem": "#4FC4DC", "Casa": "#E89B5A", "Beleza": "#DD8AE0",
-  "Pets": "#9FCC5A", "Outros": "#93A0A8",
+  "Alimentação": "#FF5A4D", "Transporte": "#22C55E", "Mercado": "#FBBF24",
+  "Lazer": "#A855F7", "Contas": "#0EA5E9", "Compras": "#EC4899",
+  "Saúde": "#14B8A6", "Assinaturas": "#6366F1", "Educação": "#3B82F6",
+  "Viagem": "#06B6D4", "Casa": "#F97316", "Beleza": "#D946EF",
+  "Pets": "#84CC16", "Outros": "#8A8A8A",
 };
 
 // ---- Ícones de interface (traço único, mesmo peso da barra de navegação) ----
@@ -69,9 +69,9 @@ const CAT_ICON = {
 // Tile da categoria: ícone na cor da categoria, sobre a mesma cor bem apagada.
 // `extra` permite pedir a versão pequena (cat-tile-sm) na legenda dos gráficos.
 function catTile(cat, extra) {
-  const cor = CATEGORIES[cat] || "#94A0B8";
+  const cor = CATEGORIES[cat] || "#8A8A8A";
   return '<span class="cat-tile' + (extra ? " " + extra : "") + '" aria-hidden="true"' +
-         ' style="background:' + cor + '26;color:' + cor + '">' + ic(CAT_ICON[cat] || "shapes") + '</span>';
+         ' style="background:' + cor + '">' + ic(CAT_ICON[cat] || "shapes") + '</span>';
 }
 
 // Compatibilidade: o código antigo chamava ICONS.pen / ICONS.x
@@ -90,7 +90,7 @@ const STR = {
     compareTitle: "Comparação mensal", statsEmpty: "Anote alguns gastos e seus gráficos aparecem aqui.",
     sub: 'Escreve do seu jeito, tipo "gastei 15 no uber". O app anota e organiza.',
     inputPh: "o que você gastou?", add: "Anotar", parsingTxt: "IA lendo...",
-    totalLabel: "GASTO NO MÊS", fixedTitle: "FIXOS POR MÊS", fixedPh: "ex: academia 30 dia 15", addFixed: "+ Fixo",
+    totalLabel: "GASTO NO MÊS", fixedTitle: "Fixos por mês", fixedPh: "ex: academia 30 dia 15", addFixed: "+ Fixo",
     chipsTitle: "Atalhos rápidos", coachTitle: "AI", coachSub: "Tire dúvidas e aprenda a organizar melhor seu dinheiro.",
     insightsTitle: "Insights",
     insightTop: "Seu maior gasto é {cat}: {pc}% do mês.",
@@ -98,12 +98,13 @@ const STR = {
     insightMore: "Você gastou {v} a mais que no mês passado.",
     insightCount: "Você anotou {n} gastos este mês. Consistência é tudo.",
     themeRowLabel: "Tema", thAuto: "Auto", thLight: "Claro", thDark: "Escuro",
-    receiptHead: "———— SEUS GASTOS ————",
+    receiptHead: "Seus gastos",
     disclaimer: "Organiza e mostra pra onde vai o dinheiro. Não dá dica de investimento.",
     emptyExpenses: "Nada anotado ainda.<br>Toca num atalho aí em cima pra ver funcionar.",
     emptyFixed: 'Nenhum fixo ainda. Ex: "academia 30 dia 15".',
     perMonth: "/mês", remaining: "Falta sair esse mês:", allPaid: "Tudo pago esse mês",
-    overview: "Visão geral", vsLastMonth: "vs. mês passado",
+    thisMonth: "Este mês", spendingInsight: "Análise de gastos",
+    overview: "Visão geral", vsLastMonth: "vs mês passado",
     weekShort: ["S", "T", "Q", "Q", "S", "S", "D"],
     noSpendWeek: "Sem gastos esta semana",
     insightCatMore: "Você está gastando {pct}% a mais em {cat} este mês.",
@@ -173,7 +174,7 @@ const STR = {
     compareTitle: "Monthly comparison", statsEmpty: "Log a few expenses and your charts show up here.",
     sub: 'Just type it, like "spent 15 on uber". The app logs and sorts it.',
     inputPh: "what did you spend on?", add: "Add", parsingTxt: "AI reading...",
-    totalLabel: "SPENT THIS MONTH", fixedTitle: "MONTHLY FIXED", fixedPh: "e.g. gym 30 day 15", addFixed: "+ Fixed",
+    totalLabel: "SPENT THIS MONTH", fixedTitle: "Monthly fixed", fixedPh: "e.g. gym 30 day 15", addFixed: "+ Fixed",
     chipsTitle: "Quick shortcuts", coachTitle: "AI", coachSub: "Ask questions and learn to organise your money better.",
     insightsTitle: "Insights",
     insightTop: "Your biggest expense is {cat}: {pc}% of the month.",
@@ -181,11 +182,12 @@ const STR = {
     insightMore: "You spent {v} more than last month.",
     insightCount: "You logged {n} expenses this month. Consistency is everything.",
     themeRowLabel: "Theme", thAuto: "Auto", thLight: "Light", thDark: "Dark",
-    receiptHead: "———— YOUR SPENDING ————",
+    receiptHead: "Your spending",
     disclaimer: "Organises and shows where your money goes. Not investment advice.",
     emptyExpenses: "Nothing logged yet.<br>Tap a shortcut above to see how it works.",
     emptyFixed: 'No fixed costs yet. E.g. "gym 30 day 15".',
     perMonth: "/mth", remaining: "Left to pay this month:", allPaid: "All paid this month",
+    thisMonth: "This month", spendingInsight: "Spending insight",
     overview: "Overview", vsLastMonth: "vs last month",
     weekShort: ["M", "T", "W", "T", "F", "S", "S"],
     noSpendWeek: "No spending this week",
@@ -582,7 +584,6 @@ function dayLabel(tv) {
 const input = document.getElementById("input");
 const listEl = document.getElementById("list");
 const totalEl = document.getElementById("total");
-const noteEl = document.getElementById("note");
 const fixedInput = document.getElementById("fixedInput");
 const fixedListEl = document.getElementById("fixedList");
 const fixedTotalEl = document.getElementById("fixedTotal");
@@ -628,7 +629,8 @@ function applyStaticTexts() {
   document.getElementById("pRisk").setAttribute("aria-label", t("riskQ"));
   document.getElementById("langBtn").setAttribute("aria-label", t("langRowLabel"));
   document.getElementById("addBtn").textContent = t("add");
-  document.getElementById("totalLabel").textContent = t("overview");
+  document.getElementById("totalLabel").textContent = t("thisMonth");
+  renderScreenTitle();
   document.getElementById("fixedTitleEl").textContent = t("fixedTitle");
   fixedInput.setAttribute("placeholder", t("fixedPh"));
   document.getElementById("fixedBtn").textContent = t("addFixed");
@@ -686,13 +688,6 @@ function render() {
   const total = monthExp.reduce((s, e) => s + (Number(e.amount) || 0), 0);
   totalEl.textContent = money(total);
 
-  const byCat = {};
-  monthExp.forEach(e => { byCat[e.category] = (byCat[e.category] || 0) + (Number(e.amount) || 0); });
-  const biggest = Object.entries(byCat).sort((a, b) => b[1] - a[1])[0];
-  if (biggest) {
-    const heavy = biggest[1] > total * 0.4 ? t("heavy") : t("ok");
-    noteEl.innerHTML = t("biggest") + " <b>" + esc(catLabel(biggest[0])) + "</b> (" + esc(money(biggest[1])) + "). " + heavy;
-  } else { noteEl.textContent = ""; }
   renderCurrencyBar();
   renderOverviewDelta();
   renderOverviewChart();
@@ -840,10 +835,9 @@ function weekChartHTML() {
     const alt = temGasto ? Math.max(3, (dias[i] / max) * base) : 3;
     const y = base - alt;
     const pico = temGasto && dias[i] === max;
-    // trilho de fundo: mostra o "espaço" do dia mesmo quando não houve gasto
-    barras += '<rect x="' + x + '" y="0" width="' + larg + '" height="' + base + '" rx="8" fill="var(--surface-2)"/>';
-    barras += '<rect x="' + x + '" y="' + y + '" width="' + larg + '" height="' + alt + '" rx="8" fill="#00E68A"' +
-              (pico ? "" : ' fill-opacity="0.45"') + '/>';
+    // fundo todo preto, como na referência: só a barra sobre a letra
+    barras += '<rect x="' + x + '" y="' + y + '" width="' + larg + '" height="' + alt + '" rx="7" fill="#00E68A"' +
+              (pico ? "" : ' fill-opacity="0.5"') + '/>';
     barras += '<text x="' + (x + larg / 2) + '" y="' + (H - 4) + '" text-anchor="middle" font-size="12" font-weight="600" ' +
               'fill="' + (i === hoje ? "#00E68A" : "var(--muted)") + '">' + esc(rotulos[i] || "") + '</text>';
   }
@@ -873,19 +867,21 @@ function renderInsights(rows, total) {
     if (d.getFullYear() + "-" + d.getMonth() === kLast) catMesPassado += Number(e.amount) || 0;
   });
 
+  // a categoria aparece em MAIÚSCULAS e em verde, como na referência
+  const catAlta = '<b class="hl">' + esc(catName(top.cat).toUpperCase()) + "</b>";
   let frase;
   if (catMesPassado > 0) {
     const pct = Math.round(Math.abs(top.val - catMesPassado) / catMesPassado * 100);
     const chave = top.val >= catMesPassado ? "insightCatMore" : "insightCatLess";
-    frase = t(chave).replace("{pct}", pct)
-                    .replace("{cat}", '<b class="hl">' + esc(catName(top.cat)) + "</b>");
+    frase = t(chave).replace("{pct}", pct).replace("{cat}", catAlta);
   } else {
     const pc = Math.round(top.val / total * 100);
-    frase = t("insightTop").replace("{cat}", '<b class="hl">' + esc(catName(top.cat)) + "</b>").replace("{pc}", pc);
+    frase = t("insightTop").replace("{cat}", catAlta).replace("{pc}", pc);
   }
 
   box.innerHTML =
-    '<div class="insight">' + catTile(top.cat, "iic-cat") + "<p>" + frase + "</p></div>" +
+    '<div class="ins-sub">' + esc(t("spendingInsight")) + "</div>" +
+    '<p class="ins-line">' + frase + "</p>" +
     weekChartHTML();
 }
 
@@ -1027,8 +1023,8 @@ function renderOverviewDelta() {
   const pct = Math.round(Math.abs(thisM - lastM) / lastM * 100);
   if (pct === 0) { el.innerHTML = ""; return; }
   const subiu = thisM > lastM;
-  el.innerHTML = esc(t("vsLastMonth")) + ' <span class="pct ' + (subiu ? "up" : "down") + '">' +
-                 (subiu ? "+" : "−") + pct + "%</span>";
+  el.innerHTML = '<span class="pct ' + (subiu ? "up" : "down") + '">' + (subiu ? "+" : "−") + pct + "%</span> " +
+                 esc(t("vsLastMonth"));
 }
 
 // Gasto ACUMULADO dia a dia do mês corrente (linha que só sobe).
@@ -1200,7 +1196,18 @@ const _ctBar = document.getElementById("chartTabBar"); if (_ctBar) _ctBar.onclic
 const _ctPie = document.getElementById("chartTabPie"); if (_ctPie) _ctPie.onclick = () => setChartType("pie");
 
 // ---- Navegação por abas ----
+// Nome de cada tela, mostrado no topo (a marca não fica mais ali)
+const SCREEN_TITLE = { home: "overview", stats: "navStats", coach: "coachTitle", set: "navSet" };
+let currentScreen = "home";
+
+function renderScreenTitle() {
+  const el = document.getElementById("screenTitle");
+  if (el) el.textContent = t(SCREEN_TITLE[currentScreen] || "overview");
+}
+
 function go(scr) {
+  currentScreen = scr;
+  renderScreenTitle();
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   const target = document.getElementById("s-" + scr);
   if (target) target.classList.add("active");

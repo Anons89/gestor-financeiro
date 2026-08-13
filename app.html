@@ -44,6 +44,16 @@
     --r-card: 20px; --r-ctl: 14px; --r-sm: 12px;
     --shadow-card: 0 4px 24px rgba(0,0,0,0.4);
   }
+  /* ===== ESTÉTICA FLAT =====
+     As seções não são mais caixas: nada de fundo cinza, borda ou sombra em
+     volta de cada bloco. O que separa é o espaço. Só o que é TOCÁVEL (campos,
+     linhas de gasto, chips, botões) continua com relevo — é o que o dedo
+     precisa enxergar. */
+  .chips-card, .fixed, .receipt, .chart-card, .analysis-card {
+    background: none; border: none; box-shadow: none; border-radius: 0;
+    padding: 0; margin-top: 28px;
+  }
+  .receipt { overflow: visible; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { -webkit-tap-highlight-color: transparent; }
   ::selection { background: rgba(0,230,138,0.28); color: var(--cream); }
@@ -71,6 +81,10 @@
      Lockup marca + nome. Antes era só o nome em texto com gradiente — o
      gradiente em letra é o acabamento que mais entrega "template": a ênfase
      de uma marca vem do peso e do desenho, não de um degradê. */
+  /* Cada tela abre com o próprio nome, como na referência — sem logo no topo.
+     (A marca continua nas telas de login/pagamento e na landing.) */
+  .screen-title { font-family: var(--font-display); font-size: 19px; font-weight: 600;
+    letter-spacing: -0.02em; color: var(--text); margin-bottom: 22px; }
   .topbar { display: flex; align-items: center; gap: 10px; padding: 2px 0 0; margin-bottom: 18px; }
   .brand { display: inline-flex; align-items: center; gap: 10px; }
   .brand-mark { width: 30px; height: 30px; flex-shrink: 0; display: block; }
@@ -123,8 +137,12 @@
   .set-item .lbl { flex: 1; font-weight: 600; font-size: 15px; color: var(--cream); }
   .set-item .curbar { margin: 0; }
   .set-foot { text-align: center; font-size: 12px; color: var(--muted); padding: 12px 0 4px; }
-  .analysis-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); padding: 20px; margin-top: 16px; box-shadow: var(--shadow-card); }
-  .analysis-title { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+  .analysis-card { margin-top: 28px; }
+  .analysis-title { font-family: var(--font-display); font-size: 17px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; margin-bottom: 10px; }
+  /* subtítulo verde do bloco de Insights */
+  .ins-sub { font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 6px; }
+  .ins-line { font-size: 15px; line-height: 1.55; color: var(--text); }
+  .ins-line b.hl { color: var(--accent); font-weight: 700; }
   .analysis-empty { text-align: center; color: var(--muted); font-size: 13px; padding: 24px 10px; }
 
   /* ===== coach em tela cheia ===== */
@@ -142,7 +160,7 @@
   .theme-seg button.on { background: var(--panel); color: var(--spent); box-shadow: 0 1px 4px rgba(0,0,0,0.25); }
 
   /* ===== legenda estilo lista (%, depois valor) ===== */
-  .leg { display: flex; align-items: center; gap: 10px; padding: 9px 2px; border-bottom: 1px solid var(--border); font-size: 14px; }
+  .leg { display: flex; align-items: center; gap: 11px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 14px; }
   .leg:last-child { border-bottom: none; }
   .leg .dot { width: 11px; height: 11px; border-radius: 4px; flex-shrink: 0; }
   .leg .cat-tile-sm { margin-right: -2px; }
@@ -153,7 +171,7 @@
   .leg .vl { font-weight: 700; color: var(--cream); width: 92px; text-align: right; flex-shrink: 0; }
 
   /* ===== insights ===== */
-  .insight { display: flex; gap: 12px; align-items: center; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-ctl); padding: 14px; margin-bottom: 10px; }
+  .insight { display: flex; gap: 12px; align-items: flex-start; background: none; border: none; padding: 0; margin-bottom: 0; }
   .insight:last-child { margin-bottom: 0; }
   /* ---- barras por dia da semana atual ---- */
   .week-wrap { margin-top: 14px; }
@@ -209,13 +227,13 @@
   .chip-x { background: none; border: none; color: var(--muted); cursor: pointer; margin-left: 6px; padding: 0; display: inline-flex; align-items: center; }
   .chip-input { flex: none; width: 140px; font-size: 12px; padding: 5px 12px; border-radius: 999px; background: var(--panel); color: var(--cream); border: 1px solid var(--border); outline: none; }
 
-  .fixed { margin-top: 16px; border-radius: var(--r-card); padding: 20px; background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-card); }
+  .fixed { margin-top: 28px; }
   .fixed-top { display: flex; justify-content: space-between; align-items: baseline; }
-  .fixed-title { font-size: 11px; letter-spacing: 0.08em; color: var(--muted); font-weight: 700; }
+  .fixed-title { font-family: var(--font-display); font-size: 17px; letter-spacing: -0.01em; color: var(--text); font-weight: 600; }
   .fixed-total { font-size: 20px; font-weight: 700; color: var(--cream); }
   .fixed-row { margin-top: 12px; }
   .fixed-list { margin-top: 6px; }
-  .fixed-item { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+  .fixed-item { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 14px; }
   .fixed-item:last-child { border-bottom: none; }
   .fixed-empty { font-size: 13px; color: var(--dim); padding: 8px 0 2px; }
   .fixed-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
@@ -236,9 +254,13 @@
      O total agora respira direto no preto, sem card verde: o número é o
      assunto da tela, não a caixa em volta dele. */
   .overview { padding: 2px 2px 4px; margin-bottom: 4px; }
-  .ov-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
-  .ov-total { font-size: clamp(42px, 13vw, 52px); font-weight: 800; color: var(--text); letter-spacing: -0.035em; line-height: 1.05; margin-top: 6px; }
-  .ov-delta { font-size: 13px; font-weight: 600; color: var(--muted); margin-top: 6px; }
+  /* "Este mês" em verde, pequeno, logo acima do número */
+  .ov-label { font-size: 13px; font-weight: 600; color: var(--accent); letter-spacing: 0; }
+  /* Peso 600: o número precisa ser grande, não pesado. Em 800 vira bloco. */
+  /* var(--text): branco no escuro (que é o tema principal) e quase-preto no
+     claro. Fixar #FFFFFF aqui apagaria o número no tema claro. */
+  .ov-total { font-size: clamp(44px, 13vw, 54px); font-weight: 600; color: var(--text); letter-spacing: -0.03em; line-height: 1.08; margin-top: 4px; }
+  .ov-delta { font-size: 13px; font-weight: 500; color: var(--muted); margin-top: 8px; }
   .ov-delta .pct { font-weight: 700; }
   .ov-delta .down { color: var(--accent); }
   .ov-delta .up { color: #F87171; }
@@ -246,9 +268,6 @@
   .ov-chart { margin-top: 14px; }
   .ov-chart:empty { display: none; }
   .ov-chart svg { display: block; width: 100%; height: 76px; }
-  .ov-note { font-size: 13px; color: var(--muted); margin-top: 12px; line-height: 1.5; }
-  .ov-note b { color: var(--text); font-weight: 600; }
-  .ov-note:empty { display: none; }
 
   .summary { margin-top: 22px; border-radius: var(--r-card); padding: 22px; background: linear-gradient(155deg, rgba(74,222,128,0.12), rgba(56,224,200,0.06) 55%, var(--panel) 100%); border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.12); }
   .summary.hero { margin-top: 0; background: linear-gradient(150deg, var(--accent) 0%, var(--accent-2) 100%); border: none; color: #04220E; position: relative; overflow: hidden; box-shadow: 0 14px 40px -14px rgba(0,230,138,0.45), inset 0 1px 0 rgba(255,255,255,0.25); }
@@ -257,27 +276,29 @@
   .summary.hero .total { color: #04220E; font-size: 44px; font-weight: 800; letter-spacing: -0.03em; }
   .summary.hero .note { color: rgba(4,34,14,0.82); font-weight: 500; }
   .summary.hero .note b { color: #04220E !important; font-weight: 700; }
-  .card-title { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .card-title { font-family: var(--font-display); font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   /* atalho é recurso secundário: fica discreto, não disputa a tela */
-  .chips-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); padding: 12px 14px; margin-top: 14px; box-shadow: var(--shadow-card); }
+  .chips-card { margin-top: 24px; }
   .chips-card .chips { margin-top: 0; gap: 6px; }
-  .chips-card .card-title { font-size: 10px; letter-spacing: 0.1em; margin-bottom: 8px; }
+  .chips-card .card-title { font-size: 13px; color: var(--muted); font-weight: 500; margin-bottom: 8px; }
   .summary .label { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; }
   .summary .total { font-size: 40px; font-weight: 700; color: var(--spent); margin-top: 2px; letter-spacing: -0.02em; }
   .summary .note { font-size: 14px; margin-top: 8px; color: var(--cream); }
 
-  .receipt { margin-top: 16px; border-radius: var(--r-card); overflow: hidden; background: var(--surface); color: var(--cream); border: 1px solid var(--border); box-shadow: var(--shadow-card); }
-  .receipt .head { padding: 14px 16px 4px; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; font-family: inherit; }
-  .receipt .body { padding: 0 16px 12px; font-family: inherit; }
+  .receipt { margin-top: 28px; color: var(--cream); }
+  .receipt .head { padding: 0 0 6px; color: var(--text); font-size: 17px; font-weight: 600; letter-spacing: -0.01em; font-family: var(--font-display); }
+  .receipt .body { padding: 0; font-family: inherit; }
   .empty { padding: 32px 20px; text-align: center; color: var(--muted); font-size: 13px; line-height: 1.6; }
-  .item { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+  .item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 14px; }
   .item:last-child { border-bottom: none; }
   /* Tile da categoria: o ícone de linha na cor da categoria, sobre a mesma cor
      bem apagada. Substitui o emoji que ficava aqui. */
-  .cat-tile { width: 40px; height: 40px; flex-shrink: 0; border-radius: var(--r-sm); display: inline-flex; align-items: center; justify-content: center; }
-  .cat-tile svg { width: 21px; height: 21px; }
-  .cat-tile-sm { width: 26px; height: 26px; border-radius: 8px; }
-  .cat-tile-sm svg { width: 14px; height: 14px; }
+  /* Círculo cheio na cor da categoria, com o ícone em tinta escura — escuro
+     lê bem em TODAS elas (no amarelo, ícone branco praticamente some). */
+  .cat-tile { width: 38px; height: 38px; flex-shrink: 0; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #0D0D0D; }
+  .cat-tile svg { width: 19px; height: 19px; stroke-width: 2.2; }
+  .cat-tile-sm { width: 26px; height: 26px; }
+  .cat-tile-sm svg { width: 13px; height: 13px; stroke-width: 2.4; }
   .item .emo { width: 40px; height: 40px; flex-shrink: 0; }
   .item .meta { flex: 1; min-width: 0; }
   .dot { width: 8px; height: 8px; border-radius: 999px; flex-shrink: 0; }
@@ -412,9 +433,9 @@
   .subscribe-btn:disabled { opacity: 0.6; cursor: default; }
 
   /* ---- Gráfico (barras / pizza) ---- */
-  .chart-card { margin-top: 16px; border-radius: var(--r-card); padding: 20px; background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-card); }
+  .chart-card { margin-top: 28px; }
   .chart-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
-  .chart-title { font-size: 11px; letter-spacing: 0.08em; color: var(--muted); font-weight: 700; text-transform: uppercase; }
+  .chart-title { font-family: var(--font-display); font-size: 17px; letter-spacing: -0.01em; color: var(--text); font-weight: 600; }
   .chart-toggle { display: inline-flex; background: var(--bg); border: 1px solid var(--border); border-radius: 999px; padding: 3px; gap: 2px; }
   .chart-tab { border: none; background: none; color: var(--muted); font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 999px; cursor: pointer; transition: background .15s, color .15s; }
   .chart-tab.active { background: var(--btn-bg); color: var(--btn-ink); }
@@ -495,20 +516,7 @@
   </div>
 
   <div class="app">
-    <div class="topbar">
-      <h1 class="brand">
-        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
-          <rect width="32" height="32" rx="9" fill="var(--accent)"/>
-          <g fill="none" stroke="var(--btn-ink)" stroke-width="2.1" stroke-linecap="round">
-            <rect x="7.5" y="9" width="17" height="14" rx="3.5"/>
-            <circle cx="14" cy="16" r="3.4"/>
-            <path d="M14 16v-2.2"/>
-            <path d="M20 13.6v4.8"/>
-          </g>
-        </svg>
-        <span class="brand-name">Algent<span class="brand-dot">.</span></span>
-      </h1>
-    </div>
+    <h1 class="screen-title" id="screenTitle"></h1>
 
     <!-- ===== ABA: INÍCIO ===== -->
     <section class="screen active" id="s-home">
@@ -517,7 +525,6 @@
       <div class="ov-total mono" id="total">£0.00</div>
       <div class="ov-delta" id="ovDelta"></div>
       <div class="ov-chart" id="ovChart"></div>
-      <div class="ov-note" id="note"></div>
     </div>
 
     <div class="row">
