@@ -189,15 +189,17 @@
   [data-theme="light"] {
     --bg: #F4F5F4; --surface: #FFFFFF; --surface-2: #F0F1F0; --border: #E3E5E3;
     --text: #0D0D0D; --muted: #6B6B6B;
-    /* verde mais fechado no claro: o #00E68A não passa contraste sobre branco */
-    --accent: #009159; --accent-2: #00B36B;
+    /* MESMO verde da marca nos dois temas — nada de escurecer no claro.
+       Como o verde é o mesmo, a tinta em cima dele também tem que ser: texto
+       branco sobre #00E68A fica ilegível (contraste ~1,6:1), então o botão
+       usa a mesma tinta escura do tema escuro e fica idêntico nos dois. */
+    --accent: #00E68A; --accent-2: #00B36B;
     --panel: var(--surface); --panel-2: var(--surface-2);
     --cream: var(--text); --dim: var(--muted); --spent: var(--accent);
-    --btn-bg: var(--accent); --btn-ink: #FFFFFF;
+    --btn-bg: var(--accent); --btn-ink: #04220E;
     --shadow-card: 0 4px 20px rgba(13,13,13,0.07);
   }
   [data-theme="light"] body { background: var(--bg); }
-  [data-theme="light"] .msg.user { color: #FFFFFF; }
   [data-theme="light"] .theme-seg button.on { box-shadow: 0 1px 4px rgba(13,26,19,0.15); }
   [data-theme="light"] .nav { background: color-mix(in srgb, #FFFFFF 92%, transparent); }
   /* voz numérica da marca: Space Grotesk com dígitos tabulares (colunas alinham) */
