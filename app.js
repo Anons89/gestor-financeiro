@@ -10,11 +10,72 @@ const CATEGORIES = {
 };
 
 // ---- Ícones de interface (traço único, mesmo peso da barra de navegação) ----
-const IC_ATTRS = 'viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
-const ICONS = {
-  pen: '<svg ' + IC_ATTRS + '><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19l-4 1z"/></svg>',
-  x: '<svg ' + IC_ATTRS + '><path d="M6 6l12 12M18 6L6 18"/></svg>',
+const IC_ATTRS = 'viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"';
+
+// ---- Ícones de linha (desenhos do Lucide, licença MIT, embutidos aqui) ----
+// Embutidos de propósito: a CSP não deixa carregar biblioteca de fora, e assim
+// não há requisição extra nem risco de o ícone não chegar.
+const ICON_PATHS = {
+  // categorias
+  // garfo + faca desenhados pra ler bem a 20px (o utensils cheio do Lucide vira borrão nesse tamanho)
+  utensils: '<path d="M6 2v7a2 2 0 0 0 2 2v11"/><path d="M10 2v7a2 2 0 0 1-2 2"/><path d="M17.5 2c-1.3 1.9-2 3.8-2 5.6 0 1.9 1 3.1 2 3.6v10.8"/>',
+  car: '<path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/>',
+  cart: '<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>',
+  party: '<path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="M22 2 20.5 2.5a2.9 2.9 0 0 0-2 3.1c.1.9-.6 1.6-1.4 1.6h-.4c-.9 0-1.6.6-1.8 1.4L14 11"/><path d="M11 13c1.9 1.9 2.8 4.2 2 5-.8.8-3.1-.1-5-2-1.9-1.9-2.8-4.2-2-5 .8-.8 3.1.1 5 2Z"/>',
+  receipt: '<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/>',
+  bag: '<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>',
+  pulse: '<path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7Z"/><path d="M3.2 13h6.3l.5-1 2 4.5 2-7 1.5 3.5h5.3"/>',
+  repeat: '<path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>',
+  cap: '<path d="M21.4 10.9a1 1 0 0 0 0-1.8L12.8 5.2a2 2 0 0 0-1.7 0L2.6 9.1a1 1 0 0 0 0 1.8l8.6 3.9a2 2 0 0 0 1.7 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>',
+  plane: '<path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>',
+  house: '<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .7-1.5l7-6a2 2 0 0 1 2.6 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+  sparkles: '<path d="M9.9 15.5A2 2 0 0 0 8.5 14.1l-6.1-1.6a.5.5 0 0 1 0-1L8.5 9.9A2 2 0 0 0 9.9 8.5l1.6-6.1a.5.5 0 0 1 1 0L14.1 8.5A2 2 0 0 0 15.5 9.9l6.1 1.6a.5.5 0 0 1 0 1L15.5 14.1a2 2 0 0 0-1.4 1.4l-1.6 6.1a.5.5 0 0 1-1 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/>',
+  paw: '<circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="20" cy="16" r="2"/><path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.8 1Q6.5 17.5 4.5 16.8A3.5 3.5 0 0 1 5.5 10Z"/>',
+  shapes: '<path d="M8.3 10a.7.7 0 0 1-.6-1.1L11.4 3a.7.7 0 0 1 1.2 0L16.3 8.9a.7.7 0 0 1-.6 1.1Z"/><rect x="3" y="14" width="7" height="7" rx="1"/><circle cx="17.5" cy="17.5" r="3.5"/>',
+  // navegação e interface
+  dashboard: '<rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>',
+  pie: '<path d="M21 12c.6 0 1-.4.9-1a10 10 0 0 0-8.9-9c-.6 0-1 .4-1 1v8a1 1 0 0 0 1 1z"/><path d="M21.2 15.9A10 10 0 1 1 8 2.8"/>',
+  settings: '<path d="M12.2 2h-.4a2 2 0 0 0-2 2v.2a2 2 0 0 1-1 1.7l-.4.3a2 2 0 0 1-2 0l-.2-.1a2 2 0 0 0-2.7.7l-.2.4a2 2 0 0 0 .7 2.7l.2.1a2 2 0 0 1 1 1.7v.5a2 2 0 0 1-1 1.8l-.2.1a2 2 0 0 0-.7 2.7l.2.4a2 2 0 0 0 2.7.7l.2-.1a2 2 0 0 1 2 0l.4.3a2 2 0 0 1 1 1.7V20a2 2 0 0 0 2 2h.4a2 2 0 0 0 2-2v-.2a2 2 0 0 1 1-1.7l.4-.3a2 2 0 0 1 2 0l.2.1a2 2 0 0 0 2.7-.7l.2-.4a2 2 0 0 0-.7-2.7l-.2-.1a2 2 0 0 1-1-1.7v-.5a2 2 0 0 1 1-1.8l.2-.1a2 2 0 0 0 .7-2.7l-.2-.4a2 2 0 0 0-2.7-.7l-.2.1a2 2 0 0 1-2 0l-.4-.3a2 2 0 0 1-1-1.7V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+  palette: '<path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.3a1.8 1.8 0 0 0-1.4 2.8l.3.4A1.8 1.8 0 0 1 12 22z"/><circle cx="13.5" cy="6.5" r=".8"/><circle cx="17.5" cy="10.5" r=".8"/><circle cx="6.5" cy="12.5" r=".8"/><circle cx="8.5" cy="7.5" r=".8"/>',
+  globe: '<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>',
+  banknote: '<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01"/><path d="M18 12h.01"/>',
+  xcircle: '<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>',
+  logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>',
+  refresh: '<path d="M3 12a9 9 0 0 1 9-9 9.8 9.8 0 0 1 6.7 2.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.8 9.8 0 0 1-6.7-2.7L3 16"/><path d="M8 16H3v5"/>',
+  send: '<path d="M14.5 21.7a.5.5 0 0 0 .9 0l6.5-19a.5.5 0 0 0-.6-.6l-19 6.5a.5.5 0 0 0 0 .9l7.9 3.2a2 2 0 0 1 1.1 1.1z"/><path d="M21.9 2.1 11 13"/>',
+  trendUp: '<path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/>',
+  trendDown: '<path d="M22 17 13.5 8.5 8.5 13.5 2 7"/><path d="M16 17h6v-6"/>',
+  pen: '<path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19l-4 1z"/>',
+  x: '<path d="M6 6l12 12M18 6L6 18"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+  pin: '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
 };
+
+// Monta o SVG do ícone. Nome desconhecido cai num ícone neutro em vez de sumir.
+function ic(nome) {
+  return '<svg ' + IC_ATTRS + '>' + (ICON_PATHS[nome] || ICON_PATHS.shapes) + '</svg>';
+}
+
+// Cada categoria tem o seu ícone. A CHAVE é sempre em português (id interno).
+const CAT_ICON = {
+  "Alimentação": "utensils", "Transporte": "car", "Mercado": "cart",
+  "Lazer": "party", "Contas": "receipt", "Compras": "bag",
+  "Saúde": "pulse", "Assinaturas": "repeat", "Educação": "cap",
+  "Viagem": "plane", "Casa": "house", "Beleza": "sparkles",
+  "Pets": "paw", "Outros": "shapes",
+};
+
+// Tile da categoria: ícone na cor da categoria, sobre a mesma cor bem apagada.
+// `extra` permite pedir a versão pequena (cat-tile-sm) na legenda dos gráficos.
+function catTile(cat, extra) {
+  const cor = CATEGORIES[cat] || "#94A0B8";
+  return '<span class="cat-tile' + (extra ? " " + extra : "") + '" aria-hidden="true"' +
+         ' style="background:' + cor + '26;color:' + cor + '">' + ic(CAT_ICON[cat] || "shapes") + '</span>';
+}
+
+// Compatibilidade: o código antigo chamava ICONS.pen / ICONS.x
+const ICONS = { pen: ic("pen"), x: ic("x") };
 
 // ---- IDIOMAS ----
 const STR = {
@@ -33,15 +94,15 @@ const STR = {
     chipsTitle: "Atalhos rápidos", coachTitle: "AI", coachSub: "Tire dúvidas e aprenda a organizar melhor seu dinheiro.",
     insightsTitle: "Insights",
     insightTop: "Seu maior gasto é {cat}: {pc}% do mês.",
-    insightLess: "Você gastou {v} a menos que no mês passado. 📉",
-    insightMore: "Você gastou {v} a mais que no mês passado. 📈",
-    insightCount: "Você anotou {n} gastos este mês. Consistência é tudo. 👏",
+    insightLess: "Você gastou {v} a menos que no mês passado.",
+    insightMore: "Você gastou {v} a mais que no mês passado.",
+    insightCount: "Você anotou {n} gastos este mês. Consistência é tudo.",
     themeRowLabel: "Tema", thAuto: "Auto", thLight: "Claro", thDark: "Escuro",
     receiptHead: "———— SEUS GASTOS ————",
     disclaimer: "Organiza e mostra pra onde vai o dinheiro. Não dá dica de investimento.",
     emptyExpenses: "Nada anotado ainda.<br>Toca num atalho aí em cima pra ver funcionar.",
     emptyFixed: 'Nenhum fixo ainda. Ex: "academia 30 dia 15".',
-    perMonth: "/mês", remaining: "Falta sair esse mês:", allPaid: "Tudo pago esse mês ✅",
+    perMonth: "/mês", remaining: "Falta sair esse mês:", allPaid: "Tudo pago esse mês",
     biggest: "Maior peso:", heavy: "Tá pesando bastante, hein.", ok: "Sob controle por enquanto.",
     chartTitle: "Para onde vai seu dinheiro", chartBar: "Barras", chartPie: "Pizza",
     pickCat: "Escolha a categoria",
@@ -52,13 +113,13 @@ const STR = {
     profileTitle: "SEU PERFIL (opcional — ajuda o coach)", incomePh: "renda/mês £",
     riskQ: "risco?", riskLow: "risco baixo", riskMed: "risco médio", riskHigh: "risco alto",
     goalPh: "seu objetivo (ex: juntar pra uma viagem)",
-    coachGreeting: "Oi! Sou seu coach financeiro. Ajudo você a entender pra onde vai seu dinheiro e explico conceitos — mas não digo o que comprar. Registra alguns gastos e me pergunta o que quiser. 👇",
+    coachGreeting: "Oi! Sou seu coach financeiro. Ajudo você a entender pra onde vai seu dinheiro e explico conceitos — mas não digo o que comprar. Registra alguns gastos e me pergunta o que quiser.",
     suggestions: ["Onde eu mais gasto?", "Como posso economizar?", "O que é reserva de emergência?", "O que fazer com o que sobra?"],
     coachPh: "pergunta pro seu coach...", send: "Enviar", thinkingTxt: "coach pensando...", coachErr: "Tive um problema pra pensar agora. Tenta de novo?",
-    coachLimit: "Você fez muitas perguntas seguidas. Respira um pouquinho e me chama de novo em instantes. 🙂",
+    coachLimit: "Você fez muitas perguntas seguidas. Respira um pouquinho e me chama de novo em instantes.",
     chatClear: "Limpar conversa", chatClearConfirm: "Apagar toda a conversa com a AI? Isso não dá pra desfazer.",
     cmpThisMonth: "Esse mês:", cmpMore: "a mais que o mês passado", cmpLess: "a menos que o mês passado", cmpSame: "Igual ao mês passado.",
-    share: "↗ Compartilhar", pdf: "PDF", shareTitle: "meus gastos", copied: "Copiado!",
+    share: "Compartilhar", pdf: "PDF", shareTitle: "meus gastos", copied: "Copiado!",
     detectCur: "moeda daqui", localCur: "Moeda local",
     authTag: "Entra ou cria sua conta pra começar.", emailPh: "seu email", passPh: "sua senha",
     google: "Continuar com Google", apple: "Continuar com Apple", authOr: "ou",
@@ -76,9 +137,9 @@ const STR = {
     signupOk: "Conta criada! Confere seu email pra confirmar e depois entra.",
     badLogin: "Email ou senha errados.", genericErr: "Deu algum erro. Tenta de novo.",
     saveErr: "Não consegui salvar agora. Confere sua conexão e tenta de novo.",
-    subscribe: "✦ Assinar — £2,99/mês", subLoading: "Abrindo pagamento...",
+    subscribe: "Assinar — £2,99/mês", subLoading: "Abrindo pagamento...",
     subErr: "Não consegui abrir o pagamento agora. Tenta de novo?",
-    subThanks: "Assinatura iniciada! Seus 30 dias grátis começaram. 🎉",
+    subThanks: "Assinatura iniciada! Seus 30 dias grátis começaram.",
     payStart: "Comece seus 30 dias grátis", payStartSub: "Use o Algent completo por 30 dias, de graça. Só depois vem a cobrança de £2,99/mês, e você cancela quando quiser.",
     payEnded: "Seu teste acabou", payEndedSub: "Assine pra continuar usando o Algent — £2,99/mês.",
     payBtnTxt: "Começar teste grátis",
@@ -94,7 +155,7 @@ const STR = {
     cancelErr: "Não consegui cancelar agora. Tenta de novo daqui a pouco?",
     legalPrivacy: "Privacidade", legalTerms: "Termos",
     aDel: "Apagar", aPaid: "Pago este mês", aCur: "Trocar moeda",
-    cats: { "Alimentação": "🍔 Alimentação", "Transporte": "🚗 Transporte", "Mercado": "🛒 Mercado", "Lazer": "🎉 Lazer", "Contas": "🧾 Contas", "Compras": "🛍️ Compras", "Saúde": "🩺 Saúde", "Assinaturas": "📺 Assinaturas", "Educação": "📚 Educação", "Viagem": "✈️ Viagem", "Casa": "🏠 Casa", "Beleza": "💅 Beleza", "Pets": "🐾 Pets", "Outros": "📦 Outros" },
+    cats: { "Alimentação": "Alimentação", "Transporte": "Transporte", "Mercado": "Mercado", "Lazer": "Lazer", "Contas": "Contas", "Compras": "Compras", "Saúde": "Saúde", "Assinaturas": "Assinaturas", "Educação": "Educação", "Viagem": "Viagem", "Casa": "Casa", "Beleza": "Beleza", "Pets": "Pets", "Outros": "Outros" },
   },
   en: {
     navHome: "Home", navStats: "Analysis", navCoach: "AI", navSet: "Settings",
@@ -111,15 +172,15 @@ const STR = {
     chipsTitle: "Quick shortcuts", coachTitle: "AI", coachSub: "Ask questions and learn to organise your money better.",
     insightsTitle: "Insights",
     insightTop: "Your biggest expense is {cat}: {pc}% of the month.",
-    insightLess: "You spent {v} less than last month. 📉",
-    insightMore: "You spent {v} more than last month. 📈",
-    insightCount: "You logged {n} expenses this month. Consistency is everything. 👏",
+    insightLess: "You spent {v} less than last month.",
+    insightMore: "You spent {v} more than last month.",
+    insightCount: "You logged {n} expenses this month. Consistency is everything.",
     themeRowLabel: "Theme", thAuto: "Auto", thLight: "Light", thDark: "Dark",
     receiptHead: "———— YOUR SPENDING ————",
     disclaimer: "Organises and shows where your money goes. Not investment advice.",
     emptyExpenses: "Nothing logged yet.<br>Tap a shortcut above to see how it works.",
     emptyFixed: 'No fixed costs yet. E.g. "gym 30 day 15".',
-    perMonth: "/mth", remaining: "Left to pay this month:", allPaid: "All paid this month ✅",
+    perMonth: "/mth", remaining: "Left to pay this month:", allPaid: "All paid this month",
     biggest: "Biggest chunk:", heavy: "That's weighing a lot.", ok: "Under control for now.",
     chartTitle: "Where your money goes", chartBar: "Bars", chartPie: "Pie",
     pickCat: "Pick the category",
@@ -130,13 +191,13 @@ const STR = {
     profileTitle: "YOUR PROFILE (optional — helps the coach)", incomePh: "income/mo £",
     riskQ: "risk?", riskLow: "low risk", riskMed: "medium risk", riskHigh: "high risk",
     goalPh: "your goal (e.g. save for a trip)",
-    coachGreeting: "Hello! I'm your money coach. I help you understand where your money goes and explain concepts — but I won't tell you what to buy. Log some spending and ask me anything. 👇",
+    coachGreeting: "Hello! I'm your money coach. I help you understand where your money goes and explain concepts — but I won't tell you what to buy. Log some spending and ask me anything.",
     suggestions: ["Where do I spend most?", "How can I save?", "What is an emergency fund?", "What to do with leftover money?"],
     coachPh: "ask your coach...", send: "Send", thinkingTxt: "coach thinking...", coachErr: "I had a problem thinking. Try again?",
-    coachLimit: "That's a lot of questions in a row. Give it a moment and ask me again. 🙂",
+    coachLimit: "That's a lot of questions in a row. Give it a moment and ask me again.",
     chatClear: "Clear chat", chatClearConfirm: "Delete the whole conversation with the AI? This can't be undone.",
     cmpThisMonth: "This month:", cmpMore: "more than last month", cmpLess: "less than last month", cmpSame: "Same as last month.",
-    share: "↗ Share", pdf: "PDF", shareTitle: "my spending", copied: "Copied!",
+    share: "Share", pdf: "PDF", shareTitle: "my spending", copied: "Copied!",
     detectCur: "currency here", localCur: "Local currency",
     authTag: "Sign in or create your account to start.", emailPh: "your email", passPh: "your password",
     google: "Continue with Google", apple: "Continue with Apple", authOr: "or",
@@ -154,9 +215,9 @@ const STR = {
     signupOk: "Account created! Check your email to confirm, then sign in.",
     badLogin: "Wrong email or password.", genericErr: "Something went wrong. Try again.",
     saveErr: "Couldn't save right now. Check your connection and try again.",
-    subscribe: "✦ Subscribe — £2.99 a month", subLoading: "Opening payment...",
+    subscribe: "Subscribe — £2.99 a month", subLoading: "Opening payment...",
     subErr: "Couldn't open payment right now. Try again?",
-    subThanks: "Subscription started! Your 30 free days have begun. 🎉",
+    subThanks: "Subscription started! Your 30 free days have begun.",
     payStart: "Start your 30 free days", payStartSub: "Use the full Algent free for 30 days. Only then does the £2.99/mo charge begin, and you can cancel anytime.",
     payEnded: "Your trial has ended", payEndedSub: "Subscribe to keep using Algent — £2.99/mo.",
     payBtnTxt: "Start free trial",
@@ -172,7 +233,7 @@ const STR = {
     cancelErr: "I couldn't cancel right now. Try again in a moment?",
     legalPrivacy: "Privacy", legalTerms: "Terms",
     aDel: "Delete", aPaid: "Paid this month", aCur: "Change currency",
-    cats: { "Alimentação": "🍔 Food", "Transporte": "🚗 Transport", "Mercado": "🛒 Groceries", "Lazer": "🎉 Leisure", "Contas": "🧾 Bills", "Compras": "🛍️ Shopping", "Saúde": "🩺 Health", "Assinaturas": "📺 Subscriptions", "Educação": "📚 Education", "Viagem": "✈️ Travel", "Casa": "🏠 Home", "Beleza": "💅 Beauty", "Pets": "🐾 Pets", "Outros": "📦 Other" },
+    cats: { "Alimentação": "Food", "Transporte": "Transport", "Mercado": "Groceries", "Lazer": "Leisure", "Contas": "Bills", "Compras": "Shopping", "Saúde": "Health", "Assinaturas": "Subscriptions", "Educação": "Education", "Viagem": "Travel", "Casa": "Home", "Beleza": "Beauty", "Pets": "Pets", "Outros": "Other" },
   },
 };
 
@@ -402,7 +463,7 @@ function openCatPicker(id) {
   if (list) {
     list.innerHTML = Object.keys(CATEGORIES).map(c =>
       '<button class="cat-opt" data-act="cat-pick" data-id="' + esc(String(id)) + '" data-cat="' + esc(c) + '">' +
-        '<span class="dot" style="background:' + CATEGORIES[c] + '"></span>' + catLabel(c) +
+        catTile(c, 'cat-tile-sm') + esc(catLabel(c)) +
       '</button>'
     ).join("");
   }
@@ -489,7 +550,6 @@ function togglePaid(id) {
 // ---- Utilidades ----
 // ---- Moedas ----
 const CURRENCIES = { GBP: "£", EUR: "€", USD: "$", BRL: "R$", JPY: "¥", AUD: "A$", CAD: "C$", CHF: "CHF", CNY: "CN¥" };
-const FLAGS = { GBP: "🇬🇧", EUR: "🇪🇺", USD: "🇺🇸", BRL: "🇧🇷", JPY: "🇯🇵", AUD: "🇦🇺", CAD: "🇨🇦", CHF: "🇨🇭", CNY: "🇨🇳" };
 const CUR_ORDER = ["GBP", "EUR", "USD", "BRL", "JPY", "AUD", "CAD", "CHF", "CNY"];
 let curMenuOpen = false;
 function loadCur(key, def) { try { const r = localStorage.getItem(key); return (r && CURRENCIES[r]) ? r : def; } catch (e) { return def; } }
@@ -569,7 +629,7 @@ function applyStaticTexts() {
   document.getElementById("pIncome").setAttribute("placeholder", t("incomePh"));
   document.getElementById("pGoal").setAttribute("placeholder", t("goalPh"));
   document.getElementById("coachInput").setAttribute("placeholder", t("coachPh"));
-  document.getElementById("coachSend").textContent = t("send");
+  document.getElementById("coachSend").innerHTML = ic("send") + "<span>" + esc(t("send")) + "</span>";
   document.getElementById("shareBtn").textContent = t("share");
   document.getElementById("pdfBtn").textContent = t("pdf");
   const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
@@ -606,11 +666,10 @@ function isThisMonth(e) {
   const d = new Date(ts(e)), n = new Date();
   return d.getFullYear() === n.getFullYear() && d.getMonth() === n.getMonth();
 }
-// O emoji e o nome vêm do rótulo da categoria ("🍔 Alimentação").
-// Uma categoria desconhecida (vinda da nuvem, editada à mão) volta como texto
-// cru — então String() aqui e esc() na hora de desenhar; nunca vai crua pro HTML.
-function catEmoji(cat) { const l = String(catLabel(cat)); const i = l.indexOf(" "); return i > 0 ? l.slice(0, i) : "📦"; }
-function catName(cat) { const l = String(catLabel(cat)); const i = l.indexOf(" "); return i > 0 ? l.slice(i + 1) : l; }
+// O rótulo agora é só o nome (o ícone vem do catTile). Uma categoria
+// desconhecida (vinda da nuvem, editada à mão) volta como texto cru — por isso
+// String() aqui e esc() na hora de desenhar; nunca vai crua pro HTML.
+function catName(cat) { return String(catLabel(cat)); }
 function render() {
   const exp = expenses.filter(e => expCur(e) === curCurrency);
   const monthExp = exp.filter(isThisMonth);
@@ -640,7 +699,7 @@ function render() {
 
   const itemHtml = e =>
     '<div class="item">' +
-      '<div class="emo" aria-hidden="true">' + esc(catEmoji(e.category)) + '</div>' +
+      catTile(e.category) +
       '<div class="meta">' +
         '<div class="desc">' + esc(e.description) + '</div>' +
         '<button class="cat-edit" data-act="cat-open" data-id="' + esc(String(e.id)) + '">' + esc(catName(e.category)) + ' <span class="pen" aria-hidden="true">' + ICONS.pen + '</span></button>' +
@@ -724,7 +783,7 @@ function chartLegendHTML(rows, total) {
   return rows.map(r => {
     const pct = total > 0 ? Math.round(r.val / total * 100) : 0;
     return '<div class="leg">' +
-      '<span class="dot" style="background:' + r.color + '"></span>' +
+      catTile(r.cat, 'cat-tile-sm') +
       '<span class="nm">' + esc(catLabel(r.cat)) + '</span>' +
       '<span class="pc">' + pct + '%</span>' +
       '<span class="vl">' + esc(money(r.val)) + '</span>' +
@@ -741,7 +800,7 @@ function renderInsights(rows, total) {
   if (card) card.style.display = "block";
   const top = rows[0];
   const pc = Math.round(top.val / total * 100);
-  let html = '<div class="insight"><span class="iic">' + catEmoji(top.cat) + '</span><p>' +
+  let html = '<div class="insight">' + catTile(top.cat, 'iic-cat') + '<p>' +
     t("insightTop").replace("{cat}", "<b>" + esc(catName(top.cat)) + "</b>").replace("{pc}", pc) + "</p></div>";
   // comparação com o mês passado (mesma conta do renderCompare)
   const now = new Date();
@@ -755,11 +814,11 @@ function renderInsights(rows, total) {
   if (lastM > 0) {
     const diff = total - lastM;
     const key = diff < 0 ? "insightLess" : "insightMore";
-    html += '<div class="insight"><span class="iic">' + (diff < 0 ? "📉" : "📈") + '</span><p>' +
+    html += '<div class="insight"><span class="iic">' + ic(diff < 0 ? "trendDown" : "trendUp") + '</span><p>' +
       t(key).replace("{v}", "<b>" + esc(money(Math.abs(diff))) + "</b>") + "</p></div>";
   }
   const count = expenses.filter(e => expCur(e) === curCurrency && isThisMonth(e)).length;
-  html += '<div class="insight"><span class="iic">✍️</span><p>' + t("insightCount").replace("{n}", "<b>" + count + "</b>") + "</p></div>";
+  html += '<div class="insight"><span class="iic">' + ic("pen") + '</span><p>' + t("insightCount").replace("{n}", "<b>" + count + "</b>") + "</p></div>";
   box.innerHTML = html;
 }
 
@@ -808,7 +867,7 @@ function renderFixed() {
     const paid = isPaid(f);
     return '<div class="fixed-item' + (paid ? ' paid' : '') + '">' +
       '<span class="fx-left">' +
-        '<button class="check' + (paid ? ' on' : '') + '" aria-pressed="' + paid + '" aria-label="' + t("aPaid") + ': ' + esc(f.name) + '" data-act="fx-paid" data-id="' + esc(String(f.id)) + '">' + (paid ? '✓' : '') + '</button>' +
+        '<button class="check' + (paid ? ' on' : '') + '" aria-pressed="' + paid + '" aria-label="' + t("aPaid") + ': ' + esc(f.name) + '" data-act="fx-paid" data-id="' + esc(String(f.id)) + '">' + (paid ? ic('check') : '') + '</button>' +
         '<span class="fx-info">' +
           '<span class="fx-name">' + esc(f.name) + '</span>' +
           (f.dueDay ? '<span class="fx-due">' + t("dueDay") + ' ' + (Number(f.dueDay) || "") + '</span>' : '') +
@@ -946,10 +1005,10 @@ function setCurCurrency(code) {
 function toggleCurMenu() { curMenuOpen = !curMenuOpen; renderCurrencyBar(); }
 function renderCurrencyBar() {
   document.getElementById("curbar").innerHTML =
-    '<button class="cur-toggle" aria-haspopup="true" aria-expanded="' + curMenuOpen + '" aria-label="' + t("aCur") + '" data-act="cur-toggle">' + FLAGS[curCurrency] + ' ' + CURRENCIES[curCurrency] + ' <span class="caret" aria-hidden="true">▾</span></button>' +
+    '<button class="cur-toggle" aria-haspopup="true" aria-expanded="' + curMenuOpen + '" aria-label="' + t("aCur") + '" data-act="cur-toggle">' + CURRENCIES[curCurrency] + ' ' + curCurrency + ' <span class="caret" aria-hidden="true">▾</span></button>' +
     '<div class="cur-menu' + (curMenuOpen ? ' open' : '') + '">' +
-      CUR_ORDER.map(code => '<button class="cur-opt' + (code === curCurrency ? ' active' : '') + '" data-act="cur-set" data-cur="' + esc(code) + '">' + FLAGS[code] + ' ' + CURRENCIES[code] + '  ' + code + '</button>').join("") +
-      '<button class="cur-opt local" data-act="cur-detect">📍 ' + t("localCur") + '</button>' +
+      CUR_ORDER.map(code => '<button class="cur-opt' + (code === curCurrency ? ' active' : '') + '" data-act="cur-set" data-cur="' + esc(code) + '"><span class="cur-sym">' + CURRENCIES[code] + '</span>' + code + '</button>').join("") +
+      '<button class="cur-opt local" data-act="cur-detect">' + ic('pin') + t("localCur") + '</button>' +
     '</div>';
 }
 // Detecta a moeda do lugar (aproximado): 1º tenta GPS, 2º cai pro fuso horário. Nunca mexe nos fixos.
