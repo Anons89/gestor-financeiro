@@ -28,3 +28,13 @@
     document.documentElement.classList.remove("has-session");
   }, 6000);
 })();
+
+// ---- Registra o service worker (necessário pra instalar como app) ----
+// Vai aqui num arquivo externo de propósito: a CSP do projeto não permite
+// <script> inline. Falha em silêncio — se o navegador não suportar ou o
+// registro der errado, o site continua funcionando igual.
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("/sw.js").catch(function () {});
+  });
+}
