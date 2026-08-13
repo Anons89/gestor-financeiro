@@ -155,11 +155,17 @@
   /* ===== insights ===== */
   .insight { display: flex; gap: 12px; align-items: center; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-ctl); padding: 14px; margin-bottom: 10px; }
   .insight:last-child { margin-bottom: 0; }
+  /* ---- barras por dia da semana atual ---- */
+  .week-wrap { margin-top: 14px; }
+  .week-wrap svg { display: block; width: 100%; height: 132px; }
+  .week-empty { font-size: 12.5px; color: var(--muted); text-align: center; margin-top: 8px; }
   .insight .iic { width: 34px; height: 34px; flex-shrink: 0; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;
     background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); }
   .insight .iic svg { width: 17px; height: 17px; }
   .insight p { font-size: 14px; color: var(--cream); margin: 0; line-height: 1.5; }
-  .insight b { color: var(--spent); }
+  .insight b { color: var(--text); }
+  /* categoria em destaque na frase dos Insights */
+  .insight b.hl { color: var(--accent); }
 
   /* ============ TEMA CLARO ============ */
   [data-theme="light"] {
@@ -198,7 +204,7 @@
   }
 
   .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center; }
-  .chip { font-size: 12px; padding: 5px 12px; border-radius: 999px; cursor: pointer; background: var(--panel); color: var(--muted); border: 1px solid var(--border); }
+  .chip { font-size: 12px; padding: 6px 12px; border-radius: 999px; cursor: pointer; background: var(--surface-2); color: var(--muted); border: 1px solid var(--border); line-height: 1.25; }
   .chip-editing { display: inline-flex; align-items: center; border-style: dashed; color: var(--cream); }
   .chip-x { background: none; border: none; color: var(--muted); cursor: pointer; margin-left: 6px; padding: 0; display: inline-flex; align-items: center; }
   .chip-input { flex: none; width: 140px; font-size: 12px; padding: 5px 12px; border-radius: 999px; background: var(--panel); color: var(--cream); border: 1px solid var(--border); outline: none; }
@@ -226,6 +232,24 @@
   .check.on { background: var(--accent); border-color: var(--accent); }
   .fixed-item.paid .fx-name, .fixed-item.paid .fx-amount { text-decoration: line-through; opacity: 0.5; }
 
+  /* ===== Cabeçalho da Início (Overview) =====
+     O total agora respira direto no preto, sem card verde: o número é o
+     assunto da tela, não a caixa em volta dele. */
+  .overview { padding: 2px 2px 4px; margin-bottom: 4px; }
+  .ov-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+  .ov-total { font-size: clamp(42px, 13vw, 52px); font-weight: 800; color: var(--text); letter-spacing: -0.035em; line-height: 1.05; margin-top: 6px; }
+  .ov-delta { font-size: 13px; font-weight: 600; color: var(--muted); margin-top: 6px; }
+  .ov-delta .pct { font-weight: 700; }
+  .ov-delta .down { color: var(--accent); }
+  .ov-delta .up { color: #F87171; }
+  .ov-delta:empty { display: none; }
+  .ov-chart { margin-top: 14px; }
+  .ov-chart:empty { display: none; }
+  .ov-chart svg { display: block; width: 100%; height: 76px; }
+  .ov-note { font-size: 13px; color: var(--muted); margin-top: 12px; line-height: 1.5; }
+  .ov-note b { color: var(--text); font-weight: 600; }
+  .ov-note:empty { display: none; }
+
   .summary { margin-top: 22px; border-radius: var(--r-card); padding: 22px; background: linear-gradient(155deg, rgba(74,222,128,0.12), rgba(56,224,200,0.06) 55%, var(--panel) 100%); border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.12); }
   .summary.hero { margin-top: 0; background: linear-gradient(150deg, var(--accent) 0%, var(--accent-2) 100%); border: none; color: #04220E; position: relative; overflow: hidden; box-shadow: 0 14px 40px -14px rgba(0,230,138,0.45), inset 0 1px 0 rgba(255,255,255,0.25); }
   .summary.hero::after { content: ""; position: absolute; right: -60px; top: -70px; width: 230px; height: 230px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.20), transparent 68%); }
@@ -234,8 +258,10 @@
   .summary.hero .note { color: rgba(4,34,14,0.82); font-weight: 500; }
   .summary.hero .note b { color: #04220E !important; font-weight: 700; }
   .card-title { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  .chips-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); padding: 16px 18px; margin-top: 16px; box-shadow: var(--shadow-card); }
-  .chips-card .chips { margin-top: 0; }
+  /* atalho é recurso secundário: fica discreto, não disputa a tela */
+  .chips-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); padding: 12px 14px; margin-top: 14px; box-shadow: var(--shadow-card); }
+  .chips-card .chips { margin-top: 0; gap: 6px; }
+  .chips-card .card-title { font-size: 10px; letter-spacing: 0.1em; margin-bottom: 8px; }
   .summary .label { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; }
   .summary .total { font-size: 40px; font-weight: 700; color: var(--spent); margin-top: 2px; letter-spacing: -0.02em; }
   .summary .note { font-size: 14px; margin-top: 8px; color: var(--cream); }
@@ -486,10 +512,12 @@
 
     <!-- ===== ABA: INÍCIO ===== -->
     <section class="screen active" id="s-home">
-    <div class="summary hero">
-      <div class="label" id="totalLabel"></div>
-      <div class="total mono" id="total">£0.00</div>
-      <div class="note" id="note"></div>
+    <div class="overview">
+      <div class="ov-label" id="totalLabel"></div>
+      <div class="ov-total mono" id="total">£0.00</div>
+      <div class="ov-delta" id="ovDelta"></div>
+      <div class="ov-chart" id="ovChart"></div>
+      <div class="ov-note" id="note"></div>
     </div>
 
     <div class="row">

@@ -103,6 +103,11 @@ const STR = {
     emptyExpenses: "Nada anotado ainda.<br>Toca num atalho aí em cima pra ver funcionar.",
     emptyFixed: 'Nenhum fixo ainda. Ex: "academia 30 dia 15".',
     perMonth: "/mês", remaining: "Falta sair esse mês:", allPaid: "Tudo pago esse mês",
+    overview: "Visão geral", vsLastMonth: "vs. mês passado",
+    weekShort: ["S", "T", "Q", "Q", "S", "S", "D"],
+    noSpendWeek: "Sem gastos esta semana",
+    insightCatMore: "Você está gastando {pct}% a mais em {cat} este mês.",
+    insightCatLess: "Você está gastando {pct}% a menos em {cat} este mês.",
     biggest: "Maior peso:", heavy: "Tá pesando bastante, hein.", ok: "Sob controle por enquanto.",
     chartTitle: "Para onde vai seu dinheiro", chartBar: "Barras", chartPie: "Pizza",
     pickCat: "Escolha a categoria",
@@ -181,6 +186,11 @@ const STR = {
     emptyExpenses: "Nothing logged yet.<br>Tap a shortcut above to see how it works.",
     emptyFixed: 'No fixed costs yet. E.g. "gym 30 day 15".',
     perMonth: "/mth", remaining: "Left to pay this month:", allPaid: "All paid this month",
+    overview: "Overview", vsLastMonth: "vs last month",
+    weekShort: ["M", "T", "W", "T", "F", "S", "S"],
+    noSpendWeek: "No spending this week",
+    insightCatMore: "You're spending {pct}% more on {cat} this month.",
+    insightCatLess: "You're spending {pct}% less on {cat} this month.",
     biggest: "Biggest chunk:", heavy: "That's weighing a lot.", ok: "Under control for now.",
     chartTitle: "Where your money goes", chartBar: "Bars", chartPie: "Pie",
     pickCat: "Pick the category",
@@ -618,7 +628,7 @@ function applyStaticTexts() {
   document.getElementById("pRisk").setAttribute("aria-label", t("riskQ"));
   document.getElementById("langBtn").setAttribute("aria-label", t("langRowLabel"));
   document.getElementById("addBtn").textContent = t("add");
-  document.getElementById("totalLabel").textContent = t("totalLabel");
+  document.getElementById("totalLabel").textContent = t("overview");
   document.getElementById("fixedTitleEl").textContent = t("fixedTitle");
   fixedInput.setAttribute("placeholder", t("fixedPh"));
   document.getElementById("fixedBtn").textContent = t("addFixed");
@@ -684,6 +694,8 @@ function render() {
     noteEl.innerHTML = t("biggest") + " <b>" + esc(catLabel(biggest[0])) + "</b> (" + esc(money(biggest[1])) + "). " + heavy;
   } else { noteEl.textContent = ""; }
   renderCurrencyBar();
+  renderOverviewDelta();
+  renderOverviewChart();
   renderCompare();
   renderChart();
 
@@ -792,34 +804,89 @@ function chartLegendHTML(rows, total) {
 }
 
 // ---- Insights do mês (com o maior gasto, a comparação e a contagem) ----
+// ---- Gastos por dia da SEMANA ATUAL (segunda -> domingo) ----
+// A semana começa na segunda (padrão do Reino Unido e do Brasil).
+function weekSeries() {
+  const agora = new Date();
+  const desdeSegunda = (agora.getDay() + 6) % 7;      // 0 = já é segunda
+  const segunda = new Date(agora);
+  segunda.setDate(agora.getDate() - desdeSegunda);
+  segunda.setHours(0, 0, 0, 0);
+  const proxSegunda = new Date(segunda);
+  proxSegunda.setDate(segunda.getDate() + 7);
+
+  const dias = [0, 0, 0, 0, 0, 0, 0];
+  expenses.filter(e => expCur(e) === curCurrency).forEach(e => {
+    const d = new Date(ts(e));
+    if (d < segunda || d >= proxSegunda) return;
+    dias[(d.getDay() + 6) % 7] += Number(e.amount) || 0;
+  });
+  return { dias: dias, hoje: desdeSegunda };
+}
+
+// Barras verticais da semana. O dia de maior gasto fica em verde cheio; os
+// outros em verde apagado — assim o pico da semana salta aos olhos.
+function weekChartHTML() {
+  const { dias, hoje } = weekSeries();
+  const rotulos = t("weekShort");
+  const max = Math.max.apply(null, dias);
+  const temGasto = max > 0;
+
+  const W = 300, H = 108, base = 88;        // base = linha de apoio das barras
+  const larg = 26, vao = (W - larg * 7) / 6;
+  let barras = "";
+  for (let i = 0; i < 7; i++) {
+    const x = i * (larg + vao);
+    const alt = temGasto ? Math.max(3, (dias[i] / max) * base) : 3;
+    const y = base - alt;
+    const pico = temGasto && dias[i] === max;
+    // trilho de fundo: mostra o "espaço" do dia mesmo quando não houve gasto
+    barras += '<rect x="' + x + '" y="0" width="' + larg + '" height="' + base + '" rx="8" fill="var(--surface-2)"/>';
+    barras += '<rect x="' + x + '" y="' + y + '" width="' + larg + '" height="' + alt + '" rx="8" fill="#00E68A"' +
+              (pico ? "" : ' fill-opacity="0.45"') + '/>';
+    barras += '<text x="' + (x + larg / 2) + '" y="' + (H - 4) + '" text-anchor="middle" font-size="12" font-weight="600" ' +
+              'fill="' + (i === hoje ? "#00E68A" : "var(--muted)") + '">' + esc(rotulos[i] || "") + '</text>';
+  }
+  return '<div class="week-wrap">' +
+           '<svg viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">' + barras + '</svg>' +
+           (temGasto ? "" : '<div class="week-empty">' + esc(t("noSpendWeek")) + '</div>') +
+         '</div>';
+}
+
+// ---- Bloco de Insights: uma frase de destaque + as barras da semana ----
 function renderInsights(rows, total) {
   const box = document.getElementById("insights");
   const card = box ? box.closest(".analysis-card") : null;
   if (!box) return;
   if (!total) { box.innerHTML = ""; if (card) card.style.display = "none"; return; }
   if (card) card.style.display = "block";
+
   const top = rows[0];
-  const pc = Math.round(top.val / total * 100);
-  let html = '<div class="insight">' + catTile(top.cat, 'iic-cat') + '<p>' +
-    t("insightTop").replace("{cat}", "<b>" + esc(catName(top.cat)) + "</b>").replace("{pc}", pc) + "</p></div>";
-  // comparação com o mês passado (mesma conta do renderCompare)
-  const now = new Date();
-  const lastD = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const kLast = lastD.getFullYear() + "-" + lastD.getMonth();
-  let lastM = 0;
-  expenses.filter(e => expCur(e) === curCurrency).forEach(e => {
+  // Quanto essa mesma categoria pesou no mês passado? Se dá pra comparar, a
+  // frase fala da VARIAÇÃO (mais útil); senão, fala do peso dela no mês.
+  const agora = new Date();
+  const mesPassado = new Date(agora.getFullYear(), agora.getMonth() - 1, 1);
+  const kLast = mesPassado.getFullYear() + "-" + mesPassado.getMonth();
+  let catMesPassado = 0;
+  expenses.filter(e => expCur(e) === curCurrency && e.category === top.cat).forEach(e => {
     const d = new Date(ts(e));
-    if (d.getFullYear() + "-" + d.getMonth() === kLast) lastM += Number(e.amount) || 0;
+    if (d.getFullYear() + "-" + d.getMonth() === kLast) catMesPassado += Number(e.amount) || 0;
   });
-  if (lastM > 0) {
-    const diff = total - lastM;
-    const key = diff < 0 ? "insightLess" : "insightMore";
-    html += '<div class="insight"><span class="iic">' + ic(diff < 0 ? "trendDown" : "trendUp") + '</span><p>' +
-      t(key).replace("{v}", "<b>" + esc(money(Math.abs(diff))) + "</b>") + "</p></div>";
+
+  let frase;
+  if (catMesPassado > 0) {
+    const pct = Math.round(Math.abs(top.val - catMesPassado) / catMesPassado * 100);
+    const chave = top.val >= catMesPassado ? "insightCatMore" : "insightCatLess";
+    frase = t(chave).replace("{pct}", pct)
+                    .replace("{cat}", '<b class="hl">' + esc(catName(top.cat)) + "</b>");
+  } else {
+    const pc = Math.round(top.val / total * 100);
+    frase = t("insightTop").replace("{cat}", '<b class="hl">' + esc(catName(top.cat)) + "</b>").replace("{pc}", pc);
   }
-  const count = expenses.filter(e => expCur(e) === curCurrency && isThisMonth(e)).length;
-  html += '<div class="insight"><span class="iic">' + ic("pen") + '</span><p>' + t("insightCount").replace("{n}", "<b>" + count + "</b>") + "</p></div>";
-  box.innerHTML = html;
+
+  box.innerHTML =
+    '<div class="insight">' + catTile(top.cat, "iic-cat") + "<p>" + frase + "</p></div>" +
+    weekChartHTML();
 }
 
 function renderChart() {
@@ -949,9 +1016,77 @@ async function askCoach(preset) {
   coachThinking = false; saveCoachMsgs(); renderChat();
 }
 
-// ---- Comparação mês a mês ----
-function renderCompare() {
-  const el = document.getElementById("compare");
+// ================= CABEÇALHO DA INÍCIO (Overview) =================
+
+// Linha "vs. mês passado −8%". Some quando não há mês anterior pra comparar.
+function renderOverviewDelta() {
+  const el = document.getElementById("ovDelta");
+  if (!el) return;
+  const { thisM, lastM } = monthTotals();
+  if (!lastM) { el.innerHTML = ""; return; }
+  const pct = Math.round(Math.abs(thisM - lastM) / lastM * 100);
+  if (pct === 0) { el.innerHTML = ""; return; }
+  const subiu = thisM > lastM;
+  el.innerHTML = esc(t("vsLastMonth")) + ' <span class="pct ' + (subiu ? "up" : "down") + '">' +
+                 (subiu ? "+" : "−") + pct + "%</span>";
+}
+
+// Gasto ACUMULADO dia a dia do mês corrente (linha que só sobe).
+// Do dia 1 até hoje: cada ponto é o total gasto até aquele dia.
+function cumulativeSeries() {
+  const now = new Date();
+  const ano = now.getFullYear(), mes = now.getMonth(), hoje = now.getDate();
+  const porDia = {};
+  let algumGasto = false;
+  expenses.filter(e => expCur(e) === curCurrency).forEach(e => {
+    const d = new Date(ts(e));
+    if (d.getFullYear() !== ano || d.getMonth() !== mes) return;
+    porDia[d.getDate()] = (porDia[d.getDate()] || 0) + (Number(e.amount) || 0);
+    algumGasto = true;
+  });
+  if (!algumGasto) return [];
+  const serie = [];
+  let acumulado = 0;
+  for (let d = 1; d <= hoje; d++) { acumulado += porDia[d] || 0; serie.push(acumulado); }
+  return serie;
+}
+
+// Sparkline: linha verde + área degradê por baixo. Sem eixos nem números —
+// serve pra dar o FORMATO do mês num relance, não pra ler valores.
+function renderOverviewChart() {
+  const box = document.getElementById("ovChart");
+  if (!box) return;
+  const serie = cumulativeSeries();
+  if (!serie.length) { box.innerHTML = ""; return; }   // mês sem gastos: nem desenha
+  // Um ponto só (dia 1) não faz linha: repete pra virar um traço reto.
+  const pts = serie.length === 1 ? [serie[0], serie[0]] : serie;
+
+  const W = 320, H = 72, pad = 6;
+  const max = Math.max.apply(null, pts) || 1;
+  const coords = pts.map((v, i) => {
+    const x = (i / (pts.length - 1)) * W;
+    const y = H - pad - (v / max) * (H - pad * 2);
+    return [Math.round(x * 100) / 100, Math.round(y * 100) / 100];
+  });
+  const linha = coords.map((c, i) => (i ? "L" : "M") + c[0] + " " + c[1]).join(" ");
+  const area = linha + " L" + W + " " + H + " L0 " + H + " Z";
+
+  box.innerHTML =
+    '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true">' +
+      '<defs><linearGradient id="ovGrad" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0%" stop-color="#00E68A" stop-opacity="0.25"/>' +
+        '<stop offset="100%" stop-color="#00E68A" stop-opacity="0"/>' +
+      '</linearGradient></defs>' +
+      '<path d="' + area + '" fill="url(#ovGrad)"/>' +
+      // vector-effect: a linha estica na horizontal, mas a espessura do traço não
+      '<path d="' + linha + '" fill="none" stroke="#00E68A" stroke-width="2.5" ' +
+        'stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>' +
+    '</svg>';
+}
+
+// ---- Totais do mês atual e do anterior (mesma base do resto do app:
+//      só a moeda que a pessoa está vendo) ----
+function monthTotals() {
   const now = new Date();
   const kThis = now.getFullYear() + "-" + now.getMonth();
   const lastD = new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -962,6 +1097,14 @@ function renderCompare() {
     if (k === kThis) thisM += Number(e.amount) || 0;
     else if (k === kLast) lastM += Number(e.amount) || 0;
   });
+  return { thisM: thisM, lastM: lastM };
+}
+
+// ---- Comparação mês a mês ----
+function renderCompare() {
+  const el = document.getElementById("compare");
+  const tot = monthTotals();
+  const thisM = tot.thisM, lastM = tot.lastM;
   if (lastM === 0) { el.innerHTML = ""; return; } // ainda não há mês passado pra comparar
   const diff = thisM - lastM;
   if (Math.abs(diff) < 0.005) { el.innerHTML = t("cmpThisMonth") + " " + money(thisM) + ". " + t("cmpSame"); return; }
