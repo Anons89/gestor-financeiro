@@ -4,35 +4,41 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Terms of Use — Algent</title>
+<link rel="icon" type="image/png" href="/favicon.png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<meta name="theme-color" content="#0D0D0D" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
+  /* Mesma marca do app e da landing: preto puro, verde vivo, Poppins. */
   :root {
-    --bg: #0A0B12; --panel: #171A22; --border: #2A2F3B; --cream: #E9ECF5;
-    --muted: #98A0B8; --accent: #8B93FF; --accent-2: #C084FC; --accent-3: #38E0C8;
+    --bg: #0D0D0D; --surface: #161616; --border: #262626;
+    --text: #F5F5F5; --muted: #8A8A8A; --accent: #00E68A;
+    --panel: var(--surface); --cream: var(--text); --accent-3: var(--accent);
+    --display: "Poppins", -apple-system, sans-serif;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0; background: var(--bg); color: var(--cream);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     line-height: 1.65; padding: 0 20px 80px;
   }
   .wrap { max-width: 720px; margin: 0 auto; }
   .topbar { display: flex; align-items: center; justify-content: space-between; padding: 22px 0 8px; }
   .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-  .brand-name {
-    font-size: 20px; font-weight: 800;
-    background: linear-gradient(105deg, #4ADE80 0%, var(--accent-3) 45%, var(--accent) 100%);
-    -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
-  }
-  .logo { width: 30px; height: 30px; border-radius: 8px; display: block; }
+  .brand-name { font-family: var(--display); font-size: 21px; font-weight: 700; letter-spacing: -0.045em; color: var(--text); }
+  .brand-dot { color: var(--accent); }
+  .logo { width: 30px; height: 30px; display: block; flex-shrink: 0; }
   .lang-toggle {
     background: var(--panel); border: 1px solid var(--border); color: var(--cream);
-    border-radius: 999px; padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer;
+    border-radius: 999px; padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; min-height: 36px;
   }
-  h1 { font-size: 26px; margin: 26px 0 4px; }
+  h1 { font-family: var(--display); font-size: 28px; font-weight: 600; letter-spacing: -0.02em; margin: 30px 0 6px; }
   .updated { color: var(--muted); font-size: 13px; margin-bottom: 26px; }
-  h2 { font-size: 18px; margin: 30px 0 8px; color: #fff; }
-  p, li { color: #D2D7E6; font-size: 15px; }
-  a { color: var(--accent-3); }
+  h2 { font-family: var(--display); font-size: 18px; font-weight: 600; margin: 32px 0 8px; color: var(--text); }
+  p, li { color: #CFCFCF; font-size: 15px; }
+  a { color: var(--accent); }
   ul { padding-left: 20px; }
   li { margin-bottom: 6px; }
   .back { display: inline-block; margin-top: 34px; color: var(--muted); font-size: 14px; text-decoration: none; border-bottom: 1px solid var(--border); padding-bottom: 2px; }
@@ -46,8 +52,8 @@
   <div class="wrap">
     <div class="topbar">
       <a class="brand" href="/">
-        <svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#000000"/><rect x="22" y="23" width="56" height="50" rx="7" fill="none" stroke="#FFFFFF" stroke-width="5"/><circle cx="45" cy="48" r="12" fill="none" stroke="#FFFFFF" stroke-width="5"/><circle cx="45" cy="48" r="2.6" fill="#FFFFFF"/><line x1="45" y1="48" x2="45" y2="39" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/><line x1="66" y1="41" x2="66" y2="55" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/><line x1="30" y1="73" x2="30" y2="79" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/><line x1="70" y1="73" x2="70" y2="79" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/></svg>
-        <span class="brand-name">Algent</span>
+        <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#00E68A"/><g fill="none" stroke="#04220E" stroke-width="2.1" stroke-linecap="round"><rect x="7.5" y="9" width="17" height="14" rx="3.5"/><circle cx="14" cy="16" r="3.4"/><path d="M14 16v-2.2"/><path d="M20 13.6v4.8"/></g></svg>
+        <span class="brand-name">Algent<span class="brand-dot">.</span></span>
       </a>
       <button class="lang-toggle" id="langToggle">Português</button>
     </div>
@@ -161,6 +167,12 @@
 
       <a class="back" href="/">← Voltar para o Algent</a>
     </div>
+
+    <footer style="margin-top:44px;padding-top:22px;border-top:1px solid var(--border);display:flex;gap:18px;flex-wrap:wrap">
+      <a href="/privacy.html" style="color:var(--muted);font-size:13px;text-decoration:none"><span data-lang="en">Privacy</span><span data-lang="pt">Privacidade</span></a>
+      <a href="/terms.html" style="color:var(--muted);font-size:13px;text-decoration:none"><span data-lang="en">Terms</span><span data-lang="pt">Termos</span></a>
+      <a href="/delete-account.html" style="color:var(--muted);font-size:13px;text-decoration:none"><span data-lang="en">Delete account</span><span data-lang="pt">Excluir conta</span></a>
+    </footer>
   </div>
 
 <script src="/legal.js"></script>

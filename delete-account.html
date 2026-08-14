@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Delete your account — Algent</title>
+<meta name="description" content="How to request deletion of your Algent account and all associated data." />
+<link rel="icon" type="image/png" href="/favicon.png" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<meta name="theme-color" content="#0D0D0D" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* Mesma marca do app e da landing: preto puro, verde vivo, Poppins. */
+  :root {
+    --bg: #0D0D0D; --surface: #161616; --surface-2: #1E1E1E; --border: #262626;
+    --text: #F5F5F5; --muted: #8A8A8A; --accent: #00E68A; --btn-ink: #04220E;
+    --display: "Poppins", -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.65; padding: 0 20px 80px; -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: rgba(0,230,138,0.28); color: var(--text); }
+  .wrap { max-width: 720px; margin: 0 auto; }
+
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 22px 0 8px; }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .logo { width: 30px; height: 30px; display: block; flex-shrink: 0; }
+  .brand-name { font-family: var(--display); font-size: 21px; font-weight: 700; letter-spacing: -0.045em; color: var(--text); }
+  .brand-dot { color: var(--accent); }
+  .lang-toggle {
+    background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    border-radius: 999px; padding: 7px 14px; font-size: 12px; font-weight: 600; cursor: pointer;
+    font-family: inherit; min-height: 36px;
+  }
+
+  h1 { font-family: var(--display); font-size: 28px; font-weight: 600; letter-spacing: -0.02em; margin: 30px 0 6px; }
+  h2 { font-family: var(--display); font-size: 18px; font-weight: 600; margin: 32px 0 8px; color: var(--text); }
+  p, li { color: #CFCFCF; font-size: 15px; }
+  a { color: var(--accent); }
+  ul { padding-left: 20px; }
+  li { margin-bottom: 8px; }
+  .lead { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+
+  /* O botão é o assunto da página: quem chega aqui quer resolver isso. */
+  .cta {
+    display: inline-flex; align-items: center; gap: 9px;
+    background: var(--accent); color: var(--btn-ink);
+    font-family: var(--display); font-size: 15px; font-weight: 600;
+    padding: 15px 24px; border-radius: 14px; text-decoration: none;
+    margin: 22px 0 8px; min-height: 50px;
+    box-shadow: 0 0 30px rgba(0,230,138,0.22);
+    transition: filter .18s ease, transform .18s ease;
+  }
+  .cta:hover { filter: brightness(1.07); }
+  .cta:active { transform: scale(0.98); }
+  .cta svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .cta-hint { color: var(--muted); font-size: 13px; margin-top: 0; }
+
+  .note {
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: 12px; padding: 14px 16px; font-size: 14px; color: #CFCFCF; margin-top: 22px;
+  }
+  .note strong { color: var(--text); }
+
+  .back { display: inline-block; margin-top: 36px; color: var(--muted); font-size: 14px; text-decoration: none; border-bottom: 1px solid var(--border); padding-bottom: 2px; }
+  footer { margin-top: 44px; padding-top: 22px; border-top: 1px solid var(--border); display: flex; gap: 18px; flex-wrap: wrap; }
+  footer a { color: var(--muted); font-size: 13px; text-decoration: none; }
+  footer a:hover { color: var(--text); }
+
+  /* troca de idioma: o legal.js põe a classe lang-en / lang-pt no body */
+  [data-lang] { display: none; }
+  body.lang-en [data-lang="en"] { display: revert; }
+  body.lang-pt [data-lang="pt"] { display: revert; }
+</style>
+</head>
+<body class="lang-en">
+  <div class="wrap">
+    <div class="topbar">
+      <a class="brand" href="/">
+        <svg class="logo" viewBox="0 0 32 32" aria-hidden="true">
+          <rect width="32" height="32" rx="9" fill="#00E68A"/>
+          <g fill="none" stroke="#04220E" stroke-width="2.1" stroke-linecap="round">
+            <rect x="7.5" y="9" width="17" height="14" rx="3.5"/>
+            <circle cx="14" cy="16" r="3.4"/>
+            <path d="M14 16v-2.2"/><path d="M20 13.6v4.8"/>
+          </g>
+        </svg>
+        <span class="brand-name">Algent<span class="brand-dot">.</span></span>
+      </a>
+      <button class="lang-toggle" id="langToggle">Português</button>
+    </div>
+
+    <!-- ================= ENGLISH ================= -->
+    <div data-lang="en">
+      <h1>Delete your Algent account</h1>
+      <div class="lead">This page explains how to permanently delete your account and everything stored with it.</div>
+
+      <p>To request deletion, email us at <a href="mailto:support@algent.co.uk">support@algent.co.uk</a> with the subject <strong>"Account Deletion Request"</strong>, from (or mentioning) the email address associated with your account. The button below opens your email app with all of that already filled in.</p>
+
+      <a class="cta" href="mailto:support@algent.co.uk?subject=Account%20Deletion%20Request&body=Hello%2C%0A%0AI%20would%20like%20to%20delete%20my%20Algent%20account%20and%20all%20associated%20data.%0A%0AAccount%20email%3A%20%0A%0AThank%20you.">
+        <svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>
+        Request account deletion
+      </a>
+      <p class="cta-hint">Opens your email app. If nothing happens, write to support@algent.co.uk manually.</p>
+
+      <h2>How long it takes</h2>
+      <p>We process deletion requests <strong>within 30 days</strong> of receiving them. We will confirm by email once it is done.</p>
+
+      <h2>What gets deleted</h2>
+      <ul>
+        <li>Your account and login credentials</li>
+        <li>All expense records</li>
+        <li>All settings and preferences, including your fixed costs and shortcuts</li>
+        <li>All AI coach conversation history</li>
+      </ul>
+
+      <div class="note">
+        <strong>Cancel your subscription first.</strong> If you have an active subscription or free trial, cancel it in the app under <strong>Settings → Cancel subscription</strong> before requesting deletion. Deleting your account does not automatically cancel billing.
+      </div>
+
+      <div class="note">
+        <strong>Deletion is permanent.</strong> Once your data is deleted it cannot be recovered. We may keep a minimal record of payments where the law requires us to (for example, for accounting), as described in our <a href="/privacy.html">Privacy Policy</a>.
+      </div>
+
+      <a class="back" href="/app.html">← Back to Algent</a>
+    </div>
+
+    <!-- ================= PORTUGUÊS ================= -->
+    <div data-lang="pt">
+      <h1>Excluir sua conta Algent</h1>
+      <div class="lead">Esta página explica como apagar de vez a sua conta e tudo que está guardado nela.</div>
+
+      <p>Para solicitar a exclusão, envie um email para <a href="mailto:support@algent.co.uk">support@algent.co.uk</a> com o assunto <strong>"Solicitação de Exclusão de Conta"</strong>, a partir do (ou mencionando o) endereço de email associado à sua conta. O botão abaixo abre seu aplicativo de email já com tudo preenchido.</p>
+
+      <a class="cta" href="mailto:support@algent.co.uk?subject=Solicita%C3%A7%C3%A3o%20de%20Exclus%C3%A3o%20de%20Conta&body=Ol%C3%A1%2C%0A%0AGostaria%20de%20excluir%20minha%20conta%20Algent%20e%20todos%20os%20dados%20associados.%0A%0AEmail%20da%20conta%3A%20%0A%0AObrigado.">
+        <svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>
+        Solicitar exclusão da conta
+      </a>
+      <p class="cta-hint">Abre seu aplicativo de email. Se não abrir, escreva para support@algent.co.uk manualmente.</p>
+
+      <h2>Quanto tempo leva</h2>
+      <p>Processamos os pedidos de exclusão <strong>em até 30 dias</strong> a partir do recebimento. Confirmamos por email assim que estiver feito.</p>
+
+      <h2>O que é excluído</h2>
+      <ul>
+        <li>Sua conta e credenciais de login</li>
+        <li>Todos os registros de gastos</li>
+        <li>Todas as configurações e preferências, incluindo seus custos fixos e atalhos</li>
+        <li>Todo o histórico de conversas com o coach de IA</li>
+      </ul>
+
+      <div class="note">
+        <strong>Cancele a assinatura antes.</strong> Se você tem assinatura ativa ou teste grátis, cancele no app em <strong>Ajustes → Cancelar assinatura</strong> antes de pedir a exclusão. Apagar a conta não cancela a cobrança automaticamente.
+      </div>
+
+      <div class="note">
+        <strong>A exclusão é definitiva.</strong> Depois de apagados, seus dados não podem ser recuperados. Podemos manter um registro mínimo de pagamentos quando a lei exigir (por exemplo, para fins contábeis), como descrito na nossa <a href="/privacy.html">Política de Privacidade</a>.
+      </div>
+
+      <a class="back" href="/app.html">← Voltar para o Algent</a>
+    </div>
+
+    <footer>
+      <a href="/privacy.html"><span data-lang="en">Privacy</span><span data-lang="pt">Privacidade</span></a>
+      <a href="/terms.html"><span data-lang="en">Terms</span><span data-lang="pt">Termos</span></a>
+      <a href="/app.html">Algent</a>
+    </footer>
+  </div>
+
+<script src="/legal.js"></script>
+</body>
+</html>

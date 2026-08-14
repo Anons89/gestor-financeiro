@@ -4,6 +4,13 @@
 [build]
   functions = "netlify/functions"
 
+# A Play Store exige a página de exclusão de conta em /delete-account (sem o
+# .html). status 200 = reescrita: a URL na barra continua limpa.
+[[redirects]]
+  from = "/delete-account"
+  to = "/delete-account.html"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]
