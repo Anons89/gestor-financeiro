@@ -26,3 +26,22 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# ---- Android / Bubblewrap (empacotamento pra Play Store) ----
+# NADA daqui vai pro GitHub. Em especial o keystore: é a CHAVE que assina o
+# app. Quem tem esse arquivo e a senha consegue publicar uma atualização
+# fingindo ser você. Ele fica só na sua máquina, com backup à parte.
+*.keystore
+*.jks
+key.properties
+
+# Pacotes gerados (grandes e refazíveis a qualquer momento)
+*.apk
+*.aab
+*.idsig
+
+# Projeto Android gerado pelo Bubblewrap — sai do `bubblewrap build`
+.gradle/
+build/
+app/build/
+local.properties
