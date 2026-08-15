@@ -1776,7 +1776,7 @@ async function oauth(provider) {
   if (!sbClient) { setAuthMsg(t("genericErr"), "err"); return; }
   setAuthMsg(t("authLoading"), "");
   try {
-    const { error } = await sbClient.auth.signInWithOAuth({ provider: provider, options: { redirectTo: window.location.origin } });
+    const { error } = await sbClient.auth.signInWithOAuth({ provider: provider, options: { redirectTo: "https://algent.co.uk/app.html" } });
     if (error) { setAuthMsg(t("genericErr"), "err"); }
   } catch (e) { setAuthMsg(t("genericErr"), "err"); }
 }
