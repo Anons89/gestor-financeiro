@@ -469,7 +469,7 @@
 <body>
   <div id="authScreen" class="auth-screen">
     <div class="auth-card">
-      <svg class="auth-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#000000"/><rect x="22" y="23" width="56" height="50" rx="7" fill="none" stroke="#FFFFFF" stroke-width="5"/><circle cx="45" cy="48" r="12" fill="none" stroke="#FFFFFF" stroke-width="5"/><circle cx="45" cy="48" r="2.6" fill="#FFFFFF"/><line x1="45" y1="48" x2="45" y2="39" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/><line x1="66" y1="41" x2="66" y2="55" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/><line x1="30" y1="73" x2="30" y2="79" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/><line x1="70" y1="73" x2="70" y2="79" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/></svg>
+      <svg class="auth-logo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#00E68A"/><g fill="none" stroke="#04220E" stroke-width="2.1" stroke-linecap="round"><rect x="7.5" y="9" width="17" height="14" rx="3.5"/><circle cx="14" cy="16" r="3.4"/><path d="M14 16v-2.2"/><path d="M20 13.6v4.8"/></g></svg>
       <div class="auth-brand"><span class="brand-name auth-name">Algent<span class="brand-dot">.</span></span></div>
       <h2 class="auth-title" id="authTitle"></h2>
       <div class="auth-switch" id="authSwitch"><span id="authSwitchText"></span> <button class="auth-switch-link" id="authToggle"></button></div>
@@ -477,6 +477,14 @@
       <button class="oauth-btn oauth-google" id="googleBtn">
         <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.28-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
         <span id="googleTxt"></span>
+      </button>
+
+      <!-- A Apple exige que todo app com login social ofereça o dela também.
+           Mesmo tamanho e forma do botão do Google; logo à esquerda do texto,
+           como pedem as diretrizes. -->
+      <button class="oauth-btn oauth-apple" id="appleBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.05 12.54c-.02-2.3 1.88-3.4 1.96-3.46-1.07-1.56-2.73-1.78-3.32-1.8-1.41-.14-2.76.83-3.48.83-.72 0-1.83-.81-3.01-.79-1.55.02-2.98.9-3.77 2.29-1.61 2.79-.41 6.92 1.15 9.19.76 1.11 1.67 2.36 2.86 2.31 1.15-.05 1.58-.74 2.97-.74 1.39 0 1.78.74 3 .72 1.24-.02 2.02-1.13 2.78-2.25.88-1.29 1.24-2.54 1.26-2.6-.03-.01-2.41-.93-2.4-3.7zM14.79 5.4c.63-.77 1.06-1.83.94-2.9-.91.04-2.01.61-2.67 1.37-.59.68-1.1 1.77-.96 2.81 1.01.08 2.05-.51 2.69-1.28z"/></svg>
+        <span id="appleTxt"></span>
       </button>
 
       <div class="auth-divider"><span id="authOr"></span></div>
@@ -503,7 +511,7 @@
 
   <div id="payScreen" class="auth-screen hidden">
     <div class="auth-card">
-      <svg class="auth-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="22" fill="#000000"/><rect x="22" y="23" width="56" height="50" rx="7" fill="none" stroke="#FFFFFF" stroke-width="5"/><circle cx="45" cy="48" r="12" fill="none" stroke="#FFFFFF" stroke-width="5"/><circle cx="45" cy="48" r="2.6" fill="#FFFFFF"/><line x1="45" y1="48" x2="45" y2="39" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/><line x1="66" y1="41" x2="66" y2="55" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/><line x1="30" y1="73" x2="30" y2="79" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/><line x1="70" y1="73" x2="70" y2="79" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/></svg>
+      <svg class="auth-logo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#00E68A"/><g fill="none" stroke="#04220E" stroke-width="2.1" stroke-linecap="round"><rect x="7.5" y="9" width="17" height="14" rx="3.5"/><circle cx="14" cy="16" r="3.4"/><path d="M14 16v-2.2"/><path d="M20 13.6v4.8"/></g></svg>
       <div class="auth-brand"><span class="brand-name auth-name">Algent<span class="brand-dot">.</span></span></div>
       <div class="pay-title" id="payTitle"></div>
       <div class="auth-tag" id="paySub"></div>

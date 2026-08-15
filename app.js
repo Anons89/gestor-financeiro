@@ -132,6 +132,7 @@ const STR = {
     authTitleUp: "Criar conta", authTitleIn: "Entrar",
     haveAccount: "Já tem conta?", noAccount: "Não tem conta?", linkIn: "Entrar", linkUp: "Criar conta",
     googleUp: "Criar conta com Google", googleIn: "Entrar com Google",
+    appleUp: "Criar conta com Apple", appleIn: "Entrar com Apple",
     emailUp: "Criar conta com email", emailIn: "Entrar com email",
     legalPre: "Ao continuar, você aceita os", legalAnd: "e a",
     forgot: "Esqueci minha senha", typeEmailFirst: "Escreve seu email no campo acima primeiro, aí toca aqui.",
@@ -216,6 +217,7 @@ const STR = {
     authTitleUp: "Sign up", authTitleIn: "Sign in",
     haveAccount: "Already have an account?", noAccount: "Don't have an account?", linkIn: "Sign in", linkUp: "Sign up",
     googleUp: "Sign up with Google", googleIn: "Sign in with Google",
+    appleUp: "Sign up with Apple", appleIn: "Sign in with Apple",
     emailUp: "Sign up with email", emailIn: "Sign in with email",
     legalPre: "By continuing, you accept the", legalAnd: "and the",
     forgot: "Forgotten your password?", typeEmailFirst: "Pop your email in the box above first, then tap here.",
@@ -1574,6 +1576,7 @@ function renderAuth() {
   set("authSwitchText", up ? t("haveAccount") : t("noAccount"));
   set("authToggle", up ? t("linkIn") : t("linkUp"));
   set("googleTxt", up ? t("googleUp") : t("googleIn"));
+  set("appleTxt", up ? t("appleUp") : t("appleIn"));
   set("emailToggleBtn", up ? t("emailUp") : t("emailIn"));
   set("authLoginBtn", up ? t("signup") : t("login"));
   set("authLegalPre", t("legalPre"));
@@ -1796,7 +1799,7 @@ function enterRecoveryMode() {
   recoveryMode = true;
   showLogin();
   emailOpen = true;
-  ["googleBtn", "emailToggleBtn", "authSwitch", "authEmail", "forgotBtn", "authLegal"].forEach(id => {
+  ["googleBtn", "appleBtn", "emailToggleBtn", "authSwitch", "authEmail", "forgotBtn", "authLegal"].forEach(id => {
     const el = document.getElementById(id); if (el) el.style.display = "none";
   });
   const div = document.querySelector(".auth-divider"); if (div) div.style.display = "none";
@@ -1835,6 +1838,7 @@ const _emailToggle = document.getElementById("emailToggleBtn"); if (_emailToggle
 const _authToggle = document.getElementById("authToggle"); if (_authToggle) _authToggle.onclick = toggleAuthMode;
 const _forgotBtn = document.getElementById("forgotBtn"); if (_forgotBtn) _forgotBtn.onclick = doForgot;
 const _gBtn = document.getElementById("googleBtn"); if (_gBtn) _gBtn.onclick = () => oauth("google");
+const _aBtn = document.getElementById("appleBtn"); if (_aBtn) _aBtn.onclick = () => oauth("apple");
 const _payBtn = document.getElementById("payBtn"); if (_payBtn) _payBtn.onclick = startCheckout;
 const _payLogout = document.getElementById("payLogout"); if (_payLogout) _payLogout.onclick = doLogout;
 document.getElementById("authPass").addEventListener("keydown", e => { if (e.key === "Enter") doLoginOrRecover(); });
