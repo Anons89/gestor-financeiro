@@ -987,7 +987,9 @@ async function askCoach(preset) {
     const bc = {}; exp.forEach(e => { bc[e.category] = (bc[e.category] || 0) + (Number(e.amount) || 0); });
     spendParts.push(money(tot, code) + " (" + Object.entries(bc).map(([c, v]) => c + " " + money(v, code)).join(", ") + ")");
   });
-  const spending = spendParts.length ? spendParts.join(" | ") : "(sem gastos)";
+  // Sem gastos ainda: o texto vai no idioma do app, senão é mais uma pista
+  // em português puxando a resposta do modelo pra língua errada.
+  const spending = spendParts.length ? spendParts.join(" | ") : (lang === "en" ? "(no spending yet)" : "(sem gastos)");
 
   const payload = {
     lang: lang,

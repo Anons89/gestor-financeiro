@@ -73,7 +73,7 @@
   }
   /* Mesma marca do app: lockup em cor sólida, sem gradiente em letra. */
   .nav-brand { display: inline-flex; align-items: center; gap: 9px; }
-  .nav-mark { width: 26px; height: 26px; display: block; flex-shrink: 0; }
+  .nav-mark { width: 26px; height: 26px; display: block; flex-shrink: 0; border-radius: 7px; }
   .nav-logo {
     font-family: var(--display);
     font-size: 21px; font-weight: 700; letter-spacing: -0.045em;
@@ -174,7 +174,7 @@
   .phone-wrap { position: relative; display: inline-block; }
   .phone {
     width: min(320px, 84vw);
-    background: #101010;
+    background: var(--bg);
     border-radius: 36px;
     border: 1.5px solid var(--border);
     overflow: hidden;
@@ -190,34 +190,31 @@
      recibo se lê alinhado à esquerda */
   .phone-screen { padding: 0 14px 20px; text-align: left; }
 
-  .ph-hero {
-    background: linear-gradient(165deg, #2FBE75 0%, #17945B 55%, #0C7A4A 100%);
-    border-radius: 16px; padding: 18px; margin-bottom: 10px;
-    position: relative; overflow: hidden;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.22);
-  }
-  .ph-hero::after { content:""; position:absolute; right:-40px; top:-45px; width:150px; height:150px; border-radius:50%; background:radial-gradient(circle at 35% 35%, rgba(255,255,255,0.16), transparent 68%); }
-  .ph-hero-lbl { font-size: 10px; font-weight:700; color:rgba(255,255,255,.85); letter-spacing:.08em; text-transform:uppercase; }
-  .ph-hero-amt { font-family: var(--display); font-variant-numeric: tabular-nums; font-size: 32px; font-weight:700; color:#fff; letter-spacing:-.02em; margin: 4px 0; }
-  .ph-hero-note { font-size: 11px; color:rgba(255,255,255,.85); }
+  /* Cabeçalho da Início, igual ao app: sem card verde. O número respira
+     direto no preto, com a etiqueta verde pequena por cima e a linha embaixo. */
+  .ph-ov { padding: 6px 2px 2px; }
+  .ph-ov-lbl  { font-size: 12px; font-weight: 600; color: var(--green); }
+  .ph-ov-amt  { font-family: var(--display); font-variant-numeric: tabular-nums;
+                font-size: 40px; font-weight: 600; color: var(--white);
+                letter-spacing: -.03em; line-height: 1.08; margin-top: 3px; }
+  .ph-ov-delta { font-size: 12px; font-weight: 500; color: var(--mid); margin-top: 7px; }
+  .ph-ov-delta .down { color: var(--green); font-weight: 700; }
+  .ph-chart { margin-top: 12px; }
+  .ph-chart svg { display: block; width: 100%; height: 62px; }
 
-  .ph-row { display:flex; gap:8px; margin-bottom:10px; }
-  .ph-input { flex:1; background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:10px 12px; font-size:12px; color:var(--mid); }
-  .ph-btn { background:var(--btn); color:var(--btn-ink); border:none; border-radius:10px; padding:10px 13px; font-size:12px; font-weight:700; }
-
-  .ph-chips { display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap; }
-  .ph-chip { background:var(--surface-2); border:1px solid var(--border); border-radius:999px; padding:5px 11px; font-size:10px; color:var(--mid); }
-
-  .ph-receipt { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
-  .ph-head { padding:10px 12px 4px; font-size:9px; font-weight:700; color:var(--dim); letter-spacing:.08em; text-transform:uppercase; }
-  .ph-item { display:flex; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid var(--surface-2); }
+  /* Linhas de gasto, no formato atual: círculo cheio na cor da categoria
+     com o ícone em tinta escura. */
+  .ph-list { margin-top: 20px; }
+  .ph-list-head { font-family: var(--display); font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .ph-item { display:flex; align-items:center; gap:11px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.06); }
   .ph-item:last-child { border-bottom:none; }
-  .ph-emo { width:32px; height:32px; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }
-  .ph-emo svg { width:16px; height:16px; }
+  .ph-tile { width:34px; height:34px; border-radius:50%; flex-shrink:0;
+             display:inline-flex; align-items:center; justify-content:center; color:#0D0D0D; }
+  .ph-tile svg { width:17px; height:17px; }
   .ph-meta { flex:1; min-width:0; }
-  .ph-desc { font-size:11px; font-weight:600; color:var(--text); }
-  .ph-cat { font-size:9.5px; color:var(--dim); }
-  .ph-amt { font-family: var(--display); font-variant-numeric: tabular-nums; font-size:12px; font-weight:700; color:var(--text); }
+  .ph-desc { font-size:13.5px; font-weight:600; color:var(--text); }
+  .ph-cat { font-size:11.5px; color:var(--mid); margin-top:1px; }
+  .ph-amt { font-family: var(--display); font-variant-numeric: tabular-nums; font-size:13.5px; font-weight:700; color:var(--text); }
 
   .phone-glow {
     position:absolute; bottom:-40px; left:50%; transform:translateX(-50%);
@@ -356,14 +353,7 @@
 <!-- NAV -->
 <nav>
   <span class="nav-brand">
-    <svg class="nav-mark" viewBox="0 0 32 32" aria-hidden="true">
-      <rect width="32" height="32" rx="9" fill="var(--green)"/>
-      <g fill="none" stroke="var(--btn-ink)" stroke-width="2.1" stroke-linecap="round">
-        <rect x="7.5" y="9" width="17" height="14" rx="3.5"/>
-        <circle cx="14" cy="16" r="3.4"/>
-        <path d="M14 16v-2.2"/><path d="M20 13.6v4.8"/>
-      </g>
-    </svg>
+    <img class="nav-mark" src="/logo.png" alt="" aria-hidden="true" />
     <span class="nav-logo">Algent<span class="brand-dot">.</span></span>
   </span>
   <a href="/app.html" class="nav-cta">Get started free</a>
@@ -392,37 +382,41 @@
       <div class="phone-notch"></div>
       <div class="phone-screen">
 
-        <div class="ph-hero">
-          <div class="ph-hero-lbl">Spent this month</div>
-          <div class="ph-hero-amt">£483.06</div>
-          <div class="ph-hero-note">Biggest chunk: Transport (£450.59)</div>
+        <div class="ph-ov">
+          <div class="ph-ov-lbl">This month</div>
+          <div class="ph-ov-amt">£483.06</div>
+          <div class="ph-ov-delta"><span class="down">−8%</span> vs last month</div>
+          <div class="ph-chart">
+            <!-- mesma curva acumulada do app: área em degradê + linha verde -->
+            <svg viewBox="0 0 320 62" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="phGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#00E68A" stop-opacity="0.25"/>
+                  <stop offset="100%" stop-color="#00E68A" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <path d="M0 55 L40 51 L80 45 L120 41 L160 32 L200 27 L240 17 L280 12 L320 6 L320 62 L0 62 Z" fill="url(#phGrad)"/>
+              <path d="M0 55 L40 51 L80 45 L120 41 L160 32 L200 27 L240 17 L280 12 L320 6"
+                    fill="none" stroke="#00E68A" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+            </svg>
+          </div>
         </div>
 
-        <div class="ph-row">
-          <div class="ph-input">spent 4.50 on coffee…</div>
-          <div class="ph-btn">Log it</div>
-        </div>
-
-        <div class="ph-chips">
-          <div class="ph-chip">Coffee £3.20</div>
-          <div class="ph-chip">Meal Deal £3.85</div>
-          <div class="ph-chip">Bus £1.75</div>
-        </div>
-
-        <div class="ph-receipt">
-          <div class="ph-head">Today</div>
+        <div class="ph-list">
+          <div class="ph-list-head">Today</div>
           <div class="ph-item">
-            <span class="ph-emo" aria-hidden="true" style="background:#F0705F26;color:#F0705F"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2v7a2 2 0 0 0 2 2v11"/><path d="M10 2v7a2 2 0 0 1-2 2"/><path d="M17.5 2c-1.3 1.9-2 3.8-2 5.6 0 1.9 1 3.1 2 3.6v10.8"/></svg></span>
+            <span class="ph-tile" aria-hidden="true" style="background:#FF5A4D"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v7a2 2 0 0 0 2 2v11"/><path d="M10 2v7a2 2 0 0 1-2 2"/><path d="M17.5 2c-1.3 1.9-2 3.8-2 5.6 0 1.9 1 3.1 2 3.6v10.8"/></svg></span>
             <div class="ph-meta"><div class="ph-desc">Five Guys</div><div class="ph-cat">Food</div></div>
             <div class="ph-amt">£12.90</div>
           </div>
           <div class="ph-item">
-            <span class="ph-emo" aria-hidden="true" style="background:#4CC38A26;color:#4CC38A"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg></span>
+            <span class="ph-tile" aria-hidden="true" style="background:#22C55E"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></svg></span>
             <div class="ph-meta"><div class="ph-desc">Uber</div><div class="ph-cat">Transport</div></div>
             <div class="ph-amt">£7.52</div>
           </div>
           <div class="ph-item">
-            <span class="ph-emo" aria-hidden="true" style="background:#8B93E826;color:#8B93E8"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg></span>
+            <span class="ph-tile" aria-hidden="true" style="background:#6366F1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg></span>
             <div class="ph-meta"><div class="ph-desc">Netflix</div><div class="ph-cat">Subscriptions</div></div>
             <div class="ph-amt">£4.99</div>
           </div>

@@ -396,7 +396,9 @@
      o showLogin() tira essa marca e a tela volta normalmente. */
   html.has-session #authScreen { display: none; }
   .auth-card { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 12px; text-align: center; }
-  .auth-logo { width: 68px; height: 68px; margin: 0 auto 2px; display: block; }
+  /* A marca é a própria app icon (o "A" em fundo preto), por isso arredondamos
+     o quadrado em vez de tentar recortar o fundo — funciona nos dois temas. */
+  .auth-logo { width: 68px; height: 68px; margin: 0 auto 2px; display: block; border-radius: 16px; }
   .auth-brand { margin-top: 2px; }
   .auth-name { font-size: 32px; }
   .auth-tag { font-size: 14px; color: var(--muted); margin-bottom: 10px; line-height: 1.4; }
@@ -469,7 +471,7 @@
 <body>
   <div id="authScreen" class="auth-screen">
     <div class="auth-card">
-      <svg class="auth-logo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#00E68A"/><g fill="none" stroke="#04220E" stroke-width="2.1" stroke-linecap="round"><rect x="7.5" y="9" width="17" height="14" rx="3.5"/><circle cx="14" cy="16" r="3.4"/><path d="M14 16v-2.2"/><path d="M20 13.6v4.8"/></g></svg>
+      <img class="auth-logo" src="/logo.png" alt="" aria-hidden="true" />
       <div class="auth-brand"><span class="brand-name auth-name">Algent<span class="brand-dot">.</span></span></div>
       <h2 class="auth-title" id="authTitle"></h2>
       <div class="auth-switch" id="authSwitch"><span id="authSwitchText"></span> <button class="auth-switch-link" id="authToggle"></button></div>
@@ -511,7 +513,7 @@
 
   <div id="payScreen" class="auth-screen hidden">
     <div class="auth-card">
-      <svg class="auth-logo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#00E68A"/><g fill="none" stroke="#04220E" stroke-width="2.1" stroke-linecap="round"><rect x="7.5" y="9" width="17" height="14" rx="3.5"/><circle cx="14" cy="16" r="3.4"/><path d="M14 16v-2.2"/><path d="M20 13.6v4.8"/></g></svg>
+      <img class="auth-logo" src="/logo.png" alt="" aria-hidden="true" />
       <div class="auth-brand"><span class="brand-name auth-name">Algent<span class="brand-dot">.</span></span></div>
       <div class="pay-title" id="payTitle"></div>
       <div class="auth-tag" id="paySub"></div>
