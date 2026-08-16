@@ -38,7 +38,12 @@
     #
     # style-src ainda permite inline (os estilos ficam no <style> das páginas).
     # É um risco bem menor: CSS não executa código.
-    Content-Security-Policy = "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://efytffndatdkvbzeoxgm.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests"
+    #
+    # O Google Analytics entra por aqui: o gtag.js vem do googletagmanager e
+    # manda os eventos pros domínios de coleta (que variam por região, daí os
+    # curingas). O bloco que o Google manda colar inline mora em /analytics.js
+    # justamente pra não precisarmos reabrir o 'unsafe-inline'.
+    Content-Security-Policy = "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://www.google-analytics.com https://*.google-analytics.com; connect-src 'self' https://efytffndatdkvbzeoxgm.supabase.co https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests"
 
 # As funções nunca devem ser guardadas em cache por CDN/navegador:
 # a resposta depende de QUEM está pedindo (token) e do limite de uso.
