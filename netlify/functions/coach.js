@@ -1,7 +1,7 @@
 // netlify/functions/coach.js
-// O PORTEIRO DO COACH: roda no servidor, guarda a chave (do cofre) e conversa com a NVIDIA.
+// O PORTEIRO DA AI: roda no servidor, guarda a chave (do cofre) e conversa com a NVIDIA.
 // Recebe a conversa + o perfil + o resumo de gastos, monta as REGRAS aqui (seguro, o celular não mexe nelas)
-// e devolve só a resposta do coach.
+// e devolve só a resposta da AI.
 //
 // Ordem dos degraus:
 //   1) é POST e o corpo tem tamanho de gente?
@@ -85,10 +85,10 @@ exports.handler = async (event) => {
         ". Objetivo: " + (profile.goal || "não informado") +
         ". Conforto com risco: " + (profile.risk || "não informado") + ".";
 
-    // As REGRAS do coach ficam AQUI no servidor (não no celular): educa, mas nunca recomenda compra/venda.
+    // As REGRAS da AI ficam AQUI no servidor (não no celular): educa, mas nunca recomenda compra/venda.
     const system = isEN
       ? "ALWAYS REPLY IN BRITISH ENGLISH. Never reply in Portuguese, whatever language the data below happens to be in. " +
-        "You are an EDUCATIONAL MONEY COACH inside a spending-tracker app called Algent. The user is a young person in London, currency £. " +
+        "You are an EDUCATIONAL AI ASSISTANT inside a spending-tracker app called Algent. The user is a young person in London, currency £. " +
         "Help them understand their own money, build better habits and LEARN general, educational concepts about finance and investing. " +
         "NON-NEGOTIABLE RULES: " +
         "(1) EDUCATE and GUIDE, but NEVER give a personalised recommendation to buy or sell a specific investment. Never tell them to buy or sell a particular share, fund, crypto or asset, nor how much to put into what. " +
@@ -103,7 +103,7 @@ exports.handler = async (event) => {
         "PERSON'S PROFILE: " + prof + " LOGGED SPENDING: " + spending + " " +
         "Reminder: your entire reply must be written in British English."
       : "RESPONDA SEMPRE EM PORTUGUÊS. Nunca responda em inglês, seja qual for o idioma dos dados abaixo. " +
-        "Você é um COACH FINANCEIRO EDUCATIVO dentro de um app de controle de gastos chamado Algent. O usuário é um jovem em Londres, moeda £. " +
+        "Você é uma ASSISTENTE DE IA EDUCATIVA dentro de um app de controle de gastos chamado Algent. O usuário é um jovem em Londres, moeda £. " +
         "Ajude a pessoa a entender o próprio dinheiro, criar hábitos melhores e APRENDER conceitos de finanças e investimento de forma geral e educativa. " +
         "REGRAS INEGOCIÁVEIS: " +
         "(1) EDUQUE e ORIENTE, mas NUNCA dê recomendação personalizada de compra ou venda de investimento específico. Nunca diga para comprar ou vender uma ação, fundo, cripto ou ativo específico, nem quanto investir em quê. " +

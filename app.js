@@ -89,7 +89,7 @@ const STR = {
     prefLabel: "Preferências", langRowLabel: "Idioma", curRowLabel: "Moeda", accountLabel: "Conta",
     compareTitle: "Comparação mensal", statsEmpty: "Anote alguns gastos e seus gráficos aparecem aqui.",
     sub: 'Escreve do seu jeito, tipo "gastei 15 no uber". O app anota e organiza.',
-    inputPh: "o que você gastou?", add: "Anotar", parsingTxt: "IA lendo...",
+    inputPh: "o que você gastou?", add: "Anotar", parsingTxt: "IA lendo...", categorising: "categorizando…",
     totalLabel: "GASTO NO MÊS", fixedTitle: "Fixos por mês", fixedPh: "ex: academia 30 dia 15", addFixed: "+ Fixo",
     chipsTitle: "Atalhos rápidos", coachTitle: "AI", coachSub: "Tire dúvidas e aprenda a organizar melhor seu dinheiro.",
     insightsTitle: "Insights",
@@ -115,13 +115,13 @@ const STR = {
     dueDay: "cai dia", today: "Hoje", yesterday: "Ontem",
     weekdays: ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"],
     editChips: "editar", addChipPh: "novo atalho", okBtn: "ok",
-    tabGastosLabel: "Gastos", tabCoachLabel: "Coach",
-    profileTitle: "SEU PERFIL (opcional — ajuda o coach)", incomePh: "renda/mês £",
+    tabGastosLabel: "Gastos", tabCoachLabel: "AI",
+    profileTitle: "SEU PERFIL (opcional — ajuda a AI)", incomePh: "renda/mês £",
     riskQ: "risco?", riskLow: "risco baixo", riskMed: "risco médio", riskHigh: "risco alto",
     goalPh: "seu objetivo (ex: juntar pra uma viagem)",
-    coachGreeting: "Oi! Sou seu coach financeiro. Ajudo você a entender pra onde vai seu dinheiro e explico conceitos — mas não digo o que comprar. Registra alguns gastos e me pergunta o que quiser.",
+    coachGreeting: "Oi! Sou sua AI. Ajudo você a entender pra onde vai seu dinheiro e explico conceitos — mas não digo o que comprar. Registra alguns gastos e me pergunta o que quiser.",
     suggestions: ["Onde eu mais gasto?", "Como posso economizar?", "O que é reserva de emergência?", "O que fazer com o que sobra?"],
-    coachPh: "pergunta pro seu coach...", send: "Enviar", thinkingTxt: "coach pensando...", coachErr: "Tive um problema pra pensar agora. Tenta de novo?",
+    coachPh: "pergunta pra AI...", send: "Enviar", thinkingTxt: "AI pensando...", coachErr: "Tive um problema pra pensar agora. Tenta de novo?",
     coachLimit: "Você fez muitas perguntas seguidas. Respira um pouquinho e me chama de novo em instantes.",
     chatClear: "Limpar conversa", chatClearConfirm: "Apagar toda a conversa com a AI? Isso não dá pra desfazer.",
     cmpThisMonth: "Esse mês:", cmpMore: "a mais que o mês passado", cmpLess: "a menos que o mês passado", cmpSame: "Igual ao mês passado.",
@@ -174,7 +174,7 @@ const STR = {
     prefLabel: "Preferences", langRowLabel: "Language", curRowLabel: "Currency", accountLabel: "Account",
     compareTitle: "Monthly comparison", statsEmpty: "Log a few expenses and your charts show up here.",
     sub: 'Just type it, like "spent 15 on uber". The app logs and sorts it.',
-    inputPh: "what did you spend on?", add: "Add", parsingTxt: "AI reading...",
+    inputPh: "what did you spend on?", add: "Add", parsingTxt: "AI reading...", categorising: "categorising…",
     totalLabel: "SPENT THIS MONTH", fixedTitle: "Monthly fixed", fixedPh: "e.g. gym 30 day 15", addFixed: "+ Fixed",
     chipsTitle: "Quick shortcuts", coachTitle: "AI", coachSub: "Ask questions and learn to organise your money better.",
     insightsTitle: "Insights",
@@ -200,13 +200,13 @@ const STR = {
     dueDay: "due day", today: "Today", yesterday: "Yesterday",
     weekdays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
     editChips: "edit", addChipPh: "new shortcut", okBtn: "done",
-    tabGastosLabel: "Spending", tabCoachLabel: "Coach",
-    profileTitle: "YOUR PROFILE (optional — helps the coach)", incomePh: "income/mo £",
+    tabGastosLabel: "Spending", tabCoachLabel: "AI",
+    profileTitle: "YOUR PROFILE (optional — helps the AI)", incomePh: "income/mo £",
     riskQ: "risk?", riskLow: "low risk", riskMed: "medium risk", riskHigh: "high risk",
     goalPh: "your goal (e.g. save for a trip)",
-    coachGreeting: "Hello! I'm your money coach. I help you understand where your money goes and explain concepts — but I won't tell you what to buy. Log some spending and ask me anything.",
+    coachGreeting: "Hello! I'm your AI assistant. I help you understand where your money goes and explain concepts — but I won't tell you what to buy. Log some spending and ask me anything.",
     suggestions: ["Where do I spend most?", "How can I save?", "What is an emergency fund?", "What to do with leftover money?"],
-    coachPh: "ask your coach...", send: "Send", thinkingTxt: "coach thinking...", coachErr: "I had a problem thinking. Try again?",
+    coachPh: "ask the AI...", send: "Send", thinkingTxt: "AI thinking...", coachErr: "I had a problem thinking. Try again?",
     coachLimit: "That's a lot of questions in a row. Give it a moment and ask me again.",
     chatClear: "Clear chat", chatClearConfirm: "Delete the whole conversation with the AI? This can't be undone.",
     cmpThisMonth: "This month:", cmpMore: "more than last month", cmpLess: "less than last month", cmpSame: "Same as last month.",
@@ -365,7 +365,18 @@ async function parse(text) {
 }
 
 // ---- MEMÓRIA ----
-function load() { try { return JSON.parse(localStorage.getItem("expenses") || "[]"); } catch (e) { return []; } }
+function load() {
+  try {
+    const raw = JSON.parse(localStorage.getItem("expenses") || "[]");
+    // Se o app fechou com um gasto ainda "a categorizar", no próximo arranque
+    // já não há nada em curso — a marca sai, senão ficava preso pra sempre.
+    return raw.map(e => {
+      const c = Object.assign({}, e);
+      delete c.pending; delete c._key;
+      return c;
+    });
+  } catch (e) { return []; }
+}
 function save() { localStorage.setItem("expenses", JSON.stringify(expenses)); }
 let expenses = load();
 
@@ -407,42 +418,102 @@ function learnedCategoryFor(text, desc) {
 }
 
 // ---- Ações: gastos do dia ----
+// O gasto entra na lista NA HORA, com o palpite local (regex + categoria
+// aprendida). A IA continua a correr, mas por trás: quando responde, corrige
+// só aquela linha. Antes a pessoa esperava 1-2s olhando pro botão "IA lendo..."
+// antes de ver qualquer coisa — e não dava pra anotar dois gastos seguidos.
+let pendingSeq = 0;
+function findByKey(key) { return expenses.find(e => e._key === key); }
+
 async function addExpense(msg, curOverride) {
   const text = (msg !== undefined ? msg : input.value).trim();
   if (!text) return;
-  const btn = document.getElementById("addBtn");
-  btn.disabled = true; btn.textContent = t("parsingTxt");
   // Tira a data do texto ANTES de ler o valor — senão "Tesco 20 dia 2" corre o
   // risco de virar um gasto de 2, e a IA ainda gastaria token lendo "dia 2".
   const quando = extractDate(text);
-  const parsed = await parse(quando.cleaned);
-  // Se a pessoa já ensinou a categoria dessa palavra, a IA respeita a escolha dela
-  const learned = learnedCategoryFor(quando.cleaned, parsed.description);
-  if (learned) parsed.category = learned;
-  const obj = {
+
+  // 1) PALPITE INSTANTÂNEO, sem rede nenhuma.
+  const guess = parseLocal(quando.cleaned);
+  // Se a pessoa já ensinou a categoria dessa palavra, o palpite já é o final:
+  // gasto repetido ("coffee") nasce categorizado, sem passar por "categorizando".
+  const learned = learnedCategoryFor(quando.cleaned, guess.description);
+  if (learned) guess.category = learned;
+  const needsAI = !learned;
+
+  const key = "tmp" + (++pendingSeq) + "_" + Date.now();
+  const optimistic = {
+    id: key,          // provisório: trocado pelo id real do banco quando chegar
+    _key: key,        // âncora estável — sobrevive à troca de id acima
+    pending: needsAI,
     date: (quando.date || new Date()).toISOString(),
     cur: curOverride || curCurrency,
-    ...parsed,
+    ...guess,
   };
-  if (sbClient) {
-    // salva na nuvem, na conta da pessoa, e usa a linha que o banco devolve (com o id de verdade)
-    const saved = await cloudInsertExpense(obj);
-    if (!saved) {
-      btn.disabled = false; btn.textContent = t("add");
-      alert(t("saveErr"));
-      return;
-    }
-    expenses.unshift(saved); save();
-  } else {
-    // sem nuvem disponível: mantém o jeito antigo, salvando no aparelho
-    expenses.unshift({ id: Date.now(), ...obj }); save();
-  }
-  input.value = "";
-  btn.disabled = false; btn.textContent = t("add");
+  expenses.unshift(optimistic); save();
+  input.value = "";   // campo livre já: dá pra anotar o próximo sem esperar
   render();
   // o gasto recém-anotado entra deslizando (só ele, não a lista inteira)
   const first = document.querySelector("#list .item");
   if (first) first.classList.add("just-added");
+
+  // 2) O resto acontece por trás. Sem await aqui de propósito: quem chamou
+  //    (o clique, o Enter) não fica preso à rede.
+  finishExpense(key, quando.cleaned, needsAI);
+}
+
+// Grava na nuvem e pergunta à IA — ao mesmo tempo, não em fila. O gasto fica
+// seguro no banco mesmo que a IA demore ou falhe.
+async function finishExpense(key, cleaned, needsAI) {
+  const partida = findByKey(key);
+  if (!partida) return;
+
+  const [saved, ai] = await Promise.all([
+    sbClient ? cloudInsertExpense(partida) : null,
+    needsAI ? parse(cleaned) : null,
+  ]);
+
+  const e = findByKey(key);
+  if (!e) {
+    // A pessoa apagou o gasto enquanto isto corria. Se o insert já tinha
+    // passado, apaga também na nuvem — senão ficava uma linha órfã lá.
+    if (saved && sbClient) cloudDeleteExpense(saved.id);
+    return;
+  }
+
+  if (sbClient) {
+    if (!saved) {
+      // Não deu pra gravar: tira da lista em vez de deixar um gasto fantasma
+      // que sumiria sozinho no próximo carregamento.
+      expenses = expenses.filter(x => x._key !== key);
+      save(); render();
+      alert(t("saveErr"));
+      return;
+    }
+    e.id = saved.id;
+  }
+
+  // A IA só corrige o que soube dizer. Se ela falhou, parse() já devolveu o
+  // palpite local de volta — o gasto fica com a categoria do regex (ou
+  // "Outros"), nunca se perde.
+  if (ai) {
+    if (CATEGORIES[ai.category]) e.category = ai.category;
+    const amt = Number(ai.amount);
+    if (isFinite(amt) && amt > 0) e.amount = amt;
+    if (ai.description) e.description = ai.description;
+    // O que a pessoa ENSINOU continua a mandar na IA. Reconferimos aqui porque
+    // a descrição da IA ("McDonald's") pode bater numa chave aprendida que o
+    // palpite local ("Mcd") não alcançava — era assim antes, quando a IA vinha
+    // primeiro, e tem de continuar a ser.
+    const aprendida = learnedCategoryFor(cleaned, e.description);
+    if (aprendida) e.category = aprendida;
+  }
+  delete e.pending;
+  save(); render();
+
+  // O insert foi com o palpite; manda pro banco o que a IA corrigiu.
+  if (sbClient && saved && ai) {
+    cloudUpdateExpense(e.id, { amount: e.amount, category: e.category, description: e.description });
+  }
 }
 async function removeExpense(id) {
   if (sbClient) { await cloudDeleteExpense(id); }
@@ -450,6 +521,11 @@ async function removeExpense(id) {
   expenses = expenses.filter(e => String(e.id) !== String(id)); save(); render();
 }
 // Atualiza a categoria de um gasto na nuvem
+// Atualiza os campos que a IA corrigiu depois do insert otimista.
+async function cloudUpdateExpense(id, fields) {
+  if (!sbClient) return;
+  try { await sbClient.from("expenses").update(fields).eq("id", id); } catch (e) {}
+}
 async function cloudUpdateExpenseCategory(id, cat) {
   if (!sbClient) return;
   try { await sbClient.from("expenses").update({ category: cat }).eq("id", id); } catch (e) {}
@@ -567,10 +643,25 @@ const CURRENCIES = { GBP: "£", EUR: "€", USD: "$", BRL: "R$", JPY: "¥", AUD:
 const CUR_ORDER = ["GBP", "EUR", "USD", "BRL", "JPY", "AUD", "CAD", "CHF", "CNY"];
 let curMenuOpen = false;
 function loadCur(key, def) { try { const r = localStorage.getItem(key); return (r && CURRENCIES[r]) ? r : def; } catch (e) { return def; } }
-let homeCurrency = loadCur("home_currency", "GBP");   // moeda de casa (fixos) — travada
+// Palpite inicial da moeda, SÓ pra quem ainda não escolheu nenhuma: o fuso
+// horário já diz o país e não custa rede nem permissão. Quem já escolheu
+// (aqui ou na nuvem) tem a escolha respeitada — loadCur devolve a dela e o
+// palpite nem chega a ser usado.
+//
+// De propósito o palpite NÃO é gravado: gravado, ele viraria uma "escolha"
+// que o sync da nuvem teria de desfazer depois. Fica só em memória até a
+// pessoa escolher de verdade no seletor.
+function defaultCurrency() {
+  const guess = currencyFromTZ();
+  return (guess && CURRENCIES[guess]) ? guess : "GBP";
+}
+let homeCurrency = loadCur("home_currency", defaultCurrency());
 let curCurrency = loadCur("cur_currency", homeCurrency); // moeda que você está vendo/registrando agora
 const money = (n, cur) => (CURRENCIES[cur || curCurrency] || "£") + (Number(n) || 0).toFixed(2);
 const expCur = e => e.cur || homeCurrency; // gastos antigos sem moeda = moeda de casa
+// "renda/mês £" tem o símbolo escrito na tradução; aqui ele passa a ser o da
+// moeda ativa, pelo mesmo motivo dos fixos.
+const withCurSymbol = str => String(str).replace("£", CURRENCIES[curCurrency] || "£");
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const ts = e => e.date ? new Date(e.date).getTime() : e.id;
 const dayKey = tv => { const d = new Date(tv); return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate(); };
@@ -626,7 +717,7 @@ function applyStaticTexts() {
   input.setAttribute("aria-label", t("inputPh"));
   fixedInput.setAttribute("aria-label", t("fixedPh"));
   document.getElementById("coachInput").setAttribute("aria-label", t("coachPh"));
-  document.getElementById("pIncome").setAttribute("aria-label", t("incomePh"));
+  document.getElementById("pIncome").setAttribute("aria-label", withCurSymbol(t("incomePh")));
   document.getElementById("pGoal").setAttribute("aria-label", t("goalPh"));
   document.getElementById("pRisk").setAttribute("aria-label", t("riskQ"));
   document.getElementById("langBtn").setAttribute("aria-label", t("langRowLabel"));
@@ -640,7 +731,7 @@ function applyStaticTexts() {
   document.getElementById("disclaimer").textContent = t("disclaimer");
   document.getElementById("langBtn").textContent = lang === "pt" ? "EN" : "PT";
   document.getElementById("profileTitle").textContent = t("profileTitle");
-  document.getElementById("pIncome").setAttribute("placeholder", t("incomePh"));
+  document.getElementById("pIncome").setAttribute("placeholder", withCurSymbol(t("incomePh")));
   document.getElementById("pGoal").setAttribute("placeholder", t("goalPh"));
   document.getElementById("coachInput").setAttribute("placeholder", t("coachPh"));
   document.getElementById("coachSend").innerHTML = ic("send") + "<span>" + esc(t("send")) + "</span>";
@@ -708,10 +799,14 @@ function render() {
 
   const itemHtml = e =>
     '<div class="item">' +
-      catTile(e.category) +
+      (e.pending ? catTile(null, 'cat-tile-wait') : catTile(e.category)) +
       '<div class="meta">' +
         '<div class="desc">' + esc(e.description) + '</div>' +
-        '<button class="cat-edit" data-act="cat-open" data-id="' + esc(String(e.id)) + '">' + esc(catName(e.category)) + ' <span class="pen" aria-hidden="true">' + ICONS.pen + '</span></button>' +
+        // Enquanto a IA pensa, a categoria não é clicável: não faz sentido
+        // editar um palpite que está prestes a ser substituído.
+        (e.pending
+          ? '<span class="cat-edit is-waiting">' + esc(t("categorising")) + '</span>'
+          : '<button class="cat-edit" data-act="cat-open" data-id="' + esc(String(e.id)) + '">' + esc(catName(e.category)) + ' <span class="pen" aria-hidden="true">' + ICONS.pen + '</span></button>') +
       '</div>' +
       '<span class="amount">' + money(e.amount) + '</span>' +
       '<button class="del" aria-label="' + t("aDel") + ': ' + esc(e.description) + '" data-act="exp-del" data-id="' + esc(String(e.id)) + '">' + ICONS.x + '</button>' +
@@ -915,12 +1010,12 @@ function setChartType(tp) {
 // ---- Desenha os fixos ----
 function renderFixed() {
   const total = recurring.reduce((s, f) => s + (Number(f.amount) || 0), 0);
-  fixedTotalEl.textContent = money(total, homeCurrency) + t("perMonth");
+  fixedTotalEl.textContent = money(total) + t("perMonth");
 
   const unpaid = recurring.filter(f => !isPaid(f)).reduce((s, f) => s + (Number(f.amount) || 0), 0);
   if (recurring.length === 0) fixedSubEl.textContent = "";
   else if (unpaid === 0) fixedSubEl.innerHTML = t("allPaid");
-  else fixedSubEl.innerHTML = t("remaining") + ' <b>' + money(unpaid, homeCurrency) + '</b>';
+  else fixedSubEl.innerHTML = t("remaining") + ' <b>' + money(unpaid) + '</b>';
 
   if (recurring.length === 0) { fixedListEl.innerHTML = '<div class="fixed-empty">' + t("emptyFixed") + '</div>'; return; }
   const sorted = [...recurring].sort((a, b) => {
@@ -939,7 +1034,7 @@ function renderFixed() {
         '</span>' +
       '</span>' +
       '<span class="fx-right">' +
-        '<span class="fx-amount">' + money(f.amount, homeCurrency) + '</span>' +
+        '<span class="fx-amount">' + money(f.amount) + '</span>' +
         '<button class="fx-del" aria-label="' + t("aDel") + ': ' + esc(f.name) + '" data-act="fx-del" data-id="' + esc(String(f.id)) + '">' + ICONS.x + '</button>' +
       '</span>' +
     '</div>';
@@ -1143,6 +1238,9 @@ function setCurCurrency(code) {
   try { localStorage.setItem("cur_currency", code); } catch (e) {}
   queueSettingsSave();
   render();
+  // Os fixos passaram a seguir a moeda ativa, e render() não desenha essa
+  // secção — sem isto ficavam com o símbolo antigo até outra coisa os redesenhar.
+  renderFixed();
 }
 // Quem impede o clique de vazar pro "fecha o menu" é o ouvinte delegado lá embaixo.
 function toggleCurMenu() { curMenuOpen = !curMenuOpen; renderCurrencyBar(); }
@@ -1165,8 +1263,15 @@ function currencyFromCoords(lat, lon) {
 function currencyFromTZ() {
   try {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+    // Os casos específicos vêm ANTES das regras gerais Europe/* e America/*,
+    // senão Toronto viraria USD e Zurique viraria EUR.
     if (tz === "Europe/London") return "GBP";
-    if (/Sao_Paulo|Bahia|Fortaleza|Recife|Manaus|Belem|Cuiaba/.test(tz)) return "BRL";
+    if (/Sao_Paulo|Bahia|Fortaleza|Recife|Manaus|Belem|Cuiaba|Araguaina|Maceio|Noronha|Porto_Velho|Rio_Branco|Boa_Vista|Santarem|Campo_Grande/.test(tz)) return "BRL";
+    if (/^Australia\//.test(tz)) return "AUD";
+    if (tz === "Asia/Tokyo") return "JPY";
+    if (/^Asia\/(Shanghai|Chongqing|Harbin|Urumqi|Kashgar|Macau)$/.test(tz)) return "CNY";
+    if (tz === "Europe/Zurich") return "CHF";
+    if (/^America\/(Toronto|Vancouver|Edmonton|Winnipeg|Halifax|St_Johns|Montreal|Regina|Moncton|Whitehorse|Yellowknife|Iqaluit|Dawson|Inuvik|Rankin_Inlet|Resolute|Creston|Glace_Bay|Goose_Bay|Nipigon|Thunder_Bay)$/.test(tz)) return "CAD";
     if (tz.indexOf("Europe/") === 0) return "EUR";
     if (tz.indexOf("America/") === 0) return "USD";
   } catch (e) {}
