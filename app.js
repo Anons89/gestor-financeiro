@@ -151,6 +151,15 @@ const STR = {
     payEnded: "Seu teste acabou", payEndedSub: "Assine pra continuar usando o Algent — £2,99/mês.",
     payBtnTxt: "Começar teste grátis",
     cancelSub: "Cancelar assinatura", cancelBusy: "Cancelando...",
+    // Compra pela Apple (só aparece dentro do app do iPhone)
+    iapRestore: "Restaurar compras", iapRestoring: "Restaurando...",
+    iapRestored: "Compra restaurada!", iapRestoreErr: "Não consegui restaurar agora. Tenta de novo.", iapNothing: "Nenhuma compra encontrada nesta conta da Apple.",
+    iapManage: "Gerenciar assinatura",
+    iapManageHint: "Sua assinatura é cobrada pela Apple. Para cancelar, abra os Ajustes do iPhone › toque no seu nome › Assinaturas.",
+    iapNoPlans: "Nenhum plano disponível agora. Tenta de novo daqui a pouco.",
+    iapDone: "Assinatura ativada! Bom proveito.",
+    iapErr: "Não consegui concluir a compra.",
+    iapUnavailable: "A compra não está disponível neste aparelho.",
     cancelConfirm: "Tem certeza que quer cancelar? Você mantém o acesso até o fim do período que já pagou (ou do seu teste grátis), e não será cobrado de novo.",
     cancelDone: "Assinatura cancelada. Você continua com acesso até {date} e não será cobrado de novo.",
     cancelDoneNoDate: "Pronto, sua assinatura foi cancelada. Você não será cobrado de novo.",
@@ -236,6 +245,15 @@ const STR = {
     payEnded: "Your trial has ended", payEndedSub: "Subscribe to keep using Algent — £2.99/mo.",
     payBtnTxt: "Start free trial",
     cancelSub: "Cancel subscription", cancelBusy: "Cancelling...",
+    // Apple purchases (only shown inside the iPhone app)
+    iapRestore: "Restore purchases", iapRestoring: "Restoring...",
+    iapRestored: "Purchase restored!", iapRestoreErr: "Couldn't restore right now. Try again.", iapNothing: "No purchases found on this Apple account.",
+    iapManage: "Manage subscription",
+    iapManageHint: "Your subscription is billed by Apple. To cancel, open iPhone Settings › tap your name › Subscriptions.",
+    iapNoPlans: "No plans available right now. Try again shortly.",
+    iapDone: "Subscription activated. Enjoy!",
+    iapErr: "Couldn't complete the purchase.",
+    iapUnavailable: "Purchases aren't available on this device.",
     cancelConfirm: "Are you sure you want to cancel? You keep access until the end of the period you've already paid for (or your free trial), and you won't be charged again.",
     cancelDone: "Subscription cancelled. You keep access until {date}, and you won't be charged again.",
     cancelDoneNoDate: "Done — your subscription has been cancelled. You won't be charged again.",
@@ -1384,6 +1402,8 @@ const ACTIONS = {
   "cur-detect":  () => detectCurrency(),
   "chat-clear":  () => clearChat(),
   "sub-reactivate": () => reactivateSubscription(),
+  "iap-restore": () => restorePurchases(),
+  "iap-manage":  () => manageAppleSubscription(),
 };
 // Registrado ANTES do "clique fora fecha o menu" logo abaixo — a ordem importa:
 // o botão de moeda precisa poder impedir que o próprio clique feche o menu que
@@ -1425,13 +1445,212 @@ let settingsTimer = null;     // espera um tiquinho antes de mandar pra nuvem (e
 let applyingRemote = false;   // enquanto aplico o que veio da nuvem, não reenvio de volta
 
 const authScreen = document.getElementById("authScreen");
-function showApp() { authScreen.classList.add("hidden"); syncCloud(); gate(); }
+function showApp() {
+  authScreen.classList.add("hidden"); syncCloud(); gate();
+  // Login pode acontecer bem depois do arranque; a compra tem de ficar
+  // amarrada a ESTA conta, não à anterior nem a um utilizador anónimo.
+  if (isNativeIOS()) { ensureRC().then(rcIdentify); }
+}
 function showLogin() {
   // Tira a marca do boot.js: a sessão guardada não valia (expirou, foi
   // revogada), então a tela de login precisa voltar a aparecer.
   document.documentElement.classList.remove("has-session");
   authScreen.classList.remove("hidden");
   if (!recoveryMode) { authMode = "signup"; emailOpen = false; setAuthMsg("", ""); renderAuth(); }
+}
+
+// ---- COMPRA DENTRO DO APP (iOS / Apple In-App Purchase) ----
+// A Apple recusou a primeira submissão porque a assinatura era cobrada por
+// fora (checkout do Stripe, na web). Dentro do app dela, quem cobra tem que
+// ser ela. Então quem decide é a plataforma:
+//   app iOS  -> In-App Purchase da Apple, intermediada pelo RevenueCat
+//   browser  -> Stripe, exatamente como já era
+// Nada do Stripe foi removido: ele continua sendo o caminho do site.
+//
+// ATENÇÃO — CHAVE DE TESTE. O prefixo "test_" é da Test Store do RevenueCat:
+// as compras NÃO vão para a App Store de verdade. Para submeter à Apple isto
+// tem que virar a chave pública iOS do painel do RevenueCat, que começa com
+// "appl_". Com a chave de teste, o revisor da Apple não veria uma compra real
+// e o app seria recusado de novo pelo mesmo motivo.
+const RC_API_KEY = "test_RiMfAtnbXQhCXPmmEjuUTCWrddJ";
+const RC_ENTITLEMENT = "Algent Pro";
+
+// "App iOS" = Capacitor rodando nativo. No Safari do iPhone isto é falso, e
+// aí nada do RevenueCat é tocado — o site segue no Stripe.
+function isNativeIOS() {
+  try {
+    const C = window.Capacitor;
+    if (!C || typeof C.isNativePlatform !== "function" || !C.isNativePlatform()) return false;
+    return typeof C.getPlatform !== "function" || C.getPlatform() === "ios";
+  } catch (e) { return false; }
+}
+function rcPlugin() {
+  try { return (window.Capacitor.Plugins || {}).Purchases || null; } catch (e) { return null; }
+}
+// Lembra se a Apple já liberou o acesso, pra tela de ajustes saber que botões mostrar.
+let appleEntitled = false;
+
+// configure() só pode rodar uma vez, e tem que rodar ANTES de qualquer outra
+// chamada. A promessa fica guardada pra que qualquer caminho (gate, comprar,
+// restaurar) possa esperar por ela sem se preocupar com ordem de arranque.
+let rcReady = null;
+function ensureRC() {
+  if (!isNativeIOS()) return Promise.resolve(false);
+  if (!rcReady) rcReady = configureRC();
+  return rcReady;
+}
+async function configureRC() {
+  const P = rcPlugin();
+  if (!P) return false;
+  try {
+    await P.configure({ apiKey: RC_API_KEY });
+    await rcIdentify();
+    return true;
+  } catch (e) {
+    console.warn("RevenueCat: configure falhou", e);
+    return false;
+  }
+}
+// Amarra a compra à CONTA (user_id do Supabase), não ao aparelho: assim quem
+// troca de iPhone, ou entra na mesma conta noutro, continua com o acesso.
+let rcUserId = null;   // quem já foi identificado, pra não repetir a chamada à toa
+async function rcIdentify() {
+  const P = rcPlugin();
+  if (!P || !sbClient) return;
+  try {
+    const { data } = await sbClient.auth.getSession();
+    const uid = data && data.session && data.session.user ? data.session.user.id : null;
+    if (uid && uid !== rcUserId) { await P.logIn({ appUserID: uid }); rcUserId = uid; }
+  } catch (e) { console.warn("RevenueCat: logIn falhou", e); }
+}
+async function rcLogOut() {
+  const P = rcPlugin();
+  rcUserId = null;
+  if (!P || !rcReady) return;
+  try { await P.logOut(); } catch (e) {}
+}
+// O plugin devolve { customerInfo }, mas versões antigas devolviam o objeto
+// direto. Aceita as duas formas em vez de quebrar numa atualização do plugin.
+function rcActive(res) {
+  const ci = (res && res.customerInfo) ? res.customerInfo : res;
+  const ativos = ci && ci.entitlements && ci.entitlements.active;
+  return !!(ativos && ativos[RC_ENTITLEMENT]);
+}
+async function rcHasEntitlement() {
+  const P = rcPlugin();
+  if (!P) return false;
+  try { return rcActive(await P.getCustomerInfo()); } catch (e) { return false; }
+}
+// O primeiro pacote da oferta "default" — hoje só existe o mensal.
+async function rcFirstPackage() {
+  const P = rcPlugin();
+  if (!P) return null;
+  try {
+    const o = await P.getOfferings();
+    const atual = o && o.current;
+    const pacotes = atual && atual.availablePackages;
+    return (pacotes && pacotes.length) ? pacotes[0] : null;
+  } catch (e) { return null; }
+}
+// Cancelar não é erro: quem fechou a folha da Apple não quer ver um alerta.
+function rcUserCancelled(e) {
+  if (!e) return false;
+  if (e.userCancelled === true) return true;
+  return String(e.code) === "1"; // PURCHASE_CANCELLED_ERROR
+}
+
+// O preço quem define é a Apple: muda por país e por promoção. Os textos do
+// app têm "£2,99" escrito à mão — mostrar isso a quem paga em reais seria
+// anunciar um preço e cobrar outro, coisa que a Apple recusa.
+let applePrice = null;
+function withApplePrice(txt) {
+  if (!applePrice) return txt;
+  return String(txt).replace(/£\s?2[.,]99/g, applePrice);
+}
+// Ajusta a interface ao que só existe dentro do app da Apple.
+async function applyIOSPurchaseUI() {
+  if (!isNativeIOS()) return;
+  const r = document.getElementById("payRestoreBtn");
+  if (r) { r.style.display = "block"; r.textContent = t("iapRestore"); }
+  const pkg = await rcFirstPackage();
+  const preco = pkg && pkg.product && pkg.product.priceString;
+  if (preco) { applePrice = preco; applyAuthTexts(); renderSubscriptionUI(); }
+}
+async function initIOSPurchases() {
+  if (!isNativeIOS()) return;
+  await ensureRC();
+  await applyIOSPurchaseUI();
+  renderSubscriptionUI(); // agora que sabemos a plataforma, os botões certos aparecem
+}
+
+// ---- Comprar pela Apple ----
+async function startAppleCheckout() {
+  const btn = document.getElementById("payBtn") || document.getElementById("subscribeBtn");
+  const P = rcPlugin();
+  if (!P) { alert(t("iapUnavailable")); return; }
+  if (btn) { btn.disabled = true; btn.dataset.label = btn.textContent; btn.textContent = t("subLoading"); }
+  try {
+    await ensureRC();
+    const pkg = await rcFirstPackage();
+    if (!pkg) { alert(t("iapNoPlans")); return; }
+    const res = await P.purchasePackage({ aPackage: pkg });
+    if (rcActive(res)) {
+      appleEntitled = true;
+      hidePaywall();
+      setSubState("active", null, false);
+      alert(t("iapDone"));
+    } else {
+      alert(t("iapErr"));
+    }
+  } catch (e) {
+    if (rcUserCancelled(e)) return;
+    console.error("RevenueCat: compra falhou", e);
+    alert(t("iapErr"));
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = btn.dataset.label || t("payBtnTxt"); }
+  }
+}
+
+// ---- Restaurar compras ----
+// Obrigatório pela Apple: quem reinstala o app, ou troca de aparelho, tem que
+// conseguir recuperar o que já pagou sem pagar de novo.
+async function restorePurchases() {
+  const P = rcPlugin();
+  if (!P) { alert(t("iapUnavailable")); return; }
+  const lbl = document.getElementById("restoreLbl");
+  const antes = lbl ? lbl.textContent : "";
+  if (lbl) lbl.textContent = t("iapRestoring");
+  try {
+    await ensureRC();
+    const info = await P.restorePurchases();
+    if (rcActive(info)) {
+      appleEntitled = true;
+      hidePaywall();
+      setSubState("active", null, false);
+      alert(t("iapRestored"));
+    } else {
+      alert(t("iapNothing"));
+    }
+  } catch (e) {
+    console.error("RevenueCat: restaurar falhou", e);
+    alert(t("iapRestoreErr"));
+  } finally {
+    if (lbl) lbl.textContent = antes || t("iapRestore");
+  }
+}
+
+// ---- Gerenciar assinatura ----
+// No iOS quem manda no cancelamento é a Apple, não o app. O RevenueCat devolve
+// o link certo da conta da pessoa; se não vier, resta explicar o caminho.
+async function manageAppleSubscription() {
+  const P = rcPlugin();
+  try {
+    const r = await P.getCustomerInfo();
+    const ci = (r && r.customerInfo) ? r.customerInfo : r;
+    const url = ci && ci.managementURL;
+    if (url) { window.open(url, "_blank"); return; }
+  } catch (e) {}
+  alert(t("iapManageHint"));
 }
 
 // ---- TRAVA DE ASSINANTE (paywall) ----
@@ -1459,7 +1678,7 @@ function showPaywall(status) {
   // se já teve algum status antes (e perdeu), fala "seu teste acabou"; senão, "comece seu teste"
   const returning = status && status !== "trialing" && status !== "active";
   document.getElementById("payTitle").textContent = returning ? t("payEnded") : t("payStart");
-  document.getElementById("paySub").textContent = returning ? t("payEndedSub") : t("payStartSub");
+  document.getElementById("paySub").textContent = withApplePrice(returning ? t("payEndedSub") : t("payStartSub"));
   document.getElementById("payScreen").classList.remove("hidden");
 }
 function hidePaywall() { document.getElementById("payScreen").classList.add("hidden"); }
@@ -1472,6 +1691,31 @@ function updateSubButtons(status, cancelAtEnd) {
   const reativar = document.getElementById("reactivateBtn");
   if (!cancelar) return;
   const temAcesso = hasAccess(status);
+  const gerir = document.getElementById("manageSubBtn");
+  const restaurar = document.getElementById("restoreBtn");
+
+  if (isNativeIOS()) {
+    // Cancelar e reativar falam com o Stripe: dentro do app da Apple eles não
+    // têm o que fazer, e a Apple ainda exige que o cancelamento passe por ela.
+    cancelar.style.display = "none";
+    if (reativar) reativar.style.display = "none";
+    if (gerir) {
+      gerir.style.display = (temAcesso || appleEntitled) ? "flex" : "none";
+      const g = document.getElementById("manageSubLbl");
+      if (g) g.textContent = t("iapManage");
+    }
+    // Restaurar fica sempre à mão: é o que a Apple exige e é o que salva quem
+    // reinstalou o app ou trocou de aparelho.
+    if (restaurar) {
+      restaurar.style.display = "flex";
+      const r = document.getElementById("restoreLbl");
+      if (r) r.textContent = t("iapRestore");
+    }
+    return;
+  }
+
+  if (gerir) gerir.style.display = "none";
+  if (restaurar) restaurar.style.display = "none";
   cancelar.style.display = (temAcesso && !cancelAtEnd) ? "flex" : "none";
   if (reativar) {
     reativar.style.display = (temAcesso && cancelAtEnd) ? "flex" : "none";
@@ -1494,8 +1738,20 @@ async function gate() {
   const sub = await fetchSubStatus();
   const status = sub ? sub.status : null;
   const cancelAtEnd = sub ? sub.cancelAtEnd : false;
-  if (hasAccess(status)) hidePaywall(); else showPaywall(status);
-  setSubState(status, sub ? sub.end : null, cancelAtEnd);
+  let liberado = hasAccess(status);
+  // No app da Apple a porta abre por QUALQUER um dos dois caminhos, de
+  // propósito: quem assinou no site (Stripe) e depois instala o app não pode
+  // levar paywall só por não ter uma compra na Apple — já pagou.
+  if (isNativeIOS()) {
+    await ensureRC();
+    appleEntitled = await rcHasEntitlement();
+    if (appleEntitled) liberado = true;
+  }
+  if (liberado) hidePaywall(); else showPaywall(status);
+  // Sem linha no banco mas com compra na Apple: o cartão de plano mostraria
+  // "sem assinatura". O estado vem da Apple nesse caso.
+  if (appleEntitled && !hasAccess(status)) setSubState("active", null, false);
+  else setSubState(status, sub ? sub.end : null, cancelAtEnd);
 }
 // Escreve a data por extenso no idioma da pessoa ("10 de setembro de 2026")
 function longDate(ms) {
@@ -1703,7 +1959,9 @@ function applyAuthTexts() {
   const ao = document.getElementById("authOr"); if (ao) ao.textContent = t("authOr");
   const fg = document.getElementById("forgotBtn"); if (fg) fg.textContent = t("forgot");
   const lo = document.getElementById("logoutLbl"); if (lo) lo.textContent = t("logout");
-  const sb = document.getElementById("subscribeBtn"); if (sb) sb.textContent = t("subscribe");
+  const sb = document.getElementById("subscribeBtn"); if (sb) sb.textContent = withApplePrice(t("subscribe"));
+  const pp = document.getElementById("planPrice"); if (pp && applePrice) pp.textContent = applePrice;
+  const pr = document.getElementById("payRestoreBtn"); if (pr && isNativeIOS()) pr.textContent = t("iapRestore");
   const pb = document.getElementById("payBtn"); if (pb) pb.textContent = t("payBtnTxt");
   const pl = document.getElementById("payLogout"); if (pl) pl.textContent = t("logout");
   const cs = document.getElementById("cancelSubLbl"); const csb = document.getElementById("cancelSubBtn");
@@ -1739,6 +1997,9 @@ async function doSignup() {
 }
 async function doLogout() {
   if (sbClient) { try { await sbClient.auth.signOut(); } catch (e) {} }
+  // Sem isto a próxima conta que entrar neste iPhone herdaria o acesso da anterior.
+  appleEntitled = false;
+  await rcLogOut();
   cloudSynced = false; currentUserId = null;
   // limpa TUDO que é pessoal do aparelho — memória E localStorage.
   // Senão a próxima conta que logar aqui herda conversa do coach, fixos etc.
@@ -1758,8 +2019,11 @@ async function checkSession() {
     if (data && data.session) showApp(); else showLogin();
   } catch (e) { showLogin(); }
 }
-// ---- ASSINATURA: abre a tela de pagamento do Stripe ----
+// ---- ASSINATURA: quem cobra depende de onde o app está rodando ----
 async function startCheckout() {
+  // Dentro do app do iPhone a cobrança TEM que ser da Apple (regra dela).
+  // No browser, segue o Stripe — o código abaixo é o mesmo de sempre.
+  if (isNativeIOS()) return startAppleCheckout();
   if (!sbClient) { alert(t("subErr")); return; }
   const btn = document.getElementById("payBtn") || document.getElementById("subscribeBtn");
   if (btn) { btn.disabled = true; btn.dataset.label = btn.textContent; btn.textContent = t("subLoading"); }
@@ -1959,3 +2223,4 @@ if (_subBtn) _subBtn.onclick = startCheckout;
 applyAuthTexts();
 handleReturnFromStripe();
 checkSession();
+initIOSPurchases(); // no browser sai na primeira linha e não custa nada
