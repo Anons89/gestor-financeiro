@@ -1467,12 +1467,13 @@ function showLogin() {
 //   browser  -> Stripe, exatamente como já era
 // Nada do Stripe foi removido: ele continua sendo o caminho do site.
 //
-// ATENÇÃO — CHAVE DE TESTE. O prefixo "test_" é da Test Store do RevenueCat:
-// as compras NÃO vão para a App Store de verdade. Para submeter à Apple isto
-// tem que virar a chave pública iOS do painel do RevenueCat, que começa com
-// "appl_". Com a chave de teste, o revisor da Apple não veria uma compra real
-// e o app seria recusado de novo pelo mesmo motivo.
-const RC_API_KEY = "test_RiMfAtnbXQhCXPmmEjuUTCWrddJ";
+// Chave PÚBLICA iOS do RevenueCat (prefixo "appl_"): as compras vão para a App
+// Store de verdade. Ela é feita pra viver no cliente — quem cobra e valida o
+// recibo é a Apple, e a chave sozinha não autoriza nada; a chave SECRETA do
+// RevenueCat é outra e não entra aqui.
+// (Antes havia aqui uma "test_...", da Test Store: aquela não fecha compra
+// real, e com ela o revisor da Apple recusaria o app de novo.)
+const RC_API_KEY = "appl_NaedAlzhmKtIYWjMPIkaLMXvjtj";
 const RC_ENTITLEMENT = "Algent Pro";
 
 // "App iOS" = Capacitor rodando nativo. No Safari do iPhone isto é falso, e
