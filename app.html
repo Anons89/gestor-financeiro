@@ -16,6 +16,12 @@
 <link rel="icon" type="image/png" href="/favicon.png" />
 <link rel="manifest" href="/manifest.json" />
 
+<!-- Google tag — mesmo arquivo da landing. Aqui ele entra com o page_view
+     DESLIGADO (o /analytics.js reconhece a página): o que interessa medir no
+     app são os passos do funil, não visitas. -->
+<script src="/analytics.js"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6MR9LCFFJ4"></script>
+
 <!-- Roda antes de a página desenhar: decide se a tela de login deve nascer
      escondida, pra quem já está logado não ver ela piscar. -->
 <script src="/boot.js"></script>

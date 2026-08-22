@@ -468,6 +468,8 @@ async function addExpense(msg, curOverride) {
     ...guess,
   };
   expenses.unshift(optimistic); save();
+  // Quantos dos que criam conta chegam a USAR o app. Só o primeiro conta.
+  if (expenses.length === 1) trackOnce("ga_first_expense", "first_expense", { category: optimistic.category });
   input.value = "";   // campo livre já: dá pra anotar o próximo sem esperar
   render();
   // o gasto recém-anotado entra deslizando (só ele, não a lista inteira)
@@ -1088,6 +1090,11 @@ async function askCoach(preset) {
   const el = document.getElementById("coachInput");
   const q = (preset !== undefined ? preset : el.value).trim();
   if (!q || coachThinking) return;
+  // Uma vez por sessão: interessa saber se a pessoa DESCOBRE a AI, não quantas
+  // perguntas faz depois.
+  try {
+    if (!sessionStorage.getItem("ga_ai_chat")) { sessionStorage.setItem("ga_ai_chat", "1"); track("ai_chat_start"); }
+  } catch (e) { }
   coachMessages.push({ role: "user", content: q });
   el.value = ""; coachThinking = true; renderChat();
 
@@ -1447,16 +1454,53 @@ let applyingRemote = false;   // enquanto aplico o que veio da nuvem, não reenv
 const authScreen = document.getElementById("authScreen");
 function showApp() {
   authScreen.classList.add("hidden"); syncCloud(); gate();
+  trackSignupIfNew();
   // Login pode acontecer bem depois do arranque; a compra tem de ficar
   // amarrada a ESTA conta, não à anterior nem a um utilizador anónimo.
   if (isNativeIOS()) { ensureRC().then(rcIdentify); }
 }
 function showLogin() {
+  track("login_screen_view");
   // Tira a marca do boot.js: a sessão guardada não valia (expirou, foi
   // revogada), então a tela de login precisa voltar a aparecer.
   document.documentElement.classList.remove("has-session");
   authScreen.classList.remove("hidden");
   if (!recoveryMode) { authMode = "signup"; emailOpen = false; setAuthMsg("", ""); renderAuth(); }
+}
+
+// ---- MEDIÇÃO: os degraus do funil ----
+// Só os passos do funil saem daqui; o page_view vem desligado no analytics.js,
+// porque uso do produto não é visita de marketing. Se o gtag não carregou (rede
+// fora, bloqueador de anúncios), tudo isto vira silêncio — medir nunca pode
+// impedir a pessoa de usar o app.
+function track(nome, params) {
+  try { if (typeof gtag === "function") gtag("event", nome, params || {}); } catch (e) {}
+}
+// Marca que só vale uma vez por conta neste aparelho (o doLogout limpa).
+function trackOnce(chave, nome, params) {
+  try {
+    if (localStorage.getItem(chave)) return;
+    localStorage.setItem(chave, "1");
+  } catch (e) {}
+  track(nome, params);
+}
+// Conta NOVA, não login repetido. O Supabase entrega os dois do mesmo jeito
+// (inclusive no Google/Apple, que voltam de um redirect), então o que separa é
+// a IDADE da conta: recém-criada = acabou de se registar.
+const SIGNUP_JANELA_MS = 120000;
+async function trackSignupIfNew() {
+  if (!sbClient) return;
+  try {
+    const { data } = await sbClient.auth.getSession();
+    const u = data && data.session && data.session.user;
+    if (!u || !u.created_at) return;
+    const idade = Date.now() - Date.parse(u.created_at);
+    if (!(idade >= 0 && idade < SIGNUP_JANELA_MS)) return;
+    const via = (u.app_metadata && u.app_metadata.provider) || "email";
+    // A chave leva o id da pessoa: showApp() roda mais de uma vez logo depois
+    // do registo, e sem isto o mesmo registo seria contado várias vezes.
+    trackOnce("ga_signup_" + u.id, "sign_up", { method: via });
+  } catch (e) {}
 }
 
 // ---- COMPRA DENTRO DO APP (iOS / Apple In-App Purchase) ----
@@ -1596,6 +1640,9 @@ async function startAppleCheckout() {
     if (!pkg) { alert(t("iapNoPlans")); return; }
     const res = await P.purchasePackage({ aPackage: pkg });
     if (rcActive(res)) {
+      // A compra da Apple confirma aqui e agora — não precisa do palpite que a
+      // web precisa. (A do Stripe conta no analytics.js, na volta do ?paid=1.)
+      track("purchase", { method: "apple_iap", value: 2.99, currency: "GBP" });
       appleEntitled = true;
       hidePaywall();
       setSubState("active", null, false);
@@ -1676,6 +1723,7 @@ async function fetchSubStatus() {
   } catch (e) { return null; }
 }
 function showPaywall(status) {
+  track("paywall_view");
   // se já teve algum status antes (e perdeu), fala "seu teste acabou"; senão, "comece seu teste"
   const returning = status && status !== "trialing" && status !== "active";
   document.getElementById("payTitle").textContent = returning ? t("payEnded") : t("payStart");
@@ -2004,8 +2052,10 @@ async function doLogout() {
   cloudSynced = false; currentUserId = null;
   // limpa TUDO que é pessoal do aparelho — memória E localStorage.
   // Senão a próxima conta que logar aqui herda conversa do coach, fixos etc.
-  ["expenses", "recurring", "quickchips_v3", "coach_profile", "coach_msgs", "learned_cats", "migrated_expenses_v1"]
+  ["expenses", "recurring", "quickchips_v3", "coach_profile", "coach_msgs", "learned_cats", "migrated_expenses_v1",
+   "ga_first_expense"]
     .forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+  try { sessionStorage.removeItem("ga_ai_chat"); } catch (e) {}
   expenses = []; recurring = []; quickChips = DEFAULT_CHIPS.slice();
   coachProfile = {}; learnedCats = {};
   coachMessages = [{ role: "bot", content: STR[lang].coachGreeting }];
@@ -2022,6 +2072,7 @@ async function checkSession() {
 }
 // ---- ASSINATURA: quem cobra depende de onde o app está rodando ----
 async function startCheckout() {
+  track("begin_checkout", { method: isNativeIOS() ? "apple_iap" : "stripe", value: 2.99, currency: "GBP" });
   // Dentro do app do iPhone a cobrança TEM que ser da Apple (regra dela).
   // No browser, segue o Stripe — o código abaixo é o mesmo de sempre.
   if (isNativeIOS()) return startAppleCheckout();
