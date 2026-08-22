@@ -77,8 +77,13 @@ exports.handler = async (event) => {
   params.append("client_reference_id", userId);
   params.append("metadata[user_id]", userId);
   if (email) params.append("customer_email", email);
-  params.append("success_url", origin + "/?paid=1");
-  params.append("cancel_url", origin + "/?canceled=1");
+  // Volta para o APP, não para a landing. O ?paid=1 é lido pelo
+  // handleReturnFromStripe() do app.js, que agradece, libera o acesso na hora e
+  // confirma o status uns segundos depois — mandando para "/" nada disso rodava
+  // e quem acabou de pagar caía na página de marketing, sem sinal nenhum.
+  // O cancel_url segue junto: quem desistiu estava DENTRO do app.
+  params.append("success_url", origin + "/app.html?paid=1");
+  params.append("cancel_url", origin + "/app.html?canceled=1");
   params.append("allow_promotion_codes", "true");
 
   try {

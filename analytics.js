@@ -34,16 +34,19 @@ if (!noApp) {
       page: "landing",
     });
   });
-
-  // O Stripe devolve a pessoa para "/?paid=1" — ou seja, para ESTA página, não
-  // para o app. Então é aqui que a compra se confirma, e é aqui que ela conta.
-  try {
-    if (new URLSearchParams(location.search).get("paid") === "1"
-        && !sessionStorage.getItem("ga_purchase_sent")) {
-      // Marca ANTES de enviar: se a pessoa recarregar a página com o ?paid=1
-      // ainda na barra de endereço, a compra não é contada duas vezes.
-      sessionStorage.setItem("ga_purchase_sent", "1");
-      gtag("event", "purchase", { method: "stripe", value: 2.99, currency: "GBP" });
-    }
-  } catch (err) {}
 }
+
+// ---- Funil: compra confirmada, chegue ela onde chegar ----
+// O Stripe devolve a pessoa para "?paid=1". Este bloco fica FORA do teste da
+// landing de propósito: o destino do success_url já mudou uma vez (era "/",
+// agora é "/app.html"), e amarrar a medição da compra a uma página específica
+// faria o evento desaparecer em silêncio na próxima vez que mudasse.
+try {
+  if (new URLSearchParams(location.search).get("paid") === "1"
+      && !sessionStorage.getItem("ga_purchase_sent")) {
+    // Marca ANTES de enviar: se a pessoa recarregar a página com o ?paid=1
+    // ainda na barra de endereço, a compra não é contada duas vezes.
+    sessionStorage.setItem("ga_purchase_sent", "1");
+    gtag("event", "purchase", { method: "stripe", value: 2.99, currency: "GBP" });
+  }
+} catch (err) {}
