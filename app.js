@@ -75,7 +75,7 @@ function catTile(cat, extra) {
 }
 
 // Compatibilidade: o código antigo chamava ICONS.pen / ICONS.x
-const ICONS = { pen: ic("pen"), x: ic("x") };
+const ICONS = { pen: ic("pen"), x: ic("x"), check: ic("check") };
 
 // ---- IDIOMAS ----
 const STR = {
@@ -90,6 +90,11 @@ const STR = {
     compareTitle: "Comparação mensal", statsEmpty: "Anote alguns gastos e seus gráficos aparecem aqui.",
     sub: 'Escreve do seu jeito, tipo "gastei 15 no uber". O app anota e organiza.',
     inputPh: "o que você gastou?", add: "Anotar", parsingTxt: "IA lendo...", categorising: "categorizando…",
+    // Primeiro uso — {tab} vira o nome real da aba, seja qual for o idioma
+    onboardWelcome: "Bem-vindo ao Algent! Anota seu primeiro gasto aqui embaixo 👇",
+    onboardPh: "ex: café 3,50",
+    onboardFirst: "O Algent organizou isso sozinho. Você só escreve, o resto é com a gente.",
+    onboardThree: "Já são 3 gastos anotados. Dá uma olhada nos gráficos na aba {tab}!",
     totalLabel: "GASTO NO MÊS", fixedTitle: "Fixos por mês", fixedPh: "ex: academia 30 dia 15", addFixed: "+ Fixo",
     chipsTitle: "Atalhos rápidos", coachTitle: "AI", coachSub: "Tire dúvidas e aprenda a organizar melhor seu dinheiro.",
     insightsTitle: "Insights",
@@ -184,6 +189,11 @@ const STR = {
     compareTitle: "Monthly comparison", statsEmpty: "Log a few expenses and your charts show up here.",
     sub: 'Just type it, like "spent 15 on uber". The app logs and sorts it.',
     inputPh: "what did you spend on?", add: "Add", parsingTxt: "AI reading...", categorising: "categorising…",
+    // First run — {tab} becomes the real tab name, whatever the language
+    onboardWelcome: "Welcome to Algent! Try typing your first expense below 👇",
+    onboardPh: "e.g. coffee 3.50",
+    onboardFirst: "Algent sorted that automatically. Just type, we handle the rest.",
+    onboardThree: "You now have 3 expenses tracked. Check your charts in the {tab} tab!",
     totalLabel: "SPENT THIS MONTH", fixedTitle: "Monthly fixed", fixedPh: "e.g. gym 30 day 15", addFixed: "+ Fixed",
     chipsTitle: "Quick shortcuts", coachTitle: "AI", coachSub: "Ask questions and learn to organise your money better.",
     insightsTitle: "Insights",
@@ -435,6 +445,78 @@ function learnedCategoryFor(text, desc) {
   return null;
 }
 
+// ---- AVISO PASSAGEIRO (toast) ----
+// Uma faixa no topo que some sozinha. Não é modal de propósito: quem já sabe o
+// que fazer continua a escrever por baixo dela sem ter de fechar nada.
+let toastTimer = null;
+function showToast(texto, ms, comVisto) {
+  const el = document.getElementById("toast");
+  if (!el) return;
+  el.innerHTML = (comVisto ? '<span class="tk" aria-hidden="true">' + ICONS.check + '</span>' : "")
+               + '<span>' + esc(texto) + '</span>';
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(hideToast, ms || 5000);
+}
+function hideToast() {
+  const el = document.getElementById("toast");
+  clearTimeout(toastTimer);
+  if (el) { el.classList.remove("show"); el.textContent = ""; }
+}
+
+// ---- PRIMEIRO USO ----
+// Três momentos, nenhum deles bloqueante. A conta nova abre num app vazio e a
+// pessoa não sabe que basta escrever — este é o degrau onde mais gente sai.
+//   0 = pessoa ainda não vista   1 = boas-vindas dadas
+//   2 = primeira categorização celebrada   3 = acabou, nunca mais
+const ONB_KEY = "onboarding_step";
+function onbStep() {
+  // localStorage fechado (modo privado): trata como "já feito" em vez de
+  // mostrar as boas-vindas a cada carregamento, que seria pior que não mostrar.
+  try { return Number(localStorage.getItem(ONB_KEY)) || 0; } catch (e) { return 3; }
+}
+function setOnbStep(n) { try { localStorage.setItem(ONB_KEY, String(n)); } catch (e) {} }
+
+// O campo de texto é o único sítio onde há algo a fazer: enquanto a pessoa não
+// anotar o primeiro gasto, ele mostra um exemplo em vez da pergunta genérica.
+function applyOnboardingPlaceholder() {
+  if (!input) return;
+  const guiando = onbStep() === 1;
+  input.setAttribute("placeholder", guiando ? t("onboardPh") : t("inputPh"));
+  input.classList.toggle("hint", guiando);
+}
+
+let onbIniciado = false;
+function initOnboarding() {
+  if (onbIniciado) return;
+  onbIniciado = true;
+  // Conta que já tem gastos é conta antiga — não há nada a explicar. Esta
+  // decisão corre DEPOIS da nuvem responder (ver syncCloud): no primeiro acesso
+  // noutro aparelho a lista começa vazia e só enche a seguir, e decidir antes
+  // disso daria "bem-vindo" a quem usa o app há meses.
+  if (onbStep() === 0 && expenses.length > 0) setOnbStep(3);
+  if (onbStep() === 0) { setOnbStep(1); showToast(t("onboardWelcome"), 9000); }
+  applyOnboardingPlaceholder();
+}
+
+// Momento 2: a IA acabou de categorizar o primeiro gasto — é aqui que o app
+// mostra ao que veio.
+function onbPrimeiraCategoria() {
+  if (onbStep() !== 1) return;
+  setOnbStep(2);
+  applyOnboardingPlaceholder();
+  showToast(t("onboardFirst"), 5000, true);
+  // Se ela anotou 3 antes de a IA responder ao primeiro, o momento 3 ficaria
+  // sem gatilho. Em vez de se perder, entra logo a seguir a este.
+  if (expenses.length >= 3) setTimeout(onbTresGastos, 5600);
+}
+// Momento 3: já há dados suficientes para os gráficos valerem a pena.
+function onbTresGastos() {
+  if (onbStep() !== 2 || expenses.length < 3) return;
+  setOnbStep(3);
+  showToast(t("onboardThree").replace("{tab}", t("navStats")), 6000);
+}
+
 // ---- Ações: gastos do dia ----
 // O gasto entra na lista NA HORA, com o palpite local (regex + categoria
 // aprendida). A IA continua a correr, mas por trás: quando responde, corrige
@@ -470,6 +552,7 @@ async function addExpense(msg, curOverride) {
   expenses.unshift(optimistic); save();
   // Quantos dos que criam conta chegam a USAR o app. Só o primeiro conta.
   if (expenses.length === 1) trackOnce("ga_first_expense", "first_expense", { category: optimistic.category });
+  onbTresGastos();
   input.value = "";   // campo livre já: dá pra anotar o próximo sem esperar
   render();
   // o gasto recém-anotado entra deslizando (só ele, não a lista inteira)
@@ -529,6 +612,7 @@ async function finishExpense(key, cleaned, needsAI) {
   }
   delete e.pending;
   save(); render();
+  onbPrimeiraCategoria();
 
   // O insert foi com o palpite; manda pro banco o que a IA corrigiu.
   if (sbClient && saved && ai) {
@@ -732,7 +816,7 @@ function renderChips() {
 let subState = { status: null, end: null, cancelAtEnd: false };
 
 function applyStaticTexts() {
-  input.setAttribute("placeholder", t("inputPh"));
+  input.setAttribute("placeholder", onbStep() === 1 ? t("onboardPh") : t("inputPh"));
   // aria-label: o placeholder some quando a pessoa digita; o rótulo de acessibilidade não
   input.setAttribute("aria-label", t("inputPh"));
   fixedInput.setAttribute("aria-label", t("fixedPh"));
@@ -1409,6 +1493,7 @@ const ACTIONS = {
   "cur-detect":  () => detectCurrency(),
   "chat-clear":  () => clearChat(),
   "sub-reactivate": () => reactivateSubscription(),
+  "toast-close": () => hideToast(),
   "iap-restore": () => restorePurchases(),
   "iap-manage":  () => manageAppleSubscription(),
 };
@@ -1896,13 +1981,14 @@ async function migrateLocalExpenses() {
 }
 let cloudSynced = false;
 async function syncCloud() {
-  if (!sbClient || cloudSynced) return;
+  if (!sbClient || cloudSynced) { initOnboarding(); return; }
   cloudSynced = true;
   try { const { data: u } = await sbClient.auth.getUser(); currentUserId = (u && u.user) ? u.user.id : null; } catch (e) {}
   await migrateLocalExpenses();
   const cloud = await cloudLoadExpenses();
   if (cloud) { expenses = cloud; save(); render(); }
   await syncSettings();
+  initOnboarding();
 }
 
 // ---- NUVEM: configurações (fixos, perfil do coach, atalhos, moeda) numa ficha só ----
@@ -2053,7 +2139,7 @@ async function doLogout() {
   // limpa TUDO que é pessoal do aparelho — memória E localStorage.
   // Senão a próxima conta que logar aqui herda conversa do coach, fixos etc.
   ["expenses", "recurring", "quickchips_v3", "coach_profile", "coach_msgs", "learned_cats", "migrated_expenses_v1",
-   "ga_first_expense"]
+   "ga_first_expense", ONB_KEY]
     .forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
   try { sessionStorage.removeItem("ga_ai_chat"); } catch (e) {}
   expenses = []; recurring = []; quickChips = DEFAULT_CHIPS.slice();

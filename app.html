@@ -308,6 +308,28 @@
   .cat-tile svg { width: 19px; height: 19px; stroke-width: 2.2; }
   /* À espera da IA: tile apagado que pulsa de leve, e a categoria em texto
      morto (não é botão enquanto não houver categoria de verdade pra editar). */
+  /* ===== aviso passageiro (primeiro uso) ===== */
+  .toast {
+    position: fixed; top: calc(10px + env(safe-area-inset-top)); left: 50%; z-index: 90;
+    width: calc(100% - 32px); max-width: 408px;
+    display: flex; align-items: flex-start; gap: 9px;
+    padding: 12px 14px; border-radius: var(--r-ctl);
+    background: color-mix(in srgb, var(--surface-2) 95%, transparent);
+    backdrop-filter: saturate(160%) blur(14px); -webkit-backdrop-filter: saturate(160%) blur(14px);
+    border: 1px solid var(--border); box-shadow: 0 14px 34px -12px rgba(0,0,0,0.62);
+    font-size: 13.5px; line-height: 1.45; color: var(--cream); text-align: left; cursor: pointer;
+    /* invisível E fora do alcance do dedo enquanto não há nada a dizer */
+    opacity: 0; pointer-events: none; transform: translateX(-50%) translateY(-12px);
+    transition: opacity .28s var(--ease), transform .28s var(--ease);
+  }
+  .toast.show { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); }
+  .toast .tk { flex-shrink: 0; width: 17px; height: 17px; margin-top: 1px; color: var(--accent); }
+  .toast .tk svg { width: 100%; height: 100%; stroke: currentColor; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  /* Enquanto a pessoa não anota o primeiro gasto, o campo puxa o olhar. */
+  #input.hint { border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); }
+  #input.hint::placeholder { color: color-mix(in srgb, var(--accent) 72%, var(--muted)); opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { .toast { transition: opacity .01s linear; } }
+
   .cat-tile-wait { opacity: 0.45; animation: catWait 1.1s ease-in-out infinite; }
   @keyframes catWait { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.7; } }
   .cat-edit.is-waiting { font-size: 12.5px; color: var(--muted); opacity: 0.75;
@@ -543,6 +565,10 @@
       </div>
     </div>
   </div>
+
+  <!-- Aviso passageiro do primeiro uso. role=status faz o leitor de tela
+       anunciar sem roubar o foco de quem está a escrever. -->
+  <div class="toast" id="toast" role="status" aria-live="polite" data-act="toast-close"></div>
 
   <div class="app">
     <h1 class="screen-title" id="screenTitle"></h1>
