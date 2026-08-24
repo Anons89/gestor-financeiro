@@ -1584,7 +1584,26 @@ async function trackSignupIfNew() {
     const via = (u.app_metadata && u.app_metadata.provider) || "email";
     // A chave leva o id da pessoa: showApp() roda mais de uma vez logo depois
     // do registo, e sem isto o mesmo registo seria contado várias vezes.
+    const primeiraVez = !jaMarcado("ga_signup_" + u.id);
     trackOnce("ga_signup_" + u.id, "sign_up", { method: via });
+    // Só no registo de verdade, e só uma vez. O email é fire-and-forget: se a
+    // rede falhar, o app nem percebe. O servidor ainda confere o token e o
+    // email_log, então nem um clique repetido nem um F5 mandam dois.
+    if (primeiraVez) sendWelcomeEmail(data.session.access_token);
+  } catch (e) {}
+}
+// "esta marca já existe?" — sem gravar nada (o trackOnce grava logo a seguir).
+function jaMarcado(chave) {
+  try { return !!localStorage.getItem(chave); } catch (e) { return false; }
+}
+// Pede ao servidor pra mandar o email de boas-vindas. Não espera resposta e
+// engole qualquer erro: e-mail nunca pode atrasar ou travar o uso do app.
+async function sendWelcomeEmail(token) {
+  try {
+    await fetch("/.netlify/functions/send-welcome-email", {
+      method: "POST",
+      headers: { "Authorization": "Bearer " + token },
+    });
   } catch (e) {}
 }
 

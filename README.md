@@ -142,6 +142,32 @@ Limpeza opcional (a tabela cresce 1 linha por pessoa/tipo/dia):
 delete from ai_usage where day < current_date - interval '30 days';
 ```
 
+### Emails automáticos (rode este SQL antes de usar os emails)
+
+As três funções de email (`send-welcome-email`, `send-activation-email`,
+`send-weekly-summary`) guardam aqui o que já mandaram, pra não repetir. **Sem
+esta tabela, as funções não enviam nada** (por segurança preferem calar-se a
+arriscar spam) — então rode isto uma vez no Supabase:
+
+```sql
+create table if not exists email_log (
+  id         bigint generated always as identity primary key,
+  user_id    uuid not null references auth.users(id) on delete cascade,
+  email_type text not null,                       -- "welcome" | "activation" | "weekly"
+  sent_at    timestamptz not null default now()
+);
+create index if not exists email_log_lookup on email_log (user_id, email_type, sent_at desc);
+alter table email_log enable row level security;
+-- (sem policy nenhuma: só o service_role escreve/lê; o app nunca toca aqui)
+```
+
+Variáveis de ambiente no Netlify (além das do Stripe/Supabase que já existem):
+
+- `RESEND_API_KEY` — chave do Resend.
+- `EMAIL_FROM` *(opcional)* — remetente. Default `Algent <hello@algent.co.uk>`.
+  Se esse endereço não estiver verificado no Resend, ponha um que esteja
+  (ex.: `Algent <noreply@algent.co.uk>`) — sem mexer em código.
+
 ## Segurança — decisões tomadas
 
 - As funções de IA (`categorize`, `coach`) **exigem token de assinante** — sem isso qualquer pessoa poderia usar a chave da NVIDIA de graça.

@@ -4,6 +4,18 @@
 [build]
   functions = "netlify/functions"
 
+# ---- Emails automáticos (funções agendadas) ----
+# O Netlify chama estas funções sozinho, no horário UTC abaixo. Elas usam a
+# service_role pra varrer as contas — não recebem pedido do navegador.
+
+# Ativação: todo dia às 10:00 UTC, pega quem criou conta há ~24h e não anotou nada.
+[functions."send-activation-email"]
+  schedule = "0 10 * * *"
+
+# Resumo semanal: segunda às 9:00 UTC.
+[functions."send-weekly-summary"]
+  schedule = "0 9 * * 1"
+
 # A Play Store exige a página de exclusão de conta em /delete-account (sem o
 # .html). status 200 = reescrita: a URL na barra continua limpa.
 [[redirects]]
