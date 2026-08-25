@@ -1456,7 +1456,14 @@ let themeMode = (function () {
 })();
 function applyTheme() {
   let mode = themeMode;
-  if (mode === "auto") mode = themeMq.matches ? "light" : "dark";
+  if (mode === "auto") {
+    // Dentro do app do iPhone, o "auto" cai pro ESCURO — a marca é escura e o
+    // WebView do Capacitor nem sempre reporta a preferência do sistema, o que
+    // deixava a tela lavada (foi o que a Apple viu). Só afeta o "auto": quem
+    // escolheu claro ou escuro nos Ajustes continua com a sua escolha.
+    if (typeof isNativeIOS === "function" && isNativeIOS()) mode = "dark";
+    else mode = themeMq.matches ? "light" : "dark";
+  }
   document.documentElement.setAttribute("data-theme", mode);
   document.querySelectorAll("#themeSeg button").forEach(b => b.classList.toggle("on", b.getAttribute("data-t") === themeMode));
   const meta = document.querySelector('meta[name="theme-color"]');
