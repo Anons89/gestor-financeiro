@@ -87,6 +87,7 @@ const STR = {
     planEnded: "Assinatura encerrada", planPastDue: "Pagamento pendente · atualize seu cartão",
     day1: "1 dia", dayN: "{n} dias",
     prefLabel: "Preferências", langRowLabel: "Idioma", curRowLabel: "Moeda", accountLabel: "Conta",
+    supportLabel: "Suporte", contactSupport: "Contactar suporte", helpCentre: "Central de ajuda", privacyPolicy: "Política de privacidade", termsOfService: "Termos de serviço",
     compareTitle: "Comparação mensal", statsEmpty: "Anote alguns gastos e seus gráficos aparecem aqui.",
     sub: 'Escreve do seu jeito, tipo "gastei 15 no uber". O app anota e organiza.',
     inputPh: "o que você gastou?", add: "Anotar", parsingTxt: "IA lendo...", categorising: "categorizando…",
@@ -186,6 +187,7 @@ const STR = {
     planEnded: "Subscription ended", planPastDue: "Payment pending · please update your card",
     day1: "1 day", dayN: "{n} days",
     prefLabel: "Preferences", langRowLabel: "Language", curRowLabel: "Currency", accountLabel: "Account",
+    supportLabel: "Support", contactSupport: "Contact support", helpCentre: "Help centre", privacyPolicy: "Privacy policy", termsOfService: "Terms of service",
     compareTitle: "Monthly comparison", statsEmpty: "Log a few expenses and your charts show up here.",
     sub: 'Just type it, like "spent 15 on uber". The app logs and sorts it.',
     inputPh: "what did you spend on?", add: "Add", parsingTxt: "AI reading...", categorising: "categorising…",
@@ -849,6 +851,7 @@ function applyStaticTexts() {
   // apagaria "Cancelada · acesso até X" toda vez que rodasse.
   renderSubscriptionUI();
   setTxt("prefLabel", t("prefLabel")); setTxt("langRowLabel", t("langRowLabel")); setTxt("curRowLabel", t("curRowLabel")); setTxt("accountLabel", t("accountLabel"));
+  setTxt("supportLabel", t("supportLabel")); setTxt("contactSupportLbl", t("contactSupport")); setTxt("helpCentreLbl", t("helpCentre")); setTxt("privacyPolicyLbl", t("privacyPolicy")); setTxt("termsOfServiceLbl", t("termsOfService"));
   setTxt("compareTitle", t("compareTitle")); setTxt("statsEmpty", t("statsEmpty"));
   setTxt("chipsTitle", t("chipsTitle"));
   setTxt("coachTitleEl", t("coachTitle")); setTxt("coachSubEl", t("coachSub")); setTxt("coachDisclaim", t("disclaimer"));
@@ -1539,6 +1542,18 @@ const SUPA_URL = "https://efytffndatdkvbzeoxgm.supabase.co";
 const SUPA_KEY = "sb_publishable_C9sNWRMrJFzyQQLEi9592Q_dgAYpaBM";
 let sbClient = null;
 try { sbClient = window.supabase.createClient(SUPA_URL, SUPA_KEY); } catch (e) {}
+function ensureSupabase() {
+  if (sbClient) return Promise.resolve(true);
+  if (window.supabase) { try { sbClient = window.supabase.createClient(SUPA_URL, SUPA_KEY); return Promise.resolve(true); } catch (e) {} }
+  return new Promise(function (resolve) {
+    var tries = 0;
+    var iv = setInterval(function () {
+      tries++;
+      if (window.supabase) { try { sbClient = window.supabase.createClient(SUPA_URL, SUPA_KEY); } catch (e) {} }
+      if (sbClient || tries >= 30) { clearInterval(iv); resolve(!!sbClient); }
+    }, 500);
+  });
+}
 let currentUserId = null;     // id da pessoa logada (pra carimbar a ficha de configurações)
 let settingsTimer = null;     // espera um tiquinho antes de mandar pra nuvem (evita mandar toda hora)
 let applyingRemote = false;   // enquanto aplico o que veio da nuvem, não reenvio de volta
@@ -2135,8 +2150,8 @@ async function doLogin() {
   const email = document.getElementById("authEmail").value.trim();
   const pass = document.getElementById("authPass").value;
   if (!email || !pass) { setAuthMsg(t("authFillErr"), "err"); return; }
-  if (!sbClient) { setAuthMsg(t("genericErr"), "err"); return; }
   setAuthMsg(t("authLoading"), "");
+  if (!sbClient) { var ok = await ensureSupabase(); if (!ok) { setAuthMsg(t("genericErr"), "err"); return; } }
   try {
     const { error } = await sbClient.auth.signInWithPassword({ email: email, password: pass });
     if (error) { setAuthMsg(t("badLogin"), "err"); return; }
@@ -2147,8 +2162,8 @@ async function doSignup() {
   const email = document.getElementById("authEmail").value.trim();
   const pass = document.getElementById("authPass").value;
   if (!email || !pass) { setAuthMsg(t("authFillErr"), "err"); return; }
-  if (!sbClient) { setAuthMsg(t("genericErr"), "err"); return; }
   setAuthMsg(t("authLoading"), "");
+  if (!sbClient) { var ok = await ensureSupabase(); if (!ok) { setAuthMsg(t("genericErr"), "err"); return; } }
   try {
     const { data, error } = await sbClient.auth.signUp({ email: email, password: pass });
     if (error) { setAuthMsg(error.message || t("genericErr"), "err"); return; }
@@ -2176,7 +2191,7 @@ async function doLogout() {
   showLogin();
 }
 async function checkSession() {
-  if (!sbClient) { showApp(); return; } // se o Supabase não carregar, não trava o app
+  if (!sbClient) { var ok = await ensureSupabase(); if (!ok) { showLogin(); return; } }
   try {
     const { data } = await sbClient.auth.getSession();
     if (data && data.session) showApp(); else showLogin();
@@ -2308,8 +2323,8 @@ function handleReturnFromStripe() {
 }
 
 async function oauth(provider) {
-  if (!sbClient) { setAuthMsg(t("genericErr"), "err"); return; }
   setAuthMsg(t("authLoading"), "");
+  if (!sbClient) { var ok = await ensureSupabase(); if (!ok) { setAuthMsg(t("genericErr"), "err"); return; } }
   try {
     const { error } = await sbClient.auth.signInWithOAuth({ provider: provider, options: { redirectTo: "https://algent.co.uk/app.html" } });
     if (error) { setAuthMsg(t("genericErr"), "err"); }
@@ -2321,8 +2336,8 @@ let recoveryMode = false;
 async function doForgot() {
   const email = document.getElementById("authEmail").value.trim();
   if (!email) { setAuthMsg(t("typeEmailFirst"), "err"); return; }
-  if (!sbClient) { setAuthMsg(t("genericErr"), "err"); return; }
   setAuthMsg(t("authLoading"), "");
+  if (!sbClient) { var ok = await ensureSupabase(); if (!ok) { setAuthMsg(t("genericErr"), "err"); return; } }
   try {
     const { error } = await sbClient.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
     if (error) { setAuthMsg(t("genericErr"), "err"); return; }

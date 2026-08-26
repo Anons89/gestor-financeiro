@@ -139,7 +139,7 @@
   .set-list { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card); overflow: visible; box-shadow: var(--shadow-card); }
   .set-item { display: flex; align-items: center; gap: 13px; padding: 14px 16px; border-bottom: 1px solid var(--border); min-height: 56px; }
   .set-item:last-child { border-bottom: none; }
-  button.set-item { width: 100%; background: none; border-left: none; border-right: none; border-top: none; font-family: inherit; font-size: inherit; cursor: pointer; text-align: left; color: var(--cream); }
+  button.set-item, a.set-item { width: 100%; background: none; border-left: none; border-right: none; border-top: none; font-family: inherit; font-size: inherit; cursor: pointer; text-align: left; color: var(--cream); text-decoration: none; }
   .set-item .chev { color: var(--muted); font-size: 19px; line-height: 1; }
   .set-item.danger .lbl { color: #F87171; }
   .set-item:disabled { opacity: 0.55; }
@@ -733,6 +733,24 @@
           <button class="set-item" id="logoutBtn">
             <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg></span><span class="lbl" id="logoutLbl"></span><span class="chev">›</span>
           </button>
+        </div>
+      </div>
+
+      <div class="set-group">
+        <div class="glabel" id="supportLabel">Support</div>
+        <div class="set-list">
+          <a class="set-item" href="mailto:support@algent.co.uk">
+            <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span><span class="lbl" id="contactSupportLbl">Contact support</span><span class="chev">›</span>
+          </a>
+          <a class="set-item" href="https://algent.co.uk" target="_blank" rel="noopener">
+            <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></span><span class="lbl" id="helpCentreLbl">Help centre</span><span class="chev">›</span>
+          </a>
+          <a class="set-item" href="/privacy.html" target="_blank" rel="noopener">
+            <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg></span><span class="lbl" id="privacyPolicyLbl">Privacy policy</span><span class="chev">›</span>
+          </a>
+          <a class="set-item" href="/terms.html" target="_blank" rel="noopener">
+            <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></span><span class="lbl" id="termsOfServiceLbl">Terms of service</span><span class="chev">›</span>
+          </a>
         </div>
       </div>
 
