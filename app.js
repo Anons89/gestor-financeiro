@@ -148,7 +148,7 @@ const STR = {
     login: "Entrar", signup: "Criar conta", logout: "Sair",
     authFillErr: "Preenche o email e a senha.", authLoading: "Só um segundo...",
     signupOk: "Conta criada! Confere seu email pra confirmar e depois entra.",
-    badLogin: "Email ou senha errados.", genericErr: "Deu algum erro. Tenta de novo.",
+    badLogin: "Email ou senha errados.", genericErr: "Deu algum erro. Tenta de novo.", connectErr: "Sem conexão com o servidor. Verifique sua internet e tente de novo.",
     saveErr: "Não consegui salvar agora. Confere sua conexão e tenta de novo.",
     subscribe: "Assinar — £2,99/mês", subLoading: "Abrindo pagamento...",
     subErr: "Não consegui abrir o pagamento agora. Tenta de novo?",
@@ -248,7 +248,7 @@ const STR = {
     login: "Sign in", signup: "Create account", logout: "Log out",
     authFillErr: "Please fill in your email and password.", authLoading: "One moment...",
     signupOk: "Account created! Check your email to confirm, then sign in.",
-    badLogin: "Wrong email or password.", genericErr: "Something went wrong. Try again.",
+    badLogin: "Wrong email or password.", genericErr: "Something went wrong. Try again.", connectErr: "Unable to connect. Please check your internet and try again.",
     saveErr: "Couldn't save right now. Check your connection and try again.",
     subscribe: "Subscribe — £2.99 a month", subLoading: "Opening payment...",
     subErr: "Couldn't open payment right now. Try again?",
@@ -2151,7 +2151,7 @@ async function doLogin() {
   const pass = document.getElementById("authPass").value;
   if (!email || !pass) { setAuthMsg(t("authFillErr"), "err"); return; }
   setAuthMsg(t("authLoading"), "");
-  if (!sbClient) { var ok = await ensureSupabase(); if (!ok) { setAuthMsg(t("genericErr"), "err"); return; } }
+  if (!sbClient) { var ok = await ensureSupabase(); if (!ok) { setAuthMsg(t("connectErr"), "err"); return; } }
   try {
     const { error } = await sbClient.auth.signInWithPassword({ email: email, password: pass });
     if (error) { setAuthMsg(t("badLogin"), "err"); return; }
@@ -2163,7 +2163,7 @@ async function doSignup() {
   const pass = document.getElementById("authPass").value;
   if (!email || !pass) { setAuthMsg(t("authFillErr"), "err"); return; }
   setAuthMsg(t("authLoading"), "");
-  if (!sbClient) { var ok = await ensureSupabase(); if (!ok) { setAuthMsg(t("genericErr"), "err"); return; } }
+  if (!sbClient) { var ok = await ensureSupabase(); if (!ok) { setAuthMsg(t("connectErr"), "err"); return; } }
   try {
     const { data, error } = await sbClient.auth.signUp({ email: email, password: pass });
     if (error) { setAuthMsg(error.message || t("genericErr"), "err"); return; }
@@ -2191,7 +2191,7 @@ async function doLogout() {
   showLogin();
 }
 async function checkSession() {
-  if (!sbClient) { var ok = await ensureSupabase(); if (!ok) { showLogin(); return; } }
+  if (!sbClient) { var ok = await ensureSupabase(); if (!ok) { showLogin(); setAuthMsg(t("connectErr"), "err"); return; } }
   try {
     const { data } = await sbClient.auth.getSession();
     if (data && data.session) showApp(); else showLogin();
@@ -2324,7 +2324,7 @@ function handleReturnFromStripe() {
 
 async function oauth(provider) {
   setAuthMsg(t("authLoading"), "");
-  if (!sbClient) { var ok = await ensureSupabase(); if (!ok) { setAuthMsg(t("genericErr"), "err"); return; } }
+  if (!sbClient) { var ok = await ensureSupabase(); if (!ok) { setAuthMsg(t("connectErr"), "err"); return; } }
   try {
     const { error } = await sbClient.auth.signInWithOAuth({ provider: provider, options: { redirectTo: "https://algent.co.uk/app.html" } });
     if (error) { setAuthMsg(t("genericErr"), "err"); }
@@ -2337,7 +2337,7 @@ async function doForgot() {
   const email = document.getElementById("authEmail").value.trim();
   if (!email) { setAuthMsg(t("typeEmailFirst"), "err"); return; }
   setAuthMsg(t("authLoading"), "");
-  if (!sbClient) { var ok = await ensureSupabase(); if (!ok) { setAuthMsg(t("genericErr"), "err"); return; } }
+  if (!sbClient) { var ok = await ensureSupabase(); if (!ok) { setAuthMsg(t("connectErr"), "err"); return; } }
   try {
     const { error } = await sbClient.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
     if (error) { setAuthMsg(t("genericErr"), "err"); return; }
