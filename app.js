@@ -1506,6 +1506,15 @@ const ACTIONS = {
   "toast-close": () => hideToast(),
   "iap-restore": () => restorePurchases(),
   "iap-manage":  () => manageAppleSubscription(),
+  "oauth-google": () => oauth("google"),
+  "oauth-apple":  () => oauth("apple"),
+  "email-toggle": () => openEmailForm(),
+  "auth-submit":  () => doLoginOrRecover(),
+  "auth-toggle":  () => toggleAuthMode(),
+  "auth-forgot":  () => doForgot(),
+  "auth-logout":  () => doLogout(),
+  "pay-start":    () => startCheckout(),
+  "pay-logout":   () => doLogout(),
 };
 // Registrado ANTES do "clique fora fecha o menu" logo abaixo — a ordem importa:
 // o botão de moeda precisa poder impedir que o próprio clique feche o menu que
@@ -2383,6 +2392,7 @@ if (sbClient) {
   } catch (e) {}
 }
 
+try {
 document.getElementById("authLoginBtn").onclick = doLoginOrRecover;
 const _emailToggle = document.getElementById("emailToggleBtn"); if (_emailToggle) _emailToggle.onclick = openEmailForm;
 const _authToggle = document.getElementById("authToggle"); if (_authToggle) _authToggle.onclick = toggleAuthMode;
@@ -2399,6 +2409,7 @@ const _cancelSubBtn = document.getElementById("cancelSubBtn");
 if (_cancelSubBtn) _cancelSubBtn.onclick = cancelSubscription;
 const _subBtn = document.getElementById("subscribeBtn");
 if (_subBtn) _subBtn.onclick = startCheckout;
+} catch (e) { console.warn("onclick fallback binding error:", e); }
 applyAuthTexts();
 handleReturnFromStripe();
 checkSession();
