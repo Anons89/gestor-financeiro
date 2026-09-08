@@ -2393,23 +2393,13 @@ if (sbClient) {
 }
 
 try {
-document.getElementById("authLoginBtn").onclick = doLoginOrRecover;
-const _emailToggle = document.getElementById("emailToggleBtn"); if (_emailToggle) _emailToggle.onclick = openEmailForm;
-const _authToggle = document.getElementById("authToggle"); if (_authToggle) _authToggle.onclick = toggleAuthMode;
-const _forgotBtn = document.getElementById("forgotBtn"); if (_forgotBtn) _forgotBtn.onclick = doForgot;
-const _gBtn = document.getElementById("googleBtn"); if (_gBtn) _gBtn.onclick = () => oauth("google");
-const _aBtn = document.getElementById("appleBtn"); if (_aBtn) _aBtn.onclick = () => oauth("apple");
-const _payBtn = document.getElementById("payBtn"); if (_payBtn) _payBtn.onclick = startCheckout;
-const _payLogout = document.getElementById("payLogout"); if (_payLogout) _payLogout.onclick = doLogout;
 document.getElementById("authPass").addEventListener("keydown", e => { if (e.key === "Enter") doLoginOrRecover(); });
 document.getElementById("authEmail").addEventListener("keydown", e => { if (e.key === "Enter") document.getElementById("authPass").focus(); });
-const _logoutBtn = document.getElementById("logoutBtn");
-if (_logoutBtn) _logoutBtn.onclick = doLogout;
 const _cancelSubBtn = document.getElementById("cancelSubBtn");
 if (_cancelSubBtn) _cancelSubBtn.onclick = cancelSubscription;
 const _subBtn = document.getElementById("subscribeBtn");
 if (_subBtn) _subBtn.onclick = startCheckout;
-} catch (e) { console.warn("onclick fallback binding error:", e); }
+} catch (e) { console.warn("auth init error:", e); }
 applyAuthTexts();
 handleReturnFromStripe();
 checkSession();
