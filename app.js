@@ -2335,8 +2335,14 @@ async function oauth(provider) {
   setAuthMsg(t("authLoading"), "");
   if (!sbClient) { var ok = await ensureSupabase(); if (!ok) { setAuthMsg(t("connectErr"), "err"); return; } }
   try {
-    const { error } = await sbClient.auth.signInWithOAuth({ provider: provider, options: { redirectTo: "https://algent.co.uk/app.html" } });
-    if (error) { setAuthMsg(t("genericErr"), "err"); }
+    var redir = "https://algent.co.uk/app.html";
+    if (isNativeIOS()) {
+      var res = await sbClient.auth.signInWithOAuth({ provider: provider, options: { redirectTo: redir, skipBrowserRedirect: true } });
+      if (res.error) { setAuthMsg(t("genericErr"), "err"); return; }
+      if (res.data && res.data.url) { window.location.href = res.data.url; return; }
+    }
+    var result = await sbClient.auth.signInWithOAuth({ provider: provider, options: { redirectTo: redir } });
+    if (result.error) { setAuthMsg(t("genericErr"), "err"); }
   } catch (e) { setAuthMsg(t("genericErr"), "err"); }
 }
 
