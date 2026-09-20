@@ -133,7 +133,7 @@ const STR = {
     cmpThisMonth: "Esse mês:", cmpMore: "a mais que o mês passado", cmpLess: "a menos que o mês passado", cmpSame: "Igual ao mês passado.",
     share: "Compartilhar", pdf: "PDF", shareTitle: "meus gastos", copied: "Copiado!",
     detectCur: "moeda daqui", localCur: "Moeda local",
-    authTag: "Entra ou cria sua conta pra começar.", emailPh: "seu email", passPh: "sua senha",
+    authTag: "Controla os teus gastos em segundos. Só escreves — a IA trata do resto.", emailPh: "seu email", passPh: "sua senha",
     google: "Continuar com Google", apple: "Continuar com Apple", authOr: "ou",
     authTitleUp: "Criar conta", authTitleIn: "Entrar",
     haveAccount: "Já tem conta?", noAccount: "Não tem conta?", linkIn: "Entrar", linkUp: "Criar conta",
@@ -233,7 +233,7 @@ const STR = {
     cmpThisMonth: "This month:", cmpMore: "more than last month", cmpLess: "less than last month", cmpSame: "Same as last month.",
     share: "Share", pdf: "PDF", shareTitle: "my spending", copied: "Copied!",
     detectCur: "currency here", localCur: "Local currency",
-    authTag: "Sign in or create your account to start.", emailPh: "your email", passPh: "your password",
+    authTag: "Track spending in seconds. Just type — AI does the rest.", emailPh: "your email", passPh: "your password",
     google: "Continue with Google", apple: "Continue with Apple", authOr: "or",
     authTitleUp: "Sign up", authTitleIn: "Sign in",
     haveAccount: "Already have an account?", noAccount: "Don't have an account?", linkIn: "Sign in", linkUp: "Sign up",
@@ -2114,7 +2114,7 @@ function setAuthMsg(text, kind) {
   m.className = "auth-msg" + (kind ? " " + kind : "");
 }
 // ---- TELA DE LOGIN: modo (criar conta / entrar) e formulário que abre ao clicar ----
-let authMode = "signup"; // pessoas novas veem "Criar conta" primeiro
+let authMode = "signin";
 let emailOpen = false;
 function renderAuth() {
   if (recoveryMode) return; // na recuperação de senha, a tela é controlada à parte
@@ -2137,6 +2137,7 @@ function openEmailForm() { emailOpen = true; renderAuth(); setTimeout(() => { co
 function toggleAuthMode() { authMode = (authMode === "signup") ? "signin" : "signup"; setAuthMsg("", ""); renderAuth(); }
 
 function applyAuthTexts() {
+  const tl = document.getElementById("authTagline"); if (tl) tl.textContent = t("authTag");
   document.getElementById("authEmail").placeholder = t("emailPh");
   document.getElementById("authPass").placeholder = t("passPh");
   document.getElementById("authEmail").setAttribute("aria-label", t("emailPh"));
@@ -2409,4 +2410,5 @@ if (_subBtn) _subBtn.onclick = startCheckout;
 applyAuthTexts();
 handleReturnFromStripe();
 checkSession();
-initIOSPurchases(); // no browser sai na primeira linha e não custa nada
+initIOSPurchases();
+window.__algentReady = true;
