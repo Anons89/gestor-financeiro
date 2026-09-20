@@ -1581,7 +1581,7 @@ function showLogin() {
   // revogada), então a tela de login precisa voltar a aparecer.
   document.documentElement.classList.remove("has-session");
   authScreen.classList.remove("hidden");
-  if (!recoveryMode) { authMode = "signup"; emailOpen = false; setAuthMsg("", ""); renderAuth(); }
+  if (!recoveryMode) { authMode = "signin"; emailOpen = false; setAuthMsg("", ""); renderAuth(); }
 }
 
 // ---- MEDIÇÃO: os degraus do funil ----
