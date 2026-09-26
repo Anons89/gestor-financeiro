@@ -793,12 +793,7 @@
 
 <!-- Supabase local: não depende de CDN externo (resolve iPad WebView bloqueado) -->
 <script src="/supabase.min.js?v=2"></script>
-<script src="/app.js?v=11"></script>
-<script>
-if (!window.__algentReady) {
-  var m = document.getElementById("authMsg");
-  if (m) { m.textContent = "Loading error — please reload the app."; m.className = "auth-msg err"; }
-}
-</script>
+<script src="/app.js?v=12"></script>
+<script src="/fallback.js"></script>
 </body>
 </html>

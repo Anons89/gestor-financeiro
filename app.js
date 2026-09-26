@@ -816,6 +816,7 @@ function renderChips() {
 // Guardando o estado aqui, a tela pode ser redesenhada quantas vezes for preciso
 // sem perder a verdade e sem consultar o banco de novo.
 let subState = { status: null, end: null, cancelAtEnd: false };
+let appleEntitled = false;
 
 function applyStaticTexts() {
   input.setAttribute("placeholder", onbStep() === 1 ? t("onboardPh") : t("inputPh"));
@@ -1667,8 +1668,7 @@ function isNativeIOS() {
 function rcPlugin() {
   try { return (window.Capacitor.Plugins || {}).Purchases || null; } catch (e) { return null; }
 }
-// Lembra se a Apple já liberou o acesso, pra tela de ajustes saber que botões mostrar.
-let appleEntitled = false;
+// appleEntitled declarada junto com subState (antes de applyStaticTexts).
 
 // configure() só pode rodar uma vez, e tem que rodar ANTES de qualquer outra
 // chamada. A promessa fica guardada pra que qualquer caminho (gate, comprar,
