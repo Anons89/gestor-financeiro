@@ -197,15 +197,23 @@ exports.handler = async (event) => {
     // Outros tipos de evento a gente simplesmente ignora, respondendo OK.
 
     if (userId && fields) {
-      // Aviso atrasado (mais velho que o último que já gravamos) é descartado.
       const last = await lastWriteAt(userId);
       if (eventAtMs >= last) {
-        await upsertSub(userId, fields, eventAtMs);
+        try {
+          await upsertSub(userId, fields, eventAtMs);
+        } catch (writeErr) {
+          const userRes = await fetch(
+            process.env.SUPABASE_URL + "/auth/v1/admin/users/" + encodeURIComponent(userId),
+            { headers: supaHeaders() }
+          );
+          if (userRes.status === 404 || !userRes.ok) {
+            return { statusCode: 200, body: JSON.stringify({ received: true, user_gone: true }) };
+          }
+          throw writeErr;
+        }
       }
     }
   } catch (e) {
-    // Se falhar, devolve erro pro Stripe tentar de novo depois.
-    // O detalhe vai pro log do Netlify, não pra resposta.
     console.error("webhook handler failed:", e);
     return { statusCode: 500, body: "handler error" };
   }

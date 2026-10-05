@@ -499,6 +499,17 @@
   input:focus-visible { border-color: var(--spent); box-shadow: 0 0 0 2px rgba(52,199,123,0.35); }
   button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid var(--spent); outline-offset: 2px; }
 
+  /* ---- Modal de confirmação (apagar conta) ---- */
+  .modal-overlay { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.5); padding: 24px; }
+  .modal-overlay.hidden { display: none; }
+  .modal-card { background: var(--card); border-radius: 16px; padding: 24px; max-width: 340px; width: 100%; display: flex; flex-direction: column; gap: 12px; }
+  .modal-warn { font-size: 14px; line-height: 1.5; color: var(--txt); margin: 0; }
+  .modal-note { font-size: 13px; line-height: 1.4; color: #FF6B5E; font-weight: 600; margin: 0; }
+  .modal-link { font-size: 13px; color: var(--spent); text-decoration: underline; }
+  .modal-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+  .modal-btn { width: 100%; padding: 13px; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; border: 1px solid var(--border); background: var(--card); color: var(--txt); }
+  .modal-btn.danger { background: #FF6B5E; color: #fff; border: none; }
+
   /* ---- Acessibilidade: respeita quem pediu menos animação no aparelho ---- */
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: 0s !important; transition-duration: 0s !important; }
@@ -559,6 +570,7 @@
       <!-- Quem já pagou e reinstalou o app cai nesta tela: sem isto ficaria
            preso, sendo empurrado a comprar de novo o que já tem. -->
       <button class="logout-btn" id="payRestoreBtn" style="display:none" data-act="iap-restore"></button>
+      <button class="logout-btn" id="payRetryBtn" style="display:none" data-act="pay-retry"></button>
       <div class="auth-msg" id="payMsg"></div>
       <button class="logout-btn" id="payLogout" style="margin-top:6px" data-act="pay-logout">Log out</button>
       <div class="legal-links" style="margin-top:16px">
@@ -731,6 +743,21 @@
           <button class="set-item" id="logoutBtn" data-act="auth-logout">
             <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg></span><span class="lbl" id="logoutLbl"></span><span class="chev">›</span>
           </button>
+          <button class="set-item danger" id="deleteAccountBtn" data-act="delete-account">
+            <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg></span><span class="lbl" id="deleteAccountLbl"></span><span class="chev">›</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="deleteModal" class="modal-overlay hidden">
+        <div class="modal-card">
+          <p class="modal-warn" id="deleteModalWarn"></p>
+          <p class="modal-note" id="deleteModalAppleNote" style="display:none"></p>
+          <a class="modal-link" id="deleteModalManageSub" href="https://apps.apple.com/account/subscriptions" target="_blank" rel="noopener" style="display:none"></a>
+          <div class="modal-actions">
+            <button class="modal-btn danger" id="deleteModalConfirm" data-act="delete-confirm"></button>
+            <button class="modal-btn" id="deleteModalCancel" data-act="delete-cancel"></button>
+          </div>
         </div>
       </div>
 
@@ -793,7 +820,7 @@
 
 <!-- Supabase local: não depende de CDN externo (resolve iPad WebView bloqueado) -->
 <script src="/supabase.min.js?v=2"></script>
-<script src="/app.js?v=12"></script>
+<script src="/app.js?v=13"></script>
 <script src="/fallback.js"></script>
 </body>
 </html>

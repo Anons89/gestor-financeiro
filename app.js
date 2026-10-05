@@ -166,6 +166,15 @@ const STR = {
     iapDone: "Assinatura ativada! Bom proveito.",
     iapErr: "Não consegui concluir a compra.",
     iapUnavailable: "A compra não está disponível neste aparelho.",
+    iapSubUnavail: "Assinatura indisponível agora. Tenta de novo.",
+    iapRetry: "Tentar de novo",
+    deleteAccount: "Apagar conta", deleteAccountConfirm: "Apagar definitivamente",
+    deleteAccountWarn: "Isto é permanente. Todos os seus gastos, definições e dados serão apagados e não podem ser recuperados.",
+    deleteAccountAppleNote: "Atenção: apagar a conta NÃO cancela automaticamente a sua assinatura da Apple App Store.",
+    deleteAccountManageSub: "Gerir assinaturas",
+    deleteAccountDone: "Conta apagada.",
+    deleteAccountErr: "Não consegui apagar a conta agora. Tenta de novo.",
+    deleteAccountCancel: "Cancelar",
     cancelConfirm: "Tem certeza que quer cancelar? Você mantém o acesso até o fim do período que já pagou (ou do seu teste grátis), e não será cobrado de novo.",
     cancelDone: "Assinatura cancelada. Você continua com acesso até {date} e não será cobrado de novo.",
     cancelDoneNoDate: "Pronto, sua assinatura foi cancelada. Você não será cobrado de novo.",
@@ -266,6 +275,15 @@ const STR = {
     iapDone: "Subscription activated. Enjoy!",
     iapErr: "Couldn't complete the purchase.",
     iapUnavailable: "Purchases aren't available on this device.",
+    iapSubUnavail: "Subscription temporarily unavailable. Please try again.",
+    iapRetry: "Try again",
+    deleteAccount: "Delete account", deleteAccountConfirm: "Delete permanently",
+    deleteAccountWarn: "This is permanent. All your expenses, settings and data will be deleted and cannot be recovered.",
+    deleteAccountAppleNote: "Note: deleting your account does NOT automatically cancel your Apple App Store subscription.",
+    deleteAccountManageSub: "Manage subscriptions",
+    deleteAccountDone: "Account deleted.",
+    deleteAccountErr: "Couldn't delete the account right now. Try again.",
+    deleteAccountCancel: "Cancel",
     cancelConfirm: "Are you sure you want to cancel? You keep access until the end of the period you've already paid for (or your free trial), and you won't be charged again.",
     cancelDone: "Subscription cancelled. You keep access until {date}, and you won't be charged again.",
     cancelDoneNoDate: "Done — your subscription has been cancelled. You won't be charged again.",
@@ -852,6 +870,7 @@ function applyStaticTexts() {
   // apagaria "Cancelada · acesso até X" toda vez que rodasse.
   renderSubscriptionUI();
   setTxt("prefLabel", t("prefLabel")); setTxt("langRowLabel", t("langRowLabel")); setTxt("curRowLabel", t("curRowLabel")); setTxt("accountLabel", t("accountLabel"));
+  setTxt("deleteAccountLbl", t("deleteAccount"));
   setTxt("supportLabel", t("supportLabel")); setTxt("contactSupportLbl", t("contactSupport")); setTxt("helpCentreLbl", t("helpCentre")); setTxt("privacyPolicyLbl", t("privacyPolicy")); setTxt("termsOfServiceLbl", t("termsOfService"));
   setTxt("compareTitle", t("compareTitle")); setTxt("statsEmpty", t("statsEmpty"));
   setTxt("chipsTitle", t("chipsTitle"));
@@ -1516,6 +1535,10 @@ const ACTIONS = {
   "auth-logout":  () => doLogout(),
   "pay-start":    () => startCheckout(),
   "pay-logout":   () => doLogout(),
+  "pay-retry":    () => { hidePaywall(); gate(); },
+  "delete-account": () => showDeleteModal(),
+  "delete-confirm": () => doDeleteAccount(),
+  "delete-cancel":  () => hideDeleteModal(),
 };
 // Registrado ANTES do "clique fora fecha o menu" logo abaixo — a ordem importa:
 // o botão de moeda precisa poder impedir que o próprio clique feche o menu que
@@ -1859,10 +1882,31 @@ async function fetchSubStatus() {
 }
 function showPaywall(status) {
   track("paywall_view");
-  // se já teve algum status antes (e perdeu), fala "seu teste acabou"; senão, "comece seu teste"
-  const returning = status && status !== "trialing" && status !== "active";
-  document.getElementById("payTitle").textContent = returning ? t("payEnded") : t("payStart");
-  document.getElementById("paySub").textContent = withApplePrice(returning ? t("payEndedSub") : t("payStartSub"));
+  var returning = status && status !== "trialing" && status !== "active";
+  var payTitle = document.getElementById("payTitle");
+  var paySub = document.getElementById("paySub");
+  var payBtn = document.getElementById("payBtn");
+  var payRestore = document.getElementById("payRestoreBtn");
+  var payRetry = document.getElementById("payRetryBtn");
+  if (isNativeIOS()) {
+    rcFirstPackage().then(function (pkg) {
+      var preco = pkg && pkg.product && pkg.product.priceString;
+      if (preco) applePrice = preco;
+      if (payTitle) payTitle.textContent = returning ? t("payEnded") : t("payStart");
+      if (paySub) paySub.textContent = preco
+        ? (returning ? t("payEndedSub") : t("payStartSub")).replace(/£\s?2[.,]99\/m\w*/g, preco + "/" + t("planMonth"))
+        : (returning ? t("payEnded") : t("payStart"));
+      if (payBtn) { payBtn.style.display = pkg ? "" : "none"; payBtn.textContent = t("payBtnTxt"); }
+      if (payRestore) { payRestore.style.display = "block"; payRestore.textContent = t("iapRestore"); }
+      if (!pkg && payRetry) payRetry.style.display = "block";
+    });
+  } else {
+    if (payTitle) payTitle.textContent = returning ? t("payEnded") : t("payStart");
+    if (paySub) paySub.textContent = returning ? t("payEndedSub") : t("payStartSub");
+    if (payBtn) payBtn.style.display = "";
+    if (payRestore) payRestore.style.display = "none";
+    if (payRetry) payRetry.style.display = "none";
+  }
   document.getElementById("payScreen").classList.remove("hidden");
 }
 function hidePaywall() { document.getElementById("payScreen").classList.add("hidden"); }
@@ -1960,7 +2004,9 @@ function renderPlanInfo(status, end, cancelAtEnd) {
     else { const p = Date.parse(end); if (!isNaN(p)) endMs = p; }
   }
 
-  // Cancelada: o que importa é ATÉ QUANDO ela ainda tem acesso.
+  var pp = document.getElementById("planPrice");
+  if (pp) pp.textContent = isNativeIOS() && applePrice ? applePrice + "/" + t("planMonth") : "£2.99/" + t("planMonth");
+
   if (cancelAtEnd) {
     el.textContent = endMs
       ? t("planCanceledUntil").replace("{date}", longDate(endMs))
@@ -1976,7 +2022,7 @@ function renderPlanInfo(status, end, cancelAtEnd) {
     el.textContent = t(key).replace("{d}", daysWord(days));
     return;
   }
-  el.textContent = t("planTrial"); // ainda sem data vinda do Stripe: texto padrão
+  el.textContent = t("planTrial");
 }
 
 // ---- NUVEM: gastos no Supabase, amarrados à conta logada ----
@@ -2132,6 +2178,7 @@ function renderAuth() {
   const fields = document.getElementById("emailFields"); if (fields) fields.style.display = emailOpen ? "flex" : "none";
   const eb = document.getElementById("emailToggleBtn"); if (eb) eb.style.display = emailOpen ? "none" : "block";
   const fg = document.getElementById("forgotBtn"); if (fg) fg.style.display = (!up && emailOpen) ? "block" : "none";
+  var gb = document.getElementById("googleBtn"); if (gb) gb.style.display = isNativeIOS() ? "none" : "";
 }
 function openEmailForm() { emailOpen = true; renderAuth(); setTimeout(() => { const e = document.getElementById("authEmail"); if (e) e.focus(); }, 40); }
 function toggleAuthMode() { authMode = (authMode === "signup") ? "signin" : "signup"; setAuthMsg("", ""); renderAuth(); }
@@ -2145,15 +2192,17 @@ function applyAuthTexts() {
   const ao = document.getElementById("authOr"); if (ao) ao.textContent = t("authOr");
   const fg = document.getElementById("forgotBtn"); if (fg) fg.textContent = t("forgot");
   const lo = document.getElementById("logoutLbl"); if (lo) lo.textContent = t("logout");
-  const sb = document.getElementById("subscribeBtn"); if (sb) sb.textContent = withApplePrice(t("subscribe"));
+  const sb = document.getElementById("subscribeBtn"); if (sb) { sb.textContent = withApplePrice(t("subscribe")); sb.style.display = isNativeIOS() ? "none" : ""; }
   const pp = document.getElementById("planPrice"); if (pp && applePrice) pp.textContent = applePrice;
   const pr = document.getElementById("payRestoreBtn"); if (pr && isNativeIOS()) pr.textContent = t("iapRestore");
+  var prt = document.getElementById("payRetryBtn"); if (prt) prt.textContent = t("iapRetry");
   const pb = document.getElementById("payBtn"); if (pb) pb.textContent = t("payBtnTxt");
   const pl = document.getElementById("payLogout"); if (pl) pl.textContent = t("logout");
   const cs = document.getElementById("cancelSubLbl"); const csb = document.getElementById("cancelSubBtn");
   if (cs && csb && !csb.disabled) cs.textContent = t("cancelSub");
   document.querySelectorAll(".js-legal-priv").forEach(a => { a.textContent = t("legalPrivacy"); });
   document.querySelectorAll(".js-legal-terms").forEach(a => { a.textContent = t("legalTerms"); });
+  var hc = document.getElementById("helpCentreLbl"); if (hc && hc.closest) { var hcItem = hc.closest(".set-item"); if (hcItem) hcItem.style.display = isNativeIOS() ? "none" : ""; }
   renderAuth();
 }
 async function doLogin() {
@@ -2180,6 +2229,56 @@ async function doSignup() {
     if (data && data.session) { setAuthMsg("", ""); showApp(); return; } // confirmação de email desligada
     setAuthMsg(t("signupOk"), "ok");
   } catch (e) { setAuthMsg(t("genericErr"), "err"); }
+}
+function showDeleteModal() {
+  var m = document.getElementById("deleteModal"); if (!m) return;
+  document.getElementById("deleteModalWarn").textContent = t("deleteAccountWarn");
+  document.getElementById("deleteModalConfirm").textContent = t("deleteAccountConfirm");
+  document.getElementById("deleteModalCancel").textContent = t("deleteAccountCancel");
+  var note = document.getElementById("deleteModalAppleNote");
+  var link = document.getElementById("deleteModalManageSub");
+  if (isNativeIOS()) {
+    if (note) { note.textContent = t("deleteAccountAppleNote"); note.style.display = ""; }
+    if (link) { link.textContent = t("deleteAccountManageSub"); link.style.display = ""; }
+  } else {
+    if (note) note.style.display = "none";
+    if (link) link.style.display = "none";
+  }
+  m.classList.remove("hidden");
+}
+function hideDeleteModal() {
+  var m = document.getElementById("deleteModal"); if (m) m.classList.add("hidden");
+}
+async function doDeleteAccount() {
+  var btn = document.getElementById("deleteModalConfirm");
+  if (btn) { btn.disabled = true; btn.textContent = "…"; }
+  try {
+    var token = await getToken();
+    if (!token) throw new Error("no session");
+    var res = await fetch("/.netlify/functions/delete-account", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ accessToken: token })
+    });
+    var data = await res.json();
+    if (!data || !data.ok) throw new Error((data && data.error) || "failed");
+    hideDeleteModal();
+    await rcLogOut();
+    appleEntitled = false;
+    if (sbClient) { try { await sbClient.auth.signOut(); } catch (e) {} }
+    cloudSynced = false; currentUserId = null;
+    ["expenses", "recurring", "quickchips_v3", "coach_profile", "coach_msgs", "learned_cats", "migrated_expenses_v1", ONB_KEY]
+      .forEach(function (k) { try { localStorage.removeItem(k); } catch (e) {} });
+    try { sessionStorage.removeItem("ga_ai_chat"); } catch (e) {}
+    expenses = []; recurring = []; quickChips = DEFAULT_CHIPS.slice();
+    coachProfile = {}; learnedCats = {};
+    coachMessages = [{ role: "bot", content: STR[lang].coachGreeting }];
+    applyStaticTexts(); renderFixed(); renderCurrencyBar(); render();
+    hidePaywall(); showLogin();
+    setAuthMsg(t("deleteAccountDone"), "ok");
+  } catch (e) {
+    if (btn) { btn.disabled = false; btn.textContent = t("deleteAccountConfirm"); }
+    setAuthMsg(t("deleteAccountErr"), "err");
+  }
 }
 async function doLogout() {
   if (sbClient) { try { await sbClient.auth.signOut(); } catch (e) {} }
@@ -2332,16 +2431,44 @@ function handleReturnFromStripe() {
   } catch (e) {}
 }
 
+function generateNonce(len) {
+  var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  var arr = new Uint8Array(len || 32);
+  crypto.getRandomValues(arr);
+  var out = "";
+  for (var i = 0; i < arr.length; i++) out += chars[arr[i] % chars.length];
+  return out;
+}
+async function sha256hex(str) {
+  var buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(function (b) { return b.toString(16).padStart(2, "0"); }).join("");
+}
+async function nativeAppleSignIn() {
+  setAuthMsg(t("authLoading"), "");
+  if (!sbClient) { var ok = await ensureSupabase(); if (!ok) { setAuthMsg(t("connectErr"), "err"); return; } }
+  try {
+    var P = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.AppleSignIn;
+    if (!P) { setAuthMsg(t("connectErr"), "err"); return; }
+    var rawNonce = generateNonce(32);
+    var hashedNonce = await sha256hex(rawNonce);
+    var res = await P.authorize({ scopes: ["email", "fullName"], nonce: hashedNonce });
+    var idToken = res && res.response && res.response.identityToken;
+    if (!idToken) { setAuthMsg(t("genericErr"), "err"); return; }
+    var result = await sbClient.auth.signInWithIdToken({ provider: "apple", token: idToken, nonce: rawNonce });
+    if (result.error) { setAuthMsg(result.error.message || t("genericErr"), "err"); return; }
+    setAuthMsg("", ""); showApp();
+  } catch (e) {
+    if (e && (e.message || "").indexOf("cancel") !== -1) { setAuthMsg("", ""); return; }
+    if (e && String(e.code) === "1001") { setAuthMsg("", ""); return; }
+    setAuthMsg(t("genericErr"), "err");
+  }
+}
 async function oauth(provider) {
+  if (provider === "apple" && isNativeIOS()) return nativeAppleSignIn();
   setAuthMsg(t("authLoading"), "");
   if (!sbClient) { var ok = await ensureSupabase(); if (!ok) { setAuthMsg(t("connectErr"), "err"); return; } }
   try {
     var redir = "https://algent.co.uk/app.html";
-    if (isNativeIOS()) {
-      var res = await sbClient.auth.signInWithOAuth({ provider: provider, options: { redirectTo: redir, skipBrowserRedirect: true } });
-      if (res.error) { setAuthMsg(t("genericErr"), "err"); return; }
-      if (res.data && res.data.url) { window.location.href = res.data.url; return; }
-    }
     var result = await sbClient.auth.signInWithOAuth({ provider: provider, options: { redirectTo: redir } });
     if (result.error) { setAuthMsg(t("genericErr"), "err"); }
   } catch (e) { setAuthMsg(t("genericErr"), "err"); }
